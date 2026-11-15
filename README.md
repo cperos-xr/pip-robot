@@ -93,4 +93,5 @@ Found a security problem? Please read [SECURITY.md](SECURITY.md).
 
 ## License
 
-Code: [MIT](LICENSE). Manual, photos and 3D models: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Code: [MIT](LICENSE). Manual, photos, web page and 3D models: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The details, and the few third-party files: [NOTICE.md](NOTICE.md).
