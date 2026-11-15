@@ -1602,8 +1602,9 @@ class Desktop:
     def capture(self, img):
         w = self.focused()
         now = time.time()
-        if not w or w.name not in ("games", "mines", "munch", "tictactoe", "checkers", "paint") or self.dialog:
-            return
+        own = ("games", "mines", "munch", "tictactoe", "checkers", "paint")
+        if not w or self.dialog or not (w.name in own or (w.name == "gameboy" and w.recording())):
+            return                                      # the Game Boy only with Settings > Posting > Record Game Boy games
         if now - self._last_cap < 0.12:
             return
         self._last_cap = now
@@ -1700,6 +1701,12 @@ class Desktop:
                 if self.dirty:
                     self.dirty = False
                     self.send_frame()
+                try:
+                    self.send_direct()
+                except Exception as e:                # an app's own drawing must not stop the desktop
+                    if time.time() - getattr(self, "_direct_err_t", 0) > 10:
+                        self._direct_err_t = time.time()
+                        self.r.log(f"desktop direct drawing: {e}", "warn")
         except Exception as e:
             self.r.log(f"desktop crashed: {e}", "warn")
         finally:
@@ -2103,14 +2110,43 @@ class Desktop:
             button(d, b, lbl)
             g["hits"].append((b, fn))
 
+    # ---- direct drawing: an app (the Game Boy) sends part of its window to the screen in its own compact format
+    def direct_target(self):
+        """(focused app, its direct rectangle) while it may draw there itself, else (app, None): nothing must cover the
+        rectangle (Start menu, popup, dialog, toast), and the app decides whether the screen can do it."""
+        w = self.focused()
+        rect = w.direct_rect() if w is not None and hasattr(w, "direct_rect") else None
+        if rect and (self.start_open or self.popup or self.dialog or (self.toast_until and time.time() < self.toast_until)):
+            rect = None
+        return w, rect
+
+    def send_direct(self):
+        w, rect = self.direct_target()
+        prev = getattr(self, "_direct_app", None)
+        if prev is not None and prev is not w:
+            prev.direct_active = False
+        if w is None or not hasattr(w, "direct_rect"):
+            self._direct_app = None
+            return
+        if rect and (prev is not w or not w.direct_active):
+            w.direct_invalidate()                 # just switched on: the screen may show something else there
+        w.direct_active = bool(rect)
+        self._direct_app = w
+        if rect:
+            w.send_direct()
+
     # ---- sending: only the changed rectangle goes over the wire
     def send_frame(self):
         img = self.render()
         arr = np.asarray(img)
+        w, direct = self.direct_target()
         if self.force or self.last_sent is None:
             box = (0, 0, W, H)
         else:
             diff = np.any(arr != self.last_sent, axis=2)
+            if direct and getattr(w, "direct_active", False):
+                x0, y0, x1, y1 = direct
+                diff[y0:y1, x0:x1] = False         # the app keeps that part up to date itself (send_direct)
             ys, xs = np.nonzero(diff)
             if len(xs) == 0:
                 return
@@ -2141,6 +2177,8 @@ class Desktop:
         if ok:
             self.last_sent = arr.copy() if box == (0, 0, W, H) or self.last_sent is None else self._merge(arr, box)
             self.force = False
+            if direct and box[0] < direct[2] and direct[0] < box[2] and box[1] < direct[3] and direct[1] < box[3]:
+                w.direct_invalidate()             # this JPEG painted over the app's own rectangle: it resends it all
         else:
             self.force = True
             self.dirty = True

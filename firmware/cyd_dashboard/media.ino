@@ -227,6 +227,48 @@ void deskTouch(char e, int x, int y) {
   JsonDocument d; d["t"] = "dt"; char ev[2] = {e, 0}; d["e"] = ev; d["x"] = x; d["y"] = y; sendJson(d);
 }
 
+// ============================================================ Game Boy frames (RoboOS Game Boy app, firmware 0.9.3+)
+// {"t":"gbf","id":n,"len":N,"crc":..,"x":X,"y":Y,"pal":[c0,c1,c2,c3]} + N bytes: one record per changed row of the
+// 160 x 144 picture: [row][n][n bytes]. n == 40: 2-bit pixels, 4 per byte, leftmost pixel in the top two bits;
+// n < 40: (count, byte) pairs that expand to those 40 bytes. pal = RGB565 colours of shades 0 (light) .. 3 (dark).
+// Drawn straight onto the desktop at x, y + row. The payload arrives in imgBuf like a JPEG: the only memory of its
+// own is one 320-byte line. Much smaller than a JPEG of the same picture and nothing to decode.
+static const int GB_W = 160, GB_H = 144, GB_ROW_BYTES = 40;
+bool gbFrame(JsonDocument& meta, const uint8_t* data, size_t len) {
+  if (screenAsleep || page != P_DESKTOP || modalActive() || imageOverlay || !deskHasFrame) return false;
+  int x = meta["x"] | 80, y = meta["y"] | 56;
+  uint16_t pal[4] = {0xFFFF, 0xAD55, 0x52AA, 0x0000};
+  JsonArray p = meta["pal"].as<JsonArray>();
+  for (int i = 0; i < 4 && i < (int)p.size(); i++) pal[i] = (uint16_t)(p[i] | 0);
+  static uint16_t line[GB_W];
+  static uint8_t packed[GB_ROW_BYTES];
+  size_t i = 0;
+  lcd.startWrite();
+  while (i + 2 <= len) {
+    int row = data[i], n = data[i + 1];
+    i += 2;
+    if (row >= GB_H || n > GB_ROW_BYTES || i + n > len) break;      // a damaged record: stop (the CRC makes this rare)
+    if (n == GB_ROW_BYTES) {
+      memcpy(packed, data + i, GB_ROW_BYTES);
+    } else {
+      int o = 0;
+      for (int k = 0; k + 1 < n; k += 2)
+        for (int c = data[i + k]; c > 0 && o < GB_ROW_BYTES; c--) packed[o++] = data[i + k + 1];
+      while (o < GB_ROW_BYTES) packed[o++] = 0;
+    }
+    i += n;
+    for (int b = 0; b < GB_ROW_BYTES; b++) {
+      uint8_t v = packed[b];
+      line[b * 4] = pal[v >> 6]; line[b * 4 + 1] = pal[(v >> 4) & 3];
+      line[b * 4 + 2] = pal[(v >> 2) & 3]; line[b * 4 + 3] = pal[v & 3];
+    }
+    lcd.pushImage(x, y + row, GB_W, 1, (const lgfx::rgb565_t*)line);
+  }
+  lcd.endWrite();
+  if (toastUntil) drawToastLcd();
+  return true;
+}
+
 // ============================================================ image arrival
 bool imageReceived(JsonDocument& meta, const uint8_t* data, size_t len) {
   const char* slot = meta["slot"] | "";

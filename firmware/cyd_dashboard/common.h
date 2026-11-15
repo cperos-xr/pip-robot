@@ -4,7 +4,7 @@
 #include "lgfx_cyd.h"
 
 #define FW_NAME "cyd-dashboard"
-#define FW_VER  "0.9.2"
+#define FW_VER  "0.9.3"
 
 #define SCR_W 320
 #define SCR_H 240
@@ -133,6 +133,7 @@ void viewerDraw();   void viewerTap(int x, int y); void viewerEnter();
 void photosPreviewRedraw();
 void filesReceived();
 bool imageReceived(JsonDocument& meta, const uint8_t* data, size_t len);  // returns true if drawn
+bool gbFrame(JsonDocument& meta, const uint8_t* data, size_t len);        // Game Boy rows on the desktop (media.ino)
 extern bool imageOverlay;
 
 // body sensors on CN1

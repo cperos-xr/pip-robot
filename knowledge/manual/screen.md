@@ -48,7 +48,9 @@ screen answers each one with `{"t":"ack","id":N,"ok":true}`.
 Pi -> screen (`"t"` values): `face`, `toast`, `ask` (question with buttons), `page`, `beep`, `cfg` (brightness, volume,
 theme...), `status`, `devices`, `tests`, `test_result`, `logs`/`log`, `ideas`, `files`, `img` (picture), `pcm` (audio),
 `lips` (mouth movement), `brain`, `vision_mode`, `qr`, `listen_state`, `imu`, `led`, `time`, `calibrate`, `restart`, `ping`,
-`shot` (send a screenshot), `social` (Bluesky numbers for the face corner).
+`shot` (send a screenshot), `social` (Bluesky numbers for the face corner), `gbf` (firmware 0.9.3+: the Game Boy
+app's changed picture rows, 2 bits a pixel, drawn straight onto the desktop; format in `media.ino` `gbFrame`; the
+screen's `hello` says `"gbf":1` when it can, and acks `ok:false` when it did not draw them, e.g. under a dialog).
 
 Screen -> Pi: `hello` (version, memory, img_max), `hb` (heartbeat every few seconds), `touch`, `page`, `answer`
 (button pressed), `run_test`, `snap`, `get_img`, `ls`, `read_text`, `describe`, `listen`, `brain_next`, `vision_next`,

@@ -62,7 +62,9 @@ def build(log=None):
         sig = {"gbc_new": ([ctypes.c_char_p, S, ctypes.POINTER(I)], V), "gbc_free": ([V], None),
                "gbc_run_frame": ([V], I), "gbc_set_buttons": ([V, ctypes.c_uint8], None), "gbc_frame": ([V], V),
                "gbc_save_size": ([V], S), "gbc_save_data": ([V], V), "gbc_load_save": ([V, ctypes.c_char_p, S], None),
-               "gbc_take_dirty": ([V], I), "gbc_reset": ([V], None), "gbc_error": ([V, ctypes.POINTER(I)], I)}
+               "gbc_take_dirty": ([V], I), "gbc_reset": ([V], None), "gbc_error": ([V, ctypes.POINTER(I)], I),
+               "gbc_delta": ([V, ctypes.c_char_p, ctypes.c_char_p, S], S), "gbc_delta_reset": ([V], None),
+               "gbc_peek": ([V, ctypes.c_uint16, ctypes.c_char_p, S], None)}
         for name, (args, res) in sig.items():
             f = getattr(lib, name)
             f.argtypes, f.restype = args, res
@@ -119,6 +121,7 @@ class Emulator:
             pass
         self.buttons = 0
         self.frame, self.seq = bytes(W * H), 0
+        self._out = ctypes.create_string_buffer(0)
         self.fps = 0.0                    # emulated frames per second, measured
         self.error = ""
         self.alive = time.time()
@@ -183,6 +186,28 @@ class Emulator:
             os.replace(tmp, self.save_path)
         except Exception as e:
             self.log(f"gameboy: could not save {self.save_path.name}: {e}", "warn")
+
+    def delta(self, cap):
+        """The rows that changed since the last delta() (all of them after delta_reset()), encoded for the screen's
+        "gbf" message. Called from the desktop thread; touches only the copy kept for this, not the running game."""
+        if not self.core:
+            return b""
+        if len(self._out) < cap:
+            self._out = ctypes.create_string_buffer(cap)
+        n = self.lib.gbc_delta(self.core, self.frame, self._out, cap)
+        return self._out.raw[:n]
+
+    def peek(self, addr, n=1):
+        """n bytes of the Game Boy's memory from addr (a racy read while the game runs: fine for watching it)."""
+        if not self.core:
+            return bytes(n)
+        buf = ctypes.create_string_buffer(n)
+        self.lib.gbc_peek(self.core, addr, buf, n)
+        return buf.raw
+
+    def delta_reset(self):
+        if self.core:
+            self.lib.gbc_delta_reset(self.core)
 
     def _stop(self):
         """Stop the game thread. False if it did not stop (then the core must be left alone)."""

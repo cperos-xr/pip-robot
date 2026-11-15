@@ -288,6 +288,19 @@ class Settings:
                 Item("ai.web", "Web search", "choice", lambda: browse.cfg(r).get("search", "smart"), web_set, browse.MODES,
                      note="Smart: Perplexity via OpenRouter, about half a US cent a search, max 40 a day. Free: basic, "
                           "often finds nothing (search engines block robots). Reading a page is always free."),
+                Item("ai.gb_steps", "Pip plays Game Boy: steps a day", "choice",
+                     lambda: int(r.cfg.data.get("desktop", {}).get("gb_ai_steps_day", 300)),
+                     lambda x: (r.cfg.data.setdefault("desktop", {}).__setitem__("gb_ai_steps_day", int(x)), r.cfg.save()),
+                     [(100, "100"), (300, "300"), (1000, "1000"), (5000, "5000")],
+                     note="One step = one look at the screen and a few button presses (or, watching, one look and maybe "
+                          "a remark). Free models cost nothing but are slow and rate-limited; a paid model costs a "
+                          "little per step."),
+                Item("ai.gb_watch", "Pip watches Game Boy: look every", "choice",
+                     lambda: int(r.cfg.data.get("desktop", {}).get("gb_watch_interval", 20)),
+                     lambda x: (r.cfg.data.setdefault("desktop", {}).__setitem__("gb_watch_interval", int(x)), r.cfg.save()),
+                     [(10, "10 s"), (20, "20 s"), (40, "40 s"), (60, "1 min")],
+                     note="Watch mode (Game Boy app, Watch button): you play, Pip comments now and then and learns "
+                          "the game. A look is skipped when nothing happened, so pauses cost nothing."),
             ]),
             ("posting", "Posting", [
                 Item("post.auto", "Post on its own", "toggle", lambda: bool(soc().get("autonomous")),
@@ -299,6 +312,11 @@ class Settings:
                      note="Photos with people are only posted when you say it is OK. On: you also tap Post on the screen."),
                 Item("post.show_off", "Show off screen + games", "toggle", lambda: bool(soc().get("show_off")),
                      lambda x: (soc().__setitem__("show_off", x), r.cfg.save())),
+                Item("post.gameboy", "Record Game Boy games", "toggle", lambda: bool(soc().get("record_gameboy")),
+                     lambda x: (soc().__setitem__("record_gameboy", x), r.cfg.save()),
+                     note="Off: the Game Boy is never recorded. On: the last 30 s of a game can become a clip to post, like "
+                          "the robot's own games. Only turn it on for games whose makers allow sharing (many homebrew games); "
+                          "commercial games belong to their publishers."),
                 Item("post.uploads_look", "Look at my uploads", "toggle", lambda: bool(soc().get("uploads_look", True)),
                      lambda x: (soc().__setitem__("uploads_look", x), r.cfg.save()),
                      note="A photo or video you upload (web app: Media > Files) is looked at right away; Pip says what it thinks."),

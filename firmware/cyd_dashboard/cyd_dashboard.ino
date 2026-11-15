@@ -259,6 +259,7 @@ static void sendHello() {
   d["st7789"] = S.st7789; d["w"] = SCR_W; d["h"] = SCR_H; d["cw"] = CW; d["ch"] = CH;
   d["img_max"] = imgMax; d["prev_max"] = prevMax; d["heap"] = ESP.getFreeHeap(); d["reset"] = (int)esp_reset_reason();
   d["shot"] = 1;   // can send screenshots
+  d["gbf"] = 1;    // draws Game Boy frames (RoboOS Game Boy app)
   d["theme"] = themeName(S.theme); d["canvas"] = canvasOk; d["calibrated"] = S.affOk ? "affine5" : (S.calOk ? "lgfx4" : "none"); d["page"] = pageName(page);
   putSettings(d["set"].to<JsonObject>());
   sensorsHello(d);
@@ -300,6 +301,11 @@ static void endImage() {
   uint32_t want = imgMeta["crc"] | 0;
   if (want && crc32(imgBuf, binLen) != want) { rxErr++; sendAck(id, false, "crc"); return; }
   if (!strcmp(imgMeta["t"] | "", "pcm")) { audioReceived(imgMeta, imgBuf, binLen, id); return; }  // acks itself
+  if (!strcmp(imgMeta["t"] | "", "gbf")) {           // Game Boy rows: ok = drawn, so the Pi knows to resend them all
+    bool shown = gbFrame(imgMeta, imgBuf, binLen);
+    sendAck(id, shown, shown ? nullptr : "not_shown");
+    return;
+  }
   bool drawn = imageReceived(imgMeta, imgBuf, binLen);
   sendAck(id, true, drawn ? nullptr : "not_shown");
 }
@@ -312,7 +318,7 @@ static void handleLine(const char* s, size_t n) {
   const char* t = d["t"] | "";
   if (!helloAcked) { helloAcked = true; barDirty = true; }
 
-  if (!strcmp(t, "img") || !strcmp(t, "pcm")) { beginImage(d); return; }
+  if (!strcmp(t, "img") || !strcmp(t, "pcm") || !strcmp(t, "gbf")) { beginImage(d); return; }
   if (!strcmp(t, "brain")) { brainLabel = (const char*)(d["label"] | "?"); if (!(d["online"] | false)) brainLabel += " (no key)"; if (page == P_SETTINGS) dirty = true; return; }
   if (!strcmp(t, "vision_mode")) { visionLabel = (const char*)(d["mode"] | "off"); visionLabel.toUpperCase(); if (page == P_CAMERA) dirty = true; return; }
   if (!strcmp(t, "qr")) { showQr(d["text"] | "", d["title"] | "", d["sub"] | ""); return; }

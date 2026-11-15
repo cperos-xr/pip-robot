@@ -30,6 +30,8 @@ typedef struct {
 	int err;                      /* first emulation error (enum gb_error_e + 1), 0 = none */
 	uint16_t err_addr;
 	uint8_t fb[GBC_W * GBC_H];    /* one byte per pixel: shade 0 (lightest) .. 3 (darkest) */
+	uint8_t sent[GBC_W * GBC_H];  /* what the screen shows (gbc_delta) */
+	uint8_t row_ok[GBC_H];        /* 1 = that row of sent[] is really on the screen */
 } core_t;
 
 static uint8_t rom_read(struct gb_s *gb, const uint_fast32_t addr)
@@ -154,6 +156,58 @@ void gbc_reset(core_t *c)
 {
 	gb_reset(&c->gb);
 	c->err = 0;
+}
+
+/* For the screen's "gbf" message (firmware/cyd_dashboard/media.ino gbFrame): encode the rows of frame (160 x 144
+ * shades, a copy taken after a frame) that differ from what the screen already shows. One record per row:
+ * [row][n][n bytes]. n == 40: 2-bit pixels, 4 per byte, leftmost pixel in the top two bits; n < 40: (count, byte)
+ * pairs that expand to those 40 bytes (flat rows such as sky shrink to a few bytes). Rows that do not fit in cap wait
+ * for the next call. Returns the number of bytes written. */
+size_t gbc_delta(core_t *c, const uint8_t *frame, uint8_t *out, size_t cap)
+{
+	enum { RB = GBC_W / 4 };
+	size_t o = 0;
+	for(int y = 0; y < GBC_H; y++) {
+		const uint8_t *row = frame + (size_t)y * GBC_W;
+		uint8_t *was = c->sent + (size_t)y * GBC_W;
+		if(c->row_ok[y] && !memcmp(row, was, GBC_W))
+			continue;
+		uint8_t packed[RB], rle[RB];
+		for(int b = 0; b < RB; b++)
+			packed[b] = (uint8_t)((row[b * 4] & 3) << 6 | (row[b * 4 + 1] & 3) << 4 |
+					      (row[b * 4 + 2] & 3) << 2 | (row[b * 4 + 3] & 3));
+		size_t n = 0;
+		int b = 0;
+		while(b < RB && n + 2 < RB) {            /* stop as soon as RLE would not be shorter than raw */
+			int run = 1;
+			while(b + run < RB && packed[b + run] == packed[b])
+				run++;
+			rle[n++] = (uint8_t)run;
+			rle[n++] = packed[b];
+			b += run;
+		}
+		const int use_rle = (b == RB);
+		const size_t len = use_rle ? n : RB;
+		if(o + 2 + len > cap)
+			break;
+		out[o++] = (uint8_t)y;
+		out[o++] = (uint8_t)len;
+		memcpy(out + o, use_rle ? rle : packed, len);
+		o += len;
+		memcpy(was, row, GBC_W);
+		c->row_ok[y] = 1;
+	}
+	return o;
+}
+
+/* The screen shows something else now (a JPEG, a dialog...): the next gbc_delta sends every row. */
+void gbc_delta_reset(core_t *c) { memset(c->row_ok, 0, sizeof c->row_ok); }
+
+/* Read n bytes of the Game Boy's memory map from addr (for the AI player: position, map, party HP...). */
+void gbc_peek(core_t *c, uint16_t addr, uint8_t *out, size_t n)
+{
+	for(size_t i = 0; i < n; i++)
+		out[i] = __gb_read(&c->gb, (uint16_t)(addr + i));
 }
 
 int gbc_error(core_t *c, int *addr)
