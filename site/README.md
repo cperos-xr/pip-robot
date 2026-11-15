@@ -4,8 +4,8 @@ One static page: `index.html` and two photos in `img/`. No build step, no tracki
 
 ## Before you publish it
 
-Open `index.html` and fill in the three addresses near the top of the `<script>` block (`LINKS`): the code on GitHub,
-the printable body on Thingiverse, the robot's Bluesky profile. A button whose address is empty says "soon".
+Open `index.html` and fill in the addresses near the top of the `<script>` block (`LINKS`): the code on GitHub,
+the printable body on Thingiverse, the robot's Bluesky profile, a video of it. A button whose address is empty says "soon".
 
 ## Putting it online
 

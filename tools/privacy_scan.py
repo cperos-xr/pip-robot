@@ -239,7 +239,7 @@ def install_hooks():
     for name, args in (("pre-commit", "--staged"), ("commit-msg", '--msg "$1"')):
         f = hooks / name
         f.write_text(f"#!/bin/sh\n# installed by tools/privacy_scan.py --install-hooks: keeps secrets and private details out of commits\n"
-                     f"exec python3 {py} {args}\n")
+                     f"exec python3 {py} {args}\n", newline="\n")      # LF even on Windows: sh chokes on CRLF
         f.chmod(f.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
     print(f"hooks installed in {hooks}: every commit in this clone is scanned first")
 

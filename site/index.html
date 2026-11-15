@@ -232,6 +232,7 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
         <a class="btn raised go" data-link="github" href="#build">Get the code</a>
         <a class="btn raised" data-link="thingiverse" href="#body">Print the body</a>
         <a class="btn raised" data-link="bluesky" href="#does">Follow Pip</a>
+        <a class="btn raised" data-link="video" href="#does">Watch Pip dance</a>
       </div>
     </div>
   </section>
@@ -356,16 +357,17 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
 
   <footer class="foot">
     <span>Code under the MIT license. Manual, photos and models under CC BY 4.0.</span>
-    <span><a data-link="github" href="#build">Code</a> · <a data-link="thingiverse" href="#body">Printable body</a> · <a data-link="bluesky" href="#does">Bluesky</a></span>
+    <span><a data-link="github" href="#build">Code</a> · <a data-link="thingiverse" href="#body">Printable body</a> · <a data-link="bluesky" href="#does">Bluesky</a> · <a data-link="video" href="#does">Video</a></span>
   </footer>
 </div>
 
 <script>
-// ---- the three addresses of the project: fill these in when they exist (empty = the button says "soon")
+// ---- the addresses of the project: fill these in when they exist (empty = the button says "soon")
 const LINKS = {
   github: "https://github.com/cperos-xr/pip-robot",
-  thingiverse: "",   // e.g. "https://www.thingiverse.com/thing:1234567"
-  bluesky: ""        // e.g. "https://bsky.app/profile/yourrobot.bsky.social"
+  thingiverse: "",   // e.g. "https://www.thingiverse.com/thing:1234567" (the body files are not uploaded yet)
+  bluesky: "https://bsky.app/profile/imalittlerobot.bsky.social",
+  video: "https://www.youtube.com/shorts/WMXmUGjVRbw"
 };
 document.querySelectorAll("[data-link]").forEach(a => {
   const url = LINKS[a.dataset.link];
