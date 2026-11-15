@@ -6,7 +6,7 @@ two wheels, pops wheelies, plays games on its own touchscreen face, and can chan
 Everything is here: the software, both firmwares, the manual the robot reads about itself, and (soon) the printable
 body. Build one, teach it a trick, bolt new hardware on, and send the change back.
 
-Project page: <https://cperos-xr.github.io/pip-robot/>
+Project page: <https://pip.xrtech.dev/>
 
 ![Pip with its wheels on](knowledge/pics/with-wheels.jpg)
 
