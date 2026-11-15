@@ -7,7 +7,7 @@ Tap a part to pick its LED, then Show. Buttons:
   Full (battery), 777, Batt -/+ (battery bars in 25 % steps)
   Shimmer (the head twinkles), Scan (every cathode in turn), Chase (the three digits), Pulse (battery blinks)."""
 
-from .desktop import App, DARK, F_BOLD, F_UI, FACE, GREEN, NAVY, RED, SHADOW, _font, bevel, button, fit_text, inside
+from roboos.desktop import App, DARK, F_BOLD, F_UI, FACE, GREEN, NAVY, RED, SHADOW, _font, bevel, button, fit_text, inside
 from . import blinkers_picture as pic
 
 

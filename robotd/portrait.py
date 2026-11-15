@@ -330,7 +330,7 @@ def ask_plan(robot, subject=None, photo=None):
 def make(robot, subject=None, photo=None):
     """Plan, paint and record a drawing: a self-portrait (no subject), anything in words (subject), or what a camera photo
     shows (photo). Returns dict(idea, png, mp4, image) or None. Never touches the real screen."""
-    from .desktop import F_BIG, F_UI, Paint
+    from roboos.desktop import F_BIG, F_UI, Paint
     from .screencap import SHOTS, encode_mp4
     if not _busy.acquire(blocking=False):
         return None

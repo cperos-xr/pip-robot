@@ -1,7 +1,7 @@
 """One list of settings for the whole robot.
 
 The touchscreen's Settings page, the RoboOS Settings app and the web app's Settings tab all show THIS list, in the
-same groups and order (GET /api/settings, {"t":"settings"} to the screen, robotd/desktop.py SettingsApp). Change a
+same groups and order (GET /api/settings, {"t":"settings"} to the screen, robotd/desktop_robot.py SettingsApp). Change a
 setting in any of them and all of them show the new value, because the value lives in one place: data/config.json,
 or (for the screen's own hardware: brightness, rotation...) the screen, which reports its values in its hello and in
 "cyd_cfg" messages and gets changes as "cfg".

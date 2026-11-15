@@ -1,5 +1,17 @@
 # Installing the software on a new robot
 
+**The easy way:** connect the brain to your computer and ask a coding AI to "make it alive":
+[`MAKE_IT_ALIVE.md`](MAKE_IT_ALIVE.md). Or run the installer on the brain yourself; it does steps 3 to 6 below on any
+Debian-family Linux, checks first, and is safe to run again:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cperos-xr/pip-robot/main/tools/install.sh | sudo bash
+sudo /root/robot/venv/bin/python /root/robot/tools/discover_parts.py --write      # what is it made of?
+```
+
+This page is the same thing by hand, written for the first robot's board (an Orange Pi Zero with Armbian). On a
+Raspberry Pi, use Raspberry Pi OS Lite (64-bit) for step 1 and skip the Orange Pi overlays in step 2.
+
 These steps were written from the first robot's working setup. They have **not** been replayed on a blank SD card
 yet. If a step fails for you, please open an issue (or a pull request that fixes this page).
 

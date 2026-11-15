@@ -1,4 +1,4 @@
-"""Game Boy for RoboOS: play original Game Boy games on the robot's screen (emulator: robotd/gameboy.py, Peanut-GB).
+"""Game Boy for RoboOS: play original Game Boy games on the screen (emulator: roboos/gameboy.py, Peanut-GB).
 
 - Games: .gb files in data/files/games (or data/files): web app > Files > Upload. None come with the robot; free
   homebrew games work well. Game Boy Color-only games do not run.
@@ -6,7 +6,7 @@
   Touching between A and B presses both. The touchscreen feels one finger at a time, so for two buttons at once
   (run + jump) use a USB keyboard: arrows or WASD = D-pad, X or K = A, Z or J = B, Enter = START, Backspace or Tab = SELECT,
   Esc = back to the list.
-- "Play" (top right): the robot's AI plays the game (robotd/gameboy_ai.py). Touching any button takes over.
+- "Play" (top right): the AI plays the game (roboos/gameboy_ai.py). Touching any button takes over.
 - "Watch" (next to it): you play, the robot watches like a friend on the couch: a remark now and then (out loud and
   under the game), a tip when it is sure, and notes on how the game works that Play mode uses later.
 - The game pauses when its window is covered or the screen leaves RoboOS. Saves: data/gameboy/saves/<game>.sav.
@@ -25,7 +25,7 @@ from PIL import Image, ImageDraw
 
 from .desktop import (DARK, F_BIG, F_BOLD, F_UI, FACE, H as DESK_H, LIGHT, NAVY, SCREEN_Y, SHADOW, W as DESK_W, bevel,
                       button, inside)
-from .desktop_games import GameApp, center_text
+from .games import GameApp, center_text
 from .gameboy import BUTTONS as B, H, SAVES, W, Emulator, find_roms
 from .gameboy_ai import AIPlayer
 
@@ -140,7 +140,7 @@ class GameBoy(GameApp):
         def work():
             emu = None
             try:
-                emu = Emulator(path, self.r.log)
+                emu = Emulator(path, self.host.log)
             except Exception as e:
                 self.d.toast(f"{path.stem}: {e}", 6)
             self.loading = None
@@ -155,7 +155,7 @@ class GameBoy(GameApp):
 
     def recording(self):
         """May the desktop record this game for a post? (Settings > Posting > Record Game Boy games, off by default.)"""
-        return bool(self.emu and self.r.cfg.data.get("social", {}).get("record_gameboy"))
+        return bool(self.emu and self.host.get("social", "record_gameboy"))
 
     def offer_clip(self, emu):
         """Leaving a game after real play, with recording allowed: the last 30 s may become a post."""
@@ -214,7 +214,7 @@ class GameBoy(GameApp):
     def direct_rect(self):
         """The game picture's rectangle (desktop coordinates, right/bottom exclusive) while the screen can draw it from
         rows, else None (older screen firmware, no game, or the game stopped with a message over the picture)."""
-        if not self.emu or self.emu.error or not self.r.cyd.info.get("gbf"):
+        if not self.emu or self.emu.error or not self.host.screen.info.get("gbf"):
             return None
         sx, sy = self.layout(self.box)["screen"]
         return (sx, sy, sx + W, sy + H)
@@ -233,12 +233,12 @@ class GameBoy(GameApp):
         if not rect:
             return
         self.direct_seq = emu.seq
-        payload = emu.delta(max(4096, self.r.cyd.info.get("img_max", 16384) - 64))
+        payload = emu.delta(max(4096, self.host.screen.info.get("img_max", 16384) - 64))
         if not payload:
             return
         if self.recording() and time.time() - self.d._last_cap >= 0.12:
             self.d.capture(self.d.render())                # direct frames skip the desktop: draw one for the recording
-        if self.r.cyd.send_image(payload, timeout=1.0, kind="gbf", x=rect[0], y=rect[1] + SCREEN_Y, pal=PAL565):
+        if self.host.screen.send_image(payload, timeout=1.0, kind="gbf", x=rect[0], y=rect[1] + SCREEN_Y, pal=PAL565):
             self.direct_n += 1
         else:                                              # not drawn (a message on the screen, a lost byte): all rows next time
             emu.delta_reset()
@@ -340,7 +340,7 @@ class GameBoy(GameApp):
         if not self.roms:
             d.text((x0 + 10, y0 + 6), "No Game Boy games yet", font=F_BIG, fill=NAVY)
             lines = ["Put .gb files in data/files/games:", "web app > Files > Upload.", "",
-                     "No games come with the robot. Free homebrew", "games work well (look for Game Boy homebrew).",
+                     "No games come with RoboOS. Free homebrew", "games work well (look for Game Boy homebrew).",
                      "Only original Game Boy games, not Color ones."]
             for i, line in enumerate(lines):
                 d.text((x0 + 10, y0 + 30 + i * 14), line, font=F_UI, fill=DARK)

@@ -12,7 +12,7 @@ import time
 from PIL import Image, ImageDraw
 
 from .desktop import DARK, F_BOLD, F_UI, FACE, LIGHT, NAVY, YELLOW, bevel
-from .desktop_games import GameApp, center_text, talk
+from .games import GameApp, center_text, talk
 
 # '#' wall, '.' dot, 'o' power pellet, anything else = empty path. Row 7 is a tunnel: it wraps left/right.
 MAZE = [

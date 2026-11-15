@@ -1,4 +1,4 @@
-"""Game Boy emulator core for RoboOS: Peanut-GB (MIT, robotd/gameboy_c/peanut_gb.h) behind a small C wrapper.
+"""Game Boy emulator core for RoboOS: Peanut-GB (MIT, roboos/gameboy_c/peanut_gb.h) behind a small C wrapper.
 
 - The C code is compiled on the robot the first time a game starts (gcc, about 15 s) into data/gameboy/gbcore.so, and
   again whenever the source is newer than that library. Nothing binary is kept in the repo.
@@ -17,7 +17,7 @@ import threading
 import time
 from pathlib import Path
 
-from .core import DATA
+from .paths import DATA
 
 SRC = Path(__file__).resolve().parent / "gameboy_c"
 HOME = DATA / "gameboy"
@@ -45,7 +45,7 @@ def build(log=None):
         if not LIB.exists() or LIB.stat().st_mtime < newest:
             cc = shutil.which("cc") or shutil.which("gcc")
             if not cc:
-                raise RuntimeError("no C compiler on the robot (apt install gcc)")
+                raise RuntimeError("no C compiler on this computer (apt install gcc)")
             HOME.mkdir(parents=True, exist_ok=True)
             tmp = LIB.with_name("gbcore.tmp.so")
             t0 = time.time()

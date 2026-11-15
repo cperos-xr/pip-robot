@@ -6,7 +6,7 @@ groups, names and order:
 | Where | How it gets the list |
 |---|---|
 | Touchscreen: Menu > Settings (firmware 0.8.0+) | The Pi sends `{"t":"settings","g":[{"n":group,"r":[rows]}]}`. A tap sends `{"t":"set","i":id,"op":...}`. Without the Pi, the screen shows its old local page (brightness, touch...). |
-| RoboOS: the **Settings** app (gear icon; it replaced the Robot Control Panel) | `SettingsApp` in `robotd/desktop.py` reads `robot.settings.all()`. |
+| RoboOS: the **Settings** app (gear icon; it replaced the Robot Control Panel) | `SettingsApp` in `robotd/desktop_robot.py` reads `robot.settings.all()`. |
 | Web app: Settings tab, "Robot settings" card (owner) | `GET /api/settings`, `POST /api/settings {"id","op"\|"value","confirmed"}`. |
 
 A change made in one place shows in the others, because the value is only stored once:
@@ -18,6 +18,11 @@ A change made in one place shows in the others, because the value is only stored
 Groups: **Sound** (output, volume, mute, keep speaker awake, Bluetooth speaker, pair a new speaker, test audio, talk
 during games), **Screen**, **Camera** (camera on/off, vision mode, eye options), **AI** (brain, speech recognition, web search),
 **Posting** (Bluesky), **Robot** (motors status, self-tests, restart, reboot, shut down).
+
+Two settings for robots built from other parts live only in `data/config.json` (stop robotd, edit, start it):
+`"i2c_bus"` (the brain board's own I2C bus number: 0 on the Orange Pi Zero, 1 on a Raspberry Pi; `tools/install.sh`
+sets it) and `"voice": {"mic": "plughw:CARD=<id>,DEV=0"}` (which microphone to record from; empty = the first Pip's
+webcam if present, else the first card that can record: `arecord -l` lists them).
 
 Not in the list on purpose, because they are features rather than settings: driving, photos, RoboDev and its
 permission modes (in RoboDev itself), passwords, API keys and guest links (web app only).

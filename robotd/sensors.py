@@ -13,7 +13,14 @@ except ImportError:  # allows running parts of robotd on a laptop
 class I2CBus:
     def __init__(self, num=0):
         self.num = num
-        self.bus = SMBus(num) if SMBus else None
+        self.bus, self.err = None, ""
+        if SMBus:
+            # A robot built on another board may have no /dev/i2c-<num> (a Raspberry Pi uses bus 1, and I2C is off
+            # until it is switched on). No bus = no Pi-side sensors, never a crash at start (config i2c_bus picks it).
+            try:
+                self.bus = SMBus(num)
+            except OSError as e:
+                self.err = f"/dev/i2c-{num}: {e.strerror or e}"
         self.lock = threading.Lock()
         self.window = deque(maxlen=1000)
         self.total_ok = self.total_fail = 0
@@ -102,6 +109,8 @@ class I2CBus:
         return False
 
     def scan(self):
+        if not self.bus:
+            return []           # no bus on this board (self.err says why)
         # warm the bus on any responder first, then probe everything
         for _ in range(30):
             try:

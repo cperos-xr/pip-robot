@@ -34,7 +34,7 @@ Project page: <https://pip.xrtech.dev/>
 - **Talks to other AIs.** An MCP server (`mcp/robot_mcp.py`) lets Claude Code, Claude Desktop and other agents see and
   act through the robot.
 
-## The body
+## The first Pip's body (yours can be different)
 
 | Part | Role |
 |---|---|
@@ -49,27 +49,40 @@ Project page: <https://pip.xrtech.dev/>
 Wiring, pins and the hard-won lessons are in [`knowledge/manual/body.md`](knowledge/manual/body.md). Printable parts
 go in [`cad/`](cad/README.md).
 
-## Build your own
+## Build your own, from your own parts
 
-1. **Put it together:** [`knowledge/manual/body.md`](knowledge/manual/body.md).
-2. **Install the software:** [`docs/INSTALL.md`](docs/INSTALL.md).
-3. **Give it a brain:** one API key (OpenRouter or Anthropic) in `data/secrets.env`
-   ([template](tools/secrets.env.template)).
-4. **Meet it:** open `http://pip.local:8080`, pair your phone with the QR code on its screen, and say hello.
+Pip is not a kit. Use whatever you have lying around: the brain can be a Raspberry Pi, an Orange Pi, any small Linux
+board or an old laptop, and every other part is optional. Pip finds what is plugged in and works with it.
+[`docs/YOUR_PARTS.md`](docs/YOUR_PARTS.md) explains how, and what can do each job.
+
+1. **Plug it together.** Mount boards on printed stud plates that click into the 8 mm grid: make one for any board
+   with the [LEGO-ifier](site/legoifier.html) ([how to mount boards](docs/MOUNTING_BOARDS.md)).
+2. **Connect the brain to your computer** (same Wi-Fi, an Ethernet cable, or USB).
+3. **Ask your coding AI to "make it alive".** In Claude Code, open this folder and type `/make-it-alive`. It finds
+   the brain, installs everything, tells you what each part can do, and has your robot say its first words.
+   The whole walk-through: [`docs/MAKE_IT_ALIVE.md`](docs/MAKE_IT_ALIVE.md).
+4. **Meet it:** open `http://pip.local:8080` on your phone and say hello.
+
+By hand instead: [`docs/INSTALL.md`](docs/INSTALL.md), or `tools/install.sh` on the brain. You need one API key
+(OpenRouter or Anthropic) either way ([template](tools/secrets.env.template)).
 
 ## Where things are
 
 ```
 robotd/            the robot's program (Python): face link, motors, sensors, camera, voice, AI, memory, web app, API
   brain.py         the AI mind and its tools          agent.py     RoboDev, the on-board coding agent
-  desktop*.py      RoboOS and its apps                api.py       web app + HTTP API      webauth.py  sign-in
+  desktop_host.py  RoboOS's host on the robot           api.py       web app + HTTP API      webauth.py  sign-in
+  desktop_*.py     robot-only RoboOS apps (Camera, Settings, Bluetooth, RoboDev, Weather, Battery, BLINKERS)
   web/             the web app (plain HTML and JavaScript, no build step)
+roboos/            RoboOS, the desktop on the screen: apps, Game Boy, App Store. Never imports robotd; also runs
+                   without a robot (python -m roboos). Published on its own as the RoboOS repo (roboos-repo/)
 firmware/          Arduino sources: cyd_dashboard (ESP32 screen), rp2040_motor_usb (motor board)
 knowledge/manual/  the manual, written for the AIs that run and change the robot (people can read it too)
-knowledge/         hardware.yaml (the robot's model of its own body), personality.md, photos
+knowledge/         parts.yaml (parts any Pip can be built from), hardware.yaml (the first Pip's body), personality.md
 mcp/robot_mcp.py   MCP server for Claude Code and other agents
-tools/             safe restart, privacy scan, install helpers
-docs/              install guide, the original design notes
+tools/             install.sh (on the brain), find_brain.py (on your PC), discover_parts.py, safe restart, privacy scan
+docs/              make it alive, your own parts, mounting boards, the install guide, the original design notes
+.claude/skills/    make-it-alive: the bring-up steps a coding AI follows
 site/              the project's web page
 ```
 
@@ -77,7 +90,8 @@ site/              the project's web page
 
 The fastest way in is the manual: start at [`knowledge/manual/README.md`](knowledge/manual/README.md), then
 `changing_things.md`. Ideas that fit in an afternoon: a new RoboOS app or game (`roboos.md`), a new self-test, a new
-trick for the wheels (`motors.md`), a new sensor on the I2C port (`body.md`). See [CONTRIBUTING.md](CONTRIBUTING.md).
+trick for the wheels (`motors.md`), a new sensor on the I2C port (`body.md`), or support for a part nobody has
+added yet (`docs/YOUR_PARTS.md`: a temperature sensor, a distance sensor, a GPS for a Pip-boat). See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Safety and privacy, by design
 

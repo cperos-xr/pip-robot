@@ -15,6 +15,11 @@ jobs:
         with:
           python-version: "3.13"
       - name: Python compiles
-        run: python -m compileall -q robotd mcp tools
+        run: python -m compileall -q robotd roboos mcp tools
+      - name: RoboOS apps draw without a screen
+        run: |
+          sudo apt-get install -y -q fonts-dejavu-core
+          pip install -q Pillow numpy pyserial requests
+          python tools/roboos_smoke_test.py
       - name: Nothing private in the tree
         run: python tools/privacy_scan.py

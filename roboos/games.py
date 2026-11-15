@@ -112,22 +112,20 @@ def draw_shovel(d, x, y, c):
 
 def talk(app, text, mood=None):
     """The robot says it out loud (in the background), unless desktop.game_talk is off."""
-    if app.r.cfg.data.get("desktop", {}).get("game_talk", True):
-        threading.Thread(target=app.r.voice.speak, args=(text, mood), daemon=True).start()
+    if app.host.game_talk():
+        app.host.say(text, mood)
 
 
 class GameApp(App):
     menu = False                      # reached through the Games launcher (and desktop icons), not the Start menu
     demo_mode = False                 # True while the robot plays by itself for a show-off video: no score, no talking
+    portable = True
 
     def cfg(self):
-        return self.r.cfg.data.setdefault("desktop", {})
+        return self.host.section("desktop")
 
     def save(self):
-        try:
-            self.r.cfg.save()
-        except Exception:
-            pass
+        self.host.save()
 
 
 # ---------------------------------------------------------------- Games launcher
@@ -137,6 +135,7 @@ class Games(App):
     To add a game: one line in GAMES (app name, tile label, one-line description) and, if it keeps a score, a case in
     line(). 3 columns: up to 6 games show as big tiles, 7-9 as smaller ones, more scroll (wheel or drag)."""
     name, title, icon = "games", "Games", "games"
+    portable = True
     GAMES = [("mines", "RoboMines", "Find the mines without stepping on one."),
              ("munch", "RoboMunch", "Eat every dot and dodge the ghosts."),
              ("gameboy", "Game Boy", "Play Game Boy games from the shared folder."),
@@ -151,7 +150,7 @@ class Games(App):
 
     def line(self, name):
         """The short score line under a tile ('' = none yet)."""
-        c = self.r.cfg.data.get("desktop", {})
+        c = self.host.section("desktop")
         if name == "mines":
             best = c.get("mines_best", {})
             for lvl in ("Hard", "Medium", "Easy"):             # the hardest level beaten

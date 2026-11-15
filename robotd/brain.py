@@ -549,8 +549,12 @@ class Brain:
         return "the owner" + ("".join(f", {n}" for n in names[:-1]) + f" or {names[-1]}" if names else "")
 
     def system_prompt(self):
+        # The self-model: THIS robot's own parts list (data/body.yaml, written by tools/discover_parts.py when it was
+        # brought to life) if it has one, else the first Pip's knowledge/hardware.yaml. Robots are built from
+        # whatever parts their owners had, so a new robot must not believe it has the first one's wheels.
         try:
-            hw = (KNOW / "hardware.yaml").read_text()[:9000]   # the whole self-model (it outgrew 6000 on 2026-11-08)
+            own = DATA / "body.yaml"
+            hw = (own if own.exists() else KNOW / "hardware.yaml").read_text()[:9000]   # it outgrew 6000 on 2026-11-08
         except OSError:
             hw = "(hardware file missing)"
         try:

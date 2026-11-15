@@ -61,8 +61,12 @@ Recipes (follow them; they are how this robot is changed safely):
   robot_api GET /api/log (or `journalctl -u robotd -n 60 --no-pager`) and test the feature.
 - **Web app (robotd/web/index.html):** read per request: edit, commit, no restart. Check JS syntax by eye; keep the
   existing helpers (`api()`, `act()`, `setHTML()`, `esc()`, `data-owner` for owner-only controls).
-- **A new RoboOS app:** read `roboos.md` first. Subclass `App` (or `ListApp`) in a new file `robotd/desktop_<name>.py` or in
-  `desktop_apps.py`, add it to `APPS` in `desktop.py`, draw an icon in `draw_icon()`. Screen area is 320x220 with a
+- **A new RoboOS app:** read `roboos.md` first. RoboOS is its own package (`roboos/`) and never imports robotd.
+  A built-in app that any RoboOS can use: subclass `App` (or `ListApp`) in `roboos/`, use only `self.host` (never
+  `self.r`), set `portable = True`, add it to `APPS` in `roboos/desktop.py`, draw an icon in `draw_icon()`; the self-test
+  `roboos_portable` must pass. An app that needs the robot (camera, motors...): put it in `robotd/desktop_<name>.py`
+  and add it in `RobotHost.apps()` (`robotd/desktop_host.py`). A one-off app for this robot only: an installed app in
+  `data/apps/<id>/` (app.json + app.py, see `roboos.md`), no restart needed (Store > Reload). Screen area is 320x220 with a
   20 px wide scrollbar convention; fonts F_UI/F_BOLD/F_MONO. Restart, then open it with robot_api POST
   /api/desktop/open `{"app":"<name>"}` and test with POST /api/desktop/input `{"click":[x,y]}` and screenshot `desktop`.
 - **CYD screen firmware (firmware/cyd_dashboard):** read `screen.md` (very little RAM: no big buffers). Edit, bump

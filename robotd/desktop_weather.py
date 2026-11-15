@@ -3,7 +3,7 @@ hours, and a Panel button that cycles it on the BLINKERS LED display. The place 
 screen can end up in social posts)."""
 import time
 
-from .desktop import App, DARK, F_BOLD, F_UI, FACE, GREEN, LIGHT, NAVY, SHADOW, YELLOW, _font, bevel, button, fit_text, inside
+from roboos.desktop import App, DARK, F_BOLD, F_UI, FACE, GREEN, LIGHT, NAVY, SHADOW, YELLOW, _font, bevel, button, fit_text, inside
 
 F_HUGE = _font("DejaVuSans-Bold.ttf", 30)
 SKY = (210, 230, 250)

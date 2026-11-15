@@ -1,6 +1,12 @@
 # For AI agents working on this repo
 
-This is the code of a small home robot (imalittlerobot). Before doing anything:
+This is the code of a small home robot (imalittlerobot).
+
+**Setting up a NEW robot?** If the owner says "make it alive", "install Pip", "set up my robot", or has just connected
+a brain computer (Raspberry Pi, Orange Pi, any small Linux board, an old laptop) to this PC: follow
+`.claude/skills/make-it-alive/SKILL.md`. Every robot is built from different parts: never assume the first one's.
+
+Working on an existing robot's code? Before doing anything:
 
 1. Read `knowledge/manual/README.md` (rules + map of the manual).
 2. Read `knowledge/manual/changing_things.md` before you change code or firmware.

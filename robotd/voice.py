@@ -70,6 +70,34 @@ def _playback_cards():
     return cards
 
 
+_mic_cache = (MIC_DEVICE, 0.0)
+
+
+def mic_device(cfg=None):
+    """The ALSA device the ears record from. Order: config voice.mic (e.g. "plughw:CARD=Codec,DEV=0") if set; the
+    first robot's webcam card "webcam" if present; else the first card that can record (any USB webcam or USB mic,
+    whatever this robot was built from). Cached 30 s."""
+    global _mic_cache
+    if cfg is not None:
+        want = ((cfg.get("voice") or {}).get("mic") or "").strip()
+        if want:
+            return want
+    if time.time() - _mic_cache[1] < 30:
+        return _mic_cache[0]
+    dev = MIC_DEVICE
+    try:
+        out = subprocess.run(["arecord", "-l"], capture_output=True, text=True, timeout=3).stdout
+        cards = re.findall(r"card (\d+): (\S+) \[", out)
+        if cards and "webcam" not in [c[1] for c in cards]:
+            # a USB card (webcam mic, USB mic) before a board's built-in codec, which usually has no microphone wired
+            usb = [c for c in cards if glob.glob(f"/proc/asound/card{c[0]}/usbid")]
+            dev = f"plughw:CARD={(usb or cards)[0][1]},DEV=0"
+    except Exception:
+        pass
+    _mic_cache = (dev, time.time())
+    return dev
+
+
 def _tone_wav(notes, lead=0.0, amp=0.5, rate=BT_RATE):
     """[(hz, ms), ...] -> 48 kHz stereo WAV (soft edges so it does not click)."""
     parts = [np.zeros(int(rate * lead), np.float32)]
@@ -566,7 +594,7 @@ class Voice:
                 self.play_tones([(1400, 40)])        # the start beep on the speaker, before recording (not in it)
             rec = KaldiRecognizer(self._load_model(), RATE)
             self.stop_listening.clear()
-            proc = subprocess.Popen(["arecord", "-q", "-D", MIC_DEVICE, "-f", "S16_LE", "-r", str(RATE), "-c", "1", "-t", "raw"],
+            proc = subprocess.Popen(["arecord", "-q", "-D", mic_device(self.r.cfg), "-f", "S16_LE", "-r", str(RATE), "-c", "1", "-t", "raw"],
                                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             chunk = RATE // 10 * 2          # 100 ms
             floor, started, last_voice, t0 = None, False, 0.0, time.time()
@@ -690,7 +718,7 @@ class Voice:
 
     def mic_level(self, seconds=1.0):
         """Open the microphone briefly and return (mean, peak) RMS. Audio is not stored or transcribed."""
-        p = subprocess.run(["arecord", "-q", "-D", MIC_DEVICE, "-f", "S16_LE", "-r", str(RATE), "-c", "1", "-t", "raw",
+        p = subprocess.run(["arecord", "-q", "-D", mic_device(self.r.cfg), "-f", "S16_LE", "-r", str(RATE), "-c", "1", "-t", "raw",
                             "-d", str(max(1, int(seconds)))], capture_output=True, timeout=10)
         x = np.frombuffer(p.stdout, dtype=np.int16).astype(np.float32)
         if len(x) < RATE // 4:

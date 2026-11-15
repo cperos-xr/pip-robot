@@ -6,9 +6,9 @@ import threading
 import time
 
 from .core import PHOTOS
-from .desktop import (App, DARK, F_BOLD, F_MONO, F_UI, FACE, LIGHT, NAVY, RED, SBW, SHADOW, Scroll, bevel, button, draw_icon,
+from roboos.desktop import (App, DARK, F_BOLD, F_MONO, F_UI, FACE, LIGHT, NAVY, RED, SBW, SHADOW, Scroll, bevel, button, draw_icon,
                       fit_text, inside)
-from .desktop_apps import Keyboard, LineEdit
+from roboos.media import Keyboard, LineEdit
 
 LINE_H = 12
 TEAL_TXT = (0, 110, 110)

@@ -209,6 +209,7 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
       <a class="raised" href="#does">What it does</a>
       <a class="raised" href="#body">The body</a>
       <a class="raised" href="#build">Build one</a>
+      <a class="raised" href="legoifier.html">LEGO-ifier</a>
       <a class="raised" href="#teach">Teach it</a>
     </nav>
     <span class="clock sunken" id="clock" aria-hidden="true">--:--</span>
@@ -264,7 +265,7 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
           <figcaption>Pip on its wheels, three days after its first boot. The front rests on two spring skids.</figcaption>
         </figure>
         <div style="min-width:0">
-          <p>Pip is built from cheap hobby boards on perforated plates and bricks, so every part can come off and something new can go on.</p>
+          <p>Pip is built from cheap hobby boards on perforated plates and bricks, so every part can come off and something new can go on. These are the first Pip's parts. <b>Yours do not have to match:</b> use what you have, and Pip works with what it finds.</p>
           <div class="scroll" style="margin-top:1.1rem">
             <table class="parts">
               <thead><tr><th scope="col">Part</th><th scope="col">Job</th></tr></thead>
@@ -280,6 +281,7 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
             </table>
           </div>
           <p class="spec"><span>I2C on the screen's CN1 port</span><span>USB on the Pi's 13-pin header</span><span>5 V logic, 7.5 V motors</span></p>
+          <p class="note" style="margin-top:1rem">Every board sits on a printed stud plate that clicks into the 8 mm grid. Make one for any board with the <a href="legoifier.html">LEGO-ifier</a>: calibrate with a small print, download the STL, bolt or glue the board on.</p>
         </div>
       </div>
     </div>
@@ -308,22 +310,23 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
   <section class="win raised" id="build">
     <div class="bar"><h2>Build one</h2><span class="ctl" aria-hidden="true"><i class="raised"></i><i class="raised"></i><i class="raised"></i></span></div>
     <div class="pane sunken">
+      <p style="margin-bottom:1.25rem">Pip is not a kit. The brain can be a Raspberry Pi, an Orange Pi, any small Linux board or an old laptop, and every other part is optional: a webcam, a speaker, a touchscreen, motors, whatever is in the drawer.</p>
       <ol class="steps">
-        <li><h3>Put it together</h3><p>The wiring, the pins and the lessons learned the hard way are in the manual's body page.</p></li>
-        <li><h3>Install</h3><p>Armbian on an SD card, a handful of packages, and the code.</p></li>
-        <li><h3>Give it a brain</h3><p>One API key, from OpenRouter or Anthropic. A cheap model is enough.</p></li>
-        <li><h3>Say hello</h3><p>Scan the QR code on its screen with your phone. You are now its owner.</p></li>
+        <li><h3>Plug it together</h3><p>Whatever parts you have, mostly by USB. Mount the boards on printed plates from the <a href="legoifier.html">LEGO-ifier</a>.</p></li>
+        <li><h3>Connect the brain</h3><p>To your computer: the same Wi-Fi, an Ethernet cable, or USB.</p></li>
+        <li><h3>Say "make it alive"</h3><p>To your coding AI, in the folder with Pip's code. It finds the brain, installs everything and tells you what each part can do.</p></li>
+        <li><h3>Say hello</h3><p>Add one AI key, open its web app on your phone, and it talks back. You are now its owner.</p></li>
       </ol>
-      <div class="term" role="group" aria-label="Install commands">
-<pre><span class="c"># on the robot's Orange Pi, as root</span>
-<span class="p">$ </span>git clone <span id="repo">&lt;address of the code&gt;</span> /root/robot
-<span class="p">$ </span>cd /root/robot
-<span class="p">$ </span>python3 -m venv --system-site-packages venv
-<span class="p">$ </span>venv/bin/pip install -r requirements.txt
-<span class="p">$ </span>cp tools/robotd.service /etc/systemd/system/ &amp;&amp; systemctl enable --now robotd
-<span class="c"># then open http://pip.local:8080 on your phone</span></pre>
+      <div class="term" role="group" aria-label="What bringing Pip to life looks like">
+<pre><span class="c"># on your computer, in the folder with Pip's code (an example run)</span>
+<span class="p">$ </span>claude
+<span class="p">&gt; </span>make it alive
+<span class="c">  found a Raspberry Pi 4 at pip.local · installing Pip ... done</span>
+<span class="c">  eyes: USB webcam · ears: its microphone · voice: USB speaker</span>
+<span class="c">  balance: MPU-6050 · not used yet: a BME280 (want me to add it?)</span>
+<span class="c">  Pip says: "I'm alive! I can see you."</span></pre>
       </div>
-      <p class="note" style="margin-top:0.9rem">The full guide is <code>docs/INSTALL.md</code> in the code.</p>
+      <p class="note" style="margin-top:0.9rem">The walk-through is <code>docs/MAKE_IT_ALIVE.md</code> in the code, and the parts guide is <code>docs/YOUR_PARTS.md</code>. Rather do it by hand? <code>docs/INSTALL.md</code>, or run <code>tools/install.sh</code> on the brain.</p>
     </div>
   </section>
 
@@ -357,7 +360,7 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
 
   <footer class="foot">
     <span>Code under the MIT license. Manual, photos and models under CC BY 4.0.</span>
-    <span><a data-link="github" href="#build">Code</a> · <a data-link="thingiverse" href="#body">Printable body</a> · <a data-link="bluesky" href="#does">Bluesky</a> · <a data-link="video" href="#does">Video</a></span>
+    <span><a data-link="github" href="#build">Code</a> · <a data-link="thingiverse" href="#body">Printable body</a> · <a data-link="bluesky" href="#does">Bluesky</a> · <a data-link="video" href="#does">Video</a> · <a data-link="coffee" href="#top">Buy me a coffee</a></span>
   </footer>
 </div>
 
@@ -366,6 +369,7 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
 const LINKS = {
   github: "https://github.com/cperos-xr/pip-robot",
   thingiverse: "https://www.thingiverse.com/thing:7435423",
+  coffee: "https://www.buymeacoffee.com/cperos",
   bluesky: "https://bsky.app/profile/imalittlerobot.bsky.social",
   video: "https://www.youtube.com/shorts/WMXmUGjVRbw"
 };
@@ -377,7 +381,7 @@ document.querySelectorAll("[data-link]").forEach(a => {
     a.insertAdjacentHTML("beforeend", ' <span class="soon">soon</span>');
   }
 });
-if (LINKS.github) document.getElementById("repo").textContent = LINKS.github;
+if (LINKS.github && document.getElementById("repo")) document.getElementById("repo").textContent = LINKS.github;
 
 // ---- clock in the taskbar
 const clock = document.getElementById("clock");

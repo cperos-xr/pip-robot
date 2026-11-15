@@ -29,7 +29,7 @@
 |---|---|
 | `main.py` | Starts everything. Class `Robot`. Camera loop, status loop, housekeeping, screen events. |
 | `core.py` | Paths, `Config` (data/config.json), `Store` (SQLite data/robot.db), event bus, logging |
-| `links.py` | `CydLink` (screen serial) and `MotorLink` (RP2040 serial) |
+| `links.py` | `MotorLink` (RP2040 serial); `CydLink` (screen serial) now lives in `roboos/screen.py` |
 | `sensors.py` | IMU (MPU-6050) maths and the PCF8574 |
 | `camera.py` | Webcam capture, photos, JPEG sizing |
 | `vision.py` | OpenCV: faces, smiles, eye gaze, motion, QR codes |
@@ -45,10 +45,16 @@
 | `api.py` | Web server, JSON API, login |
 | `webauth.py` | Passwords, pairing codes, cookies, public page settings |
 | `agent.py` | RoboDev, the robot's coding agent (tool loop, permission modes, firmware builds); see `robodev.md` |
+| `desktop_host.py` | `RobotHost`: RoboOS (`roboos/`) with the robot behind its Host API, plus the robot-only apps |
+| `desktop_robot.py`, `desktop_bluetooth.py` | RoboOS apps that need the robot: Camera, Settings, Bluetooth |
 | `desktop_dev.py` | The RoboDev app on RoboOS |
 | `settings.py` | The one settings list shown by the screen, the RoboOS Settings app and the web app (`settings.md`) |
 | `browse.py` | Web search and page reading for the brain and RoboDev (`brain.md`, "Looking things up online") |
 | `firmware.py` | Flash the CYD / RP2040, fetch firmware built by GitHub Actions |
+
+RoboOS, the desktop on the screen, is its own package next to robotd: `roboos/` (desktop, built-in apps, Game Boy,
+the screen link, the app store). It never imports robotd and also runs without a robot (`python -m roboos`).
+See `roboos.md`.
 
 ## Data (data/, never committed)
 

@@ -41,6 +41,7 @@ Written 2026-11-06. If something here disagrees with the code, the code wins. Fi
 | You want to... | Read |
 |---|---|
 | Know the parts and the wiring | `body.md` |
+| Know what THIS robot is made of (robots are built from different parts) | `data/body.yaml` (private; written by `tools/discover_parts.py`), parts catalog `knowledge/parts.yaml`, `docs/YOUR_PARTS.md` |
 | Know how the software is organised, where files are, how to restart | `software.md` |
 | Call the robot from code (web API, MCP tools, self-tests) | `api.md` |
 | Understand the touchscreen and its messages | `screen.md` |

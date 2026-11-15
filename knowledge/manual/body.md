@@ -2,6 +2,11 @@
 
 The detailed self-model is `knowledge/hardware.yaml`. This page is the simple version.
 
+This page and `hardware.yaml` describe the **first** Pip. Other robots are built from whatever parts their owners had:
+a robot's own parts list is `data/body.yaml` (private, written by `tools/discover_parts.py`), and when that file
+exists the robot's AI reads it instead of `hardware.yaml`. Known parts and how they are recognised:
+`knowledge/parts.yaml`. Mounting boards on the frame: `docs/MOUNTING_BOARDS.md`.
+
 ## The map
 
 ```

@@ -72,7 +72,7 @@ say "privacy scan of exactly what would be published"
 python3 "$HERE/tools/privacy_scan.py" --dir "$TMP" || die "the scan found something. Fix it in the private repo first; nothing was published."
 
 say "do the Python files compile?"
-python3 -m compileall -q "$TMP/robotd" "$TMP/mcp" "$TMP/tools" >/dev/null || die "a Python file does not compile"
+python3 -m compileall -q "$TMP/robotd" "$TMP/roboos" "$TMP/mcp" "$TMP/tools" >/dev/null || die "a Python file does not compile"
 echo "yes"
 
 # the public clone becomes exactly the export (its .git stays)

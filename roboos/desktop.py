@@ -1,4 +1,7 @@
-"""RoboOS: a tiny Windows-95-style desktop for the CYD touchscreen, drawn here on the Orange Pi.
+"""RoboOS: a tiny Windows-95-style desktop for the CYD touchscreen, drawn on the Linux board it is plugged into.
+
+RoboOS is its own package (roboos/): it never imports the robot (robotd). Everything it needs from the machine comes
+through a Host (roboos/host.py); robotd gives it a RobotHost, `python -m roboos` runs it on any board with a CYD.
 
 How it works
 - The Pi renders the whole desktop with PIL (320x220, the area under the screen's top bar) and sends only the part
@@ -6,11 +9,11 @@ How it works
   hundred bytes per update.
 - The screen forwards touches on its Desktop page as {"t":"dt","e":"d|m|u","x":..,"y":..}. A USB mouse and keyboard
   plugged into the Pi are read straight from /dev/input (no extra libraries).
-- Apps are small classes (see APPS at the bottom). To add one: subclass App, give it name/title/icon, draw() and the
-  input methods you need, then add it to APPS. It shows up in the Start menu automatically.
+- Apps are small classes (see APPS at the bottom). To add a built-in one: subclass App, give it name/title/icon,
+  draw() and the input methods you need, then add it to APPS. Apps from other people install into data/apps/<id>/
+  (roboos/store.py, the Store app). Either way it shows up in the Start menu automatically.
 """
 import io
-import json
 import math
 import os
 import pty
@@ -28,13 +31,13 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from .core import DATA, PHOTOS, ROOT
+from . import VERSION
+from .paths import DATA, PHOTOS, ROOT
 
 W, H = 320, 220            # desktop area on the screen (below the screen's own 20 px bar)
 SCREEN_Y = 20
 TASK_H = 22
 TITLE_H = 16
-VERSION = "1.1"
 
 # Windows 95 palette
 TEAL = (0, 128, 128)
@@ -190,11 +193,34 @@ class Scroll:
         self._grab = None
 
 
+ICON_IMAGES = {}                  # icon name -> RGBA picture (installed apps bring their own icon.png: roboos/store.py)
+_icon_cache = {}
+
+
 def draw_icon(d, kind, x, y, s=24, off=False):
-    """Little pixel-art icons drawn with primitives (s = 24 or 16)."""
+    """Little pixel-art icons drawn with primitives (s = 24 or 16), or an installed app's own picture."""
     k = s / 24.0
     P = lambda a, b: (x + a * k, y + b * k)
     R = lambda a, b, c, e: (x + a * k, y + b * k, x + c * k, y + e * k)
+    pic = ICON_IMAGES.get(kind)
+    if pic is not None and getattr(d, "_image", None) is not None:
+        key = (kind, s, id(pic))
+        if key not in _icon_cache:
+            _icon_cache[key] = pic.resize((s, s), Image.LANCZOS if pic.width > s else Image.NEAREST)
+        im = _icon_cache[key]
+        d._image.paste(im, (int(x), int(y)), im)
+        return
+    if kind == "store":                                    # a shopping bag
+        d.rectangle(R(3, 8, 21, 22), fill=(40, 120, 220), outline=DARK)
+        d.arc(R(7, 2, 17, 14), 180, 360, fill=DARK, width=max(1, int(2 * k)))
+        d.polygon([P(12, 11), P(14, 15), P(18, 15), P(15, 18), P(16, 21), P(12, 19), P(8, 21), P(9, 18), P(6, 15),
+                   P(10, 15)], fill=YELLOW)
+        return
+    if kind == "app":                                      # an installed app without its own icon: a window
+        d.rectangle(R(2, 3, 22, 21), fill=LIGHT, outline=DARK)
+        d.rectangle(R(2, 3, 22, 7), fill=NAVY)
+        d.rectangle(R(6, 10, 18, 17), fill=(120, 200, 120), outline=SHADOW)
+        return
     if kind == "terminal":
         d.rectangle(R(1, 3, 23, 21), fill=DARK, outline=SHADOW)
         d.rectangle(R(1, 3, 23, 6), fill=NAVY)
@@ -479,13 +505,19 @@ class InputDevices(threading.Thread):
 
 # ---------------------------------------------------------------- apps
 class App:
-    """All coordinates (draw boxes and input) are whole-desktop coordinates (0..320, 0..220)."""
+    """All coordinates (draw boxes and input) are whole-desktop coordinates (0..320, 0..220).
+
+    self.host is the app's door to the machine (robotd/desktop_host.py: settings, log, say, screen, AI, system info).
+    portable = True: the app uses only self.host and self.d, never self.r (the robot), so it can run in a RoboOS
+    without a robot; the self-test roboos_portable checks it. Robot-only apps leave it False and may use self.r."""
     name, title, icon = "app", "App", "about"
     short = None                      # shorter label for the desktop icon
+    portable = False
 
     def __init__(self, desk):
         self.d = desk
-        self.r = desk.r
+        self.host = desk.host
+        self.r = desk.r                   # the robot (robot-only apps); None when RoboOS runs without one
 
     def draw(self, img, d, box):
         pass
@@ -602,6 +634,7 @@ class ListApp(App):
 
 
 class Terminal(App):
+    portable = True
     name, title, icon = "terminal", "Terminal", "terminal"
     QUICK = [("ls", "ls -la\n"), ("df", "df -h /\n"), ("free", "free -m\n"), ("ps", "ps -eo pid,pcpu,rss,comm --sort=-pcpu | head -8\n"),
              ("ip", "ip -4 -br addr\n"), ("clear", None)]
@@ -868,7 +901,7 @@ def delete_file(desk, p, after=None):
         if desk.audio.playing and str(desk.audio.source) == str(p):
             desk.audio.stop()
         Path(p).unlink(missing_ok=True)
-        desk.r.log(f"owner deleted {p} (RoboOS)")
+        desk.host.log(f"owner deleted {p} (RoboOS)")
         desk.toast("deleted")
         if after:
             after()
@@ -876,6 +909,7 @@ def delete_file(desk, p, after=None):
 
 
 class Files(ListApp):
+    portable = True
     name, title, icon = "files", "Files", "files"
     row_h = 16
 
@@ -1061,6 +1095,7 @@ class Files(ListApp):
 class Monitor(App):
     name, title, icon = "monitor", "System Monitor", "monitor"
     short = "Monitor"
+    portable = True
 
     def __init__(self, desk):
         super().__init__(desk)
@@ -1072,7 +1107,7 @@ class Monitor(App):
         if time.time() - self.last < 2:
             return False
         self.last = time.time()
-        self.cpu.append(self.r.sys.cpu_pct())
+        self.cpu.append(self.host.cpu_pct())
         try:
             out = subprocess.run(["ps", "-eo", "pid,pcpu,rss,comm", "--sort=-pcpu"], capture_output=True, text=True, timeout=3).stdout
             self.procs = [ln for ln in out.splitlines()[1:] if not ln.rstrip().endswith(" ps")][:5]
@@ -1090,12 +1125,12 @@ class Monitor(App):
             d.line([(g[0] + 1, gy), (g[2] - 1, gy)], fill=(0, 70, 0))
         pts = [(g[0] + 1 + i * (g[2] - g[0] - 2) / 59, g[3] - 1 - v / 100 * (g[3] - g[1] - 2)) for i, v in enumerate(self.cpu)]
         d.line(pts, fill=(0, 255, 0), width=1)
-        used, total = self.r.sys.mem()
+        used, total = self.host.mem()
         du = shutil.disk_usage("/")
-        up = time.time() - self.r.t0
+        up = self.host.uptime()
         info = [f"Memory  {used:.0f} / {total:.0f} MB", f"Disk    {du.used / 1e9:.1f} / {du.total / 1e9:.1f} GB",
-                f"Temp    {self.r.sys.temp():.0f} °C", f"robotd  up {int(up // 3600)}h {int(up % 3600 // 60)}m",
-                "IP      " + "  ".join(self.r.sys.ips().values())]
+                f"Temp    {self.host.temp():.0f} °C", f"{self.host.program[:7]:<7} up {int(up // 3600)}h {int(up % 3600 // 60)}m",
+                "IP      " + "  ".join(self.host.ips().values())]
         for i, line in enumerate(info):
             d.text((x0 + 4, y0 + 68 + i * 12), line, font=F_MONO, fill=DARK)
         py = y0 + 68 + len(info) * 12 + 2
@@ -1106,148 +1141,9 @@ class Monitor(App):
                 d.text((x0 + 4, py + 12 + i * 12), f"{p[0]:>5} {p[1]:>4} {int(p[2]) // 1024:>5}M  {p[3][:16]}", font=F_MONO, fill=DARK)
 
 
-class CameraApp(App):
-    name, title, icon = "camera", "Camera", "camera"
-
-    def draw(self, img, d, box):
-        x0, y0, x1, y1 = box
-        d.rectangle(box, fill=FACE)
-        cam = self.r.cam
-        off = cam.privacy
-        draw_icon(d, "camera", x0 + 10, y0 + 8, 24, off=off)
-        d.text((x0 + 42, y0 + 8), "Camera is OFF (privacy)" if off else "Camera is allowed", font=F_BIG, fill=RED if off else GREEN)
-        users = sorted(cam.live_owners) if cam.live_proc else []
-        d.text((x0 + 42, y0 + 24), ("In use by: " + ", ".join(users)) if users else "Not streaming right now", font=F_UI, fill=DARK)
-        self.big = (x0 + 10, y0 + 42, x1 - 10, y0 + 74)
-        button(d, self.big, "Turn camera ON" if off else "Turn camera OFF", font=F_BIG, color=GREEN if off else RED)
-        vc = self.r.vision.cfg()
-        self.opts = []
-        for i, (key, label) in enumerate((("follow", "Eyes follow faces"), ("gaze_mirror", "Eyes copy where you look"),
-                                          ("reactions", "React to smiles and QR codes"))):
-            b = (x0 + 10, y0 + 84 + i * 22, x0 + 24, y0 + 98 + i * 22)
-            bevel(d, b, raised=False, fill=LIGHT)
-            if vc.get(key):
-                d.line([(b[0] + 3, b[1] + 7), (b[0] + 6, b[3] - 3), (b[2] - 3, b[1] + 3)], fill=DARK, width=2)
-            d.text((b[2] + 6, b[1] + 1), label, font=F_UI, fill=DARK)
-            self.opts.append(((b[0], b[1], x1 - 10, b[3]), key))
-        d.text((x0 + 10, y1 - 14), "Eye options keep the camera on while the face shows.", font=F_UI, fill=SHADOW)
-
-    def click(self, x, y):
-        if inside(self.big, x, y):
-            self.d.set_privacy(not self.r.cam.privacy)
-            return
-        for b, key in self.opts:
-            if inside(b, x, y):
-                vc = self.r.vision.cfg()
-                vc[key] = not vc.get(key)
-                self.r.cfg.save()
-                return
-
-
-class SettingsApp(ListApp):
-    """Settings: the robot's one settings list (robotd/settings.py), the same list the touchscreen's Settings page and
-    the web app's Settings tab show. Group tabs on top, a row per setting; tap the value to change it."""
-    name, title, icon = "settings", "Settings", "settings"
-    row_h = 24
-    TAB_H = 20
-
-    def __init__(self, desk):
-        super().__init__(desk)
-        self.group, self.note, self.cache, self.t = 0, "", None, 0
-
-    def data(self):
-        if self.cache is None or time.time() - self.t > 1.5:
-            self.cache, self.t = self.r.settings.all(), time.time()
-        return self.cache
-
-    def rows(self):
-        g = self.data()
-        self.group = max(0, min(self.group, len(g) - 1))
-        return g[self.group]["rows"] if g else []
-
-    def tick(self):
-        if time.time() - self.t > 2:
-            old = json.dumps(self.cache, default=str)
-            self.cache = None
-            return json.dumps(self.data(), default=str) != old
-        return False
-
-    def draw(self, img, d, box):
-        x0, y0, x1, y1 = box
-        d.rectangle(box, fill=FACE)
-        groups = self.data()
-        self.tabs = []
-        tw = (x1 - x0 + 1) / max(1, len(groups))
-        for i, g in enumerate(groups):
-            b = (int(x0 + i * tw), y0 + 1, int(x0 + (i + 1) * tw) - 1, y0 + self.TAB_H)
-            button(d, b, fit_text(d, g["name"], b[2] - b[0] - 4), pressed=i == self.group, fill=LIGHT if i == self.group else FACE)
-            self.tabs.append(b)
-        foot = 14 if self.note else 0
-        self.draw_list(d, (x0, y0 + self.TAB_H + 3, x1, y1 - foot))
-        if self.note:
-            d.text((x0 + 4, y1 - 13), fit_text(d, self.note, x1 - x0 - 8), font=F_UI, fill=NAVY)
-
-    def ctrl(self, box, row):
-        """Where the control of a row sits: list of (box, op)."""
-        x0, y0, x1, y1 = box
-        b = (x1 - 4, y0 + 2, x1 - 4, y1 - 2)
-        k = row["kind"]
-        if k == "range":
-            return [((x1 - 116, y0 + 2, x1 - 88, y1 - 2), "-"), ((x1 - 32, y0 + 2, x1 - 4, y1 - 2), "+")]
-        if k == "toggle":
-            return [((x1 - 100, b[1], b[2], b[3]), "toggle")]
-        if k in ("choice", "action"):
-            return [((x1 - 160, b[1], b[2], b[3]), "next" if k == "choice" else "run")]
-        return []
-
-    def draw_row(self, d, box, row, i):
-        x0, y0, x1, y1 = box
-        d.text((x0 + 5, y0 + 6), fit_text(d, row["label"], 128), font=F_BOLD, fill=DARK)
-        k, text = row["kind"], row["text"]
-        cs = self.ctrl(box, row)
-        if k == "range":
-            for b, op in cs:
-                button(d, b, op, font=F_BOLD)
-            mid = (x1 - 88, y0, x1 - 32, y1)
-            tw = d.textlength(text, font=F_BOLD)
-            d.text(((mid[0] + mid[2] - tw) / 2, y0 + 6), text, font=F_BOLD, fill=NAVY)
-        elif k == "toggle":
-            on = bool(row["value"])
-            button(d, cs[0][0], fit_text(d, text, 90), pressed=on, fill=(170, 220, 170) if on else FACE)
-        elif k in ("choice", "action"):
-            b = cs[0][0]
-            button(d, b, fit_text(d, text, b[2] - b[0] - 8))
-        else:
-            d.text((x1 - 160, y0 + 6), fit_text(d, text, 156), font=F_UI, fill=SHADOW)
-
-    def click(self, x, y):
-        for i, b in enumerate(getattr(self, "tabs", [])):
-            if inside(b, x, y):
-                self.group, self.top, self.note = i, 0, ""
-                return
-        i = self.list_click(x, y)
-        rows = self.rows()
-        if i is None or i >= len(rows):
-            return
-        row = rows[i]
-        rb = (self.box[0], self.box[1] + (i - self.top) * self.row_h, self.box[2] - SBW - 1, self.box[1] + (i - self.top + 1) * self.row_h - 1)
-        self.note = row.get("note", "")
-        for b, op in self.ctrl(rb, row):
-            if inside(b, x, y):
-                self.change(row, op)
-                return
-
-    def change(self, row, op, confirmed=False):
-        ok, msg = self.r.settings.apply(row["id"], op, confirmed=confirmed, source="desktop")
-        if msg == "confirm":
-            self.d.confirm(row["label"] + "?", row.get("confirm", "Are you sure?"), lambda: self.change(row, op, True))
-        elif not ok:
-            self.d.toast(msg)
-        self.cache = None
-
-
 class Logs(ListApp):
     name, title, icon = "logs", "Logs", "logs"
+    portable = True
     row_h = 12
 
     def __init__(self, desk):
@@ -1259,7 +1155,7 @@ class Logs(ListApp):
         if time.time() - self.last < 3:
             return False
         self.last = time.time()
-        ev = self.r.store.recent_events(120)
+        ev = self.host.recent_log(120)    # [(time, kind, message)], newest first
         new = [f"{time.strftime('%H:%M', time.localtime(ts))} {msg}" for ts, kind, msg in reversed(ev)]
         lines = [ln[i:i + 52] for ln in new for i in range(0, max(1, len(ln)), 52)]
         changed = lines != self.items
@@ -1284,6 +1180,7 @@ class Logs(ListApp):
 
 
 class Paint(App):
+    portable = True
     name, title, icon = "paint", "Paint", "paint"
     long_press = None                 # holding still is part of painting: no long-press menu
     COLORS = [DARK, LIGHT, RED, (255, 140, 0), YELLOW, GREEN, (40, 80, 220), (150, 60, 200), TEAL, SHADOW]
@@ -1359,14 +1256,15 @@ class Paint(App):
 
 class Power(App):
     name, title, icon = "power", "Shut Down", "power"
+    portable = True
 
     def draw(self, img, d, box):
         x0, y0, x1, y1 = box
         d.rectangle(box, fill=FACE)
-        d.text((x0 + 10, y0 + 6), "What do you want the robot to do?", font=F_BOLD, fill=DARK)
+        d.text((x0 + 10, y0 + 6), f"What do you want {self.host.machine} to do?", font=F_BOLD, fill=DARK)
         self.btns = []
-        for i, (label, act, note) in enumerate((("Restart robotd", "restart", "restart the robot software (about 40 s)"),
-                                                ("Reboot the Orange Pi", "reboot", "restart the whole computer (about 1 min)"),
+        for i, (label, act, note) in enumerate(((f"Restart {self.host.program}", "restart", "restart the software (about 40 s)"),
+                                                ("Reboot the computer", "reboot", "restart the whole computer (about 1 min)"),
                                                 ("Shut down", "shutdown", "safe to unplug when the green LED stops"))):
             b = (x0 + 10, y0 + 24 + i * 52, x1 - 10, y0 + 50 + i * 52)
             button(d, b, label, font=F_BIG)
@@ -1379,56 +1277,57 @@ class Power(App):
                 self.d.confirm(f"{label}?", "Are you sure?", lambda a=act: self.do(a))
 
     def do(self, act):
-        self.r.log(f"desktop: owner chose {act}")
+        self.host.log(f"desktop: owner chose {act}")
         if act == "restart":
-            self.d.toast("restarting robotd...")
-            subprocess.Popen(["systemctl", "restart", "robotd"])
-        else:
-            threading.Thread(target=self.r.on_power, args=({"action": act},), daemon=True).start()
+            self.d.toast(f"restarting {self.host.program}...")
+        threading.Thread(target=self.host.power, args=(act,), daemon=True).start()
 
 
 class About(App):
     name, title, icon = "about", "About RoboOS", "about"
     short = "About"
+    portable = True
 
     def draw(self, img, d, box):
         x0, y0, x1, y1 = box
         d.rectangle(box, fill=FACE)
         draw_icon(d, "robot", x0 + 12, y0 + 10, 24)
         d.text((x0 + 44, y0 + 8), f"RoboOS {VERSION}", font=F_BIG, fill=NAVY)
-        d.text((x0 + 44, y0 + 26), "a tiny desktop for imalittlerobot", font=F_UI, fill=DARK)
+        d.text((x0 + 44, y0 + 26), f"a tiny desktop for {self.host.machine}", font=F_UI, fill=DARK)
         try:
             commit = subprocess.run(["git", "-C", str(ROOT), "log", "-1", "--format=%h %s"], capture_output=True, text=True, timeout=2).stdout.strip()
         except Exception:
             commit = "?"
-        info = [f"Computer: Orange Pi Zero (H2+), {self.r.sys.mem()[1]:.0f} MB", f"Screen firmware: {self.r.cyd.info.get('ver', '?')}",
-                f"robotd: {commit[:44]}", "Input: touch" + "".join(" + " + k for k in sorted(self.d.inputs.kinds)),
+        info = [f"Computer: {self.host.board()[:26]}, {self.host.mem()[1]:.0f} MB",
+                f"Screen firmware: {self.host.screen.info.get('ver', '?')}",
+                f"{self.host.program}: {(commit or 'RoboOS ' + VERSION)[:44]}", "Input: touch" + "".join(" + " + k for k in sorted(self.d.inputs.kinds)),
                 "Tip: long-press (or right-click) a Start", "menu item to put it on the desktop."]
         for i, line in enumerate(info):
             d.text((x0 + 12, y0 + 50 + i * 14), line, font=F_UI, fill=DARK)
 
 
-from .desktop_apps import Browser, Music, Notepad, Recorder, Tube   # noqa: E402  (they build on the classes above)
-from .desktop_games import Checkers, Games, Mines, TicTacToe        # noqa: E402
-from .desktop_munch import Munch                                    # noqa: E402
-from .desktop_gameboy import GameBoy                                # noqa: E402
-from .desktop_apps import Bluetooth                                 # noqa: E402
-from .desktop_dev import RoboDev                                    # noqa: E402
-from .desktop_blinkers import BlinkersApp                           # noqa: E402
-from .desktop_weather import WeatherApp                             # noqa: E402
-from .desktop_battery import BatteryApp                             # noqa: E402
+from .media import Browser, Music, Notepad, Recorder, Tube          # noqa: E402  (they build on the classes above)
+from .games import Checkers, Games, Mines, TicTacToe                # noqa: E402
+from .munch import Munch                                            # noqa: E402
+from .gameboy_app import GameBoy                                    # noqa: E402
+from .store import Store, load_installed                            # noqa: E402
 
-APPS = [RoboDev, Terminal, Files, Notepad, Browser, Tube, Music, Recorder, Paint, Games, Mines, TicTacToe, Checkers, Munch, GameBoy, Monitor, BlinkersApp, WeatherApp, BatteryApp, CameraApp,
-        SettingsApp, Bluetooth, Logs, About, Power]
-APP_BY_NAME = {a.name: a for a in APPS}
+# The built-in apps in Start-menu order. A host adds its own (Host.apps(): the robot puts RoboDev first and its robot
+# apps before Logs); apps installed from the store (data/apps) come after them.
+APPS = [Terminal, Files, Notepad, Browser, Tube, Music, Recorder, Paint, Games, Mines, TicTacToe, Checkers, Munch, GameBoy,
+        Monitor, Store, Logs, About, Power]
 DEFAULT_ICONS = ["robodev", "terminal", "files", "browser", "tube", "music", "recorder", "notepad", "paint", "monitor", "camera", "settings", "power",
-                 "mines", "munch", "gameboy", "tictactoe", "checkers"]
+                 "mines", "munch", "gameboy", "tictactoe", "checkers", "store"]
 
 
 # ---------------------------------------------------------------- the desktop (window manager)
 class Desktop:
-    def __init__(self, robot):
-        self.r = robot
+    def __init__(self, host):
+        self.host = host                  # the machine: settings, log, screen, voice... (roboos/host.py)
+        self.r = host.robot               # the robot for robot-only apps; None without one
+        self.apps = list(host.apps(APPS))
+        self.app_by_name = {a.name: a for a in self.apps}
+        self.broken = {}                  # installed app id -> why it did not load
         self.q = queue.Queue()
         self.windows = []                 # open apps, last = focused
         self.minimized = set()
@@ -1445,20 +1344,21 @@ class Desktop:
         self.dirty = True
         self.wall = self._wallpaper()
         self._last_wake = 0
-        self.inputs = InputDevices(self.on_input, robot.log)
+        self.inputs = InputDevices(self.on_input, host.log)
         self.inputs.start()
-        from .desktop_apps import AudioOut
-        self.audio = AudioOut(robot)              # one sound at a time, shared by Music / Recorder / RoboTube
+        from .media import AudioOut
+        self.audio = AudioOut(host)              # one sound at a time, shared by Music / Recorder / RoboTube
         self.hits = []
         self._stale = True
         self.stats = {"sent": 0, "failed": 0, "bytes": 0, "full": 0, "last_ms": 0}
         self.lock = threading.RLock()     # render() and input handling; preview() borrows the window list under it
         self.replay = deque()             # (time, JPEG) of recent frames, only while a public app (a game...) is in front
         self._last_cap = 0
+        load_installed(self)              # apps from the store (data/apps/<id>/)
 
     # ---- config
     def cfg(self):
-        c = self.r.cfg.data.setdefault("desktop", {})
+        c = self.host.section("desktop")
         c.setdefault("icons", list(DEFAULT_ICONS))
         if not c.get("icons_v2"):                  # put the new apps on the desktop once
             c["icons"] = list(DEFAULT_ICONS)
@@ -1495,6 +1395,10 @@ class Desktop:
                 i = c["icons"].index("munch") + 1 if "munch" in c["icons"] else len(c["icons"])
                 c["icons"].insert(i, "gameboy")
             c["icons_v10"] = True
+        if not c.get("icons_v11"):                 # the App Store (2026-11-15), added once
+            if "store" not in c["icons"]:
+                c["icons"].append("store")
+            c["icons_v11"] = True
         return c
 
     def _wallpaper(self):
@@ -1513,13 +1417,21 @@ class Desktop:
         self.dirty = True
 
     def set_privacy(self, on):
-        self.r.cam.set_privacy(on)
-        if on:
-            vc = self.r.vision.cfg()
-            vc["follow"] = vc["gaze_mirror"] = False
-            self.r.cfg.save()
-        self.r.log(f"camera privacy {'ON - camera off' if on else 'off - camera allowed'} (desktop)")
+        self.host.set_camera_privacy(on)
         self.toast("camera OFF" if on else "camera allowed")
+
+    def add_app(self, cls):
+        """An app installed while RoboOS runs (the Store): it shows up in the Start menu now."""
+        self.apps = [a for a in self.apps if a.name != cls.name] + [cls]
+        self.app_by_name[cls.name] = cls
+        self.dirty = True
+
+    def remove_app(self, name):
+        for w in [w for w in self.windows if w.name == name]:
+            self.close_app(w)
+        self.apps = [a for a in self.apps if a.name != name]
+        self.app_by_name.pop(name, None)
+        self.dirty = True
 
     def open_app(self, name):
         for w in self.windows:
@@ -1529,7 +1441,7 @@ class Desktop:
                 self.minimized.discard(w)
                 break
         else:
-            cls = APP_BY_NAME.get(name)
+            cls = self.app_by_name.get(name)
             if not cls:
                 return
             try:
@@ -1563,7 +1475,7 @@ class Desktop:
 
     def snapshot_png(self):
         """Current desktop as PNG (for the web app and for testing)."""
-        if self.r.cyd.page != "desktop":          # the screen loop is not running: let apps catch up (terminal output...)
+        if self.host.screen.page != "desktop":          # the screen loop is not running: let apps catch up (terminal output...)
             for w in list(self.windows):
                 try:
                     w.tick()
@@ -1590,7 +1502,7 @@ class Desktop:
         else:
             self.on_touch(m)
         self.dirty = True
-        if self.r.cyd.page != "desktop":         # nobody is running the loop: process now so screenshots update
+        if self.host.screen.page != "desktop":         # nobody is running the loop: process now so screenshots update
             while not self.q.empty():
                 self.handle(self.q.get_nowait())
 
@@ -1603,7 +1515,7 @@ class Desktop:
         w = self.focused()
         now = time.time()
         own = ("games", "mines", "munch", "tictactoe", "checkers", "paint")
-        if not w or self.dialog or not (w.name in own or (w.name == "gameboy" and w.recording())):
+        if not self.host.has("social") or not w or self.dialog or not (w.name in own or (w.name == "gameboy" and w.recording())):
             return                                      # the Game Boy only with Settings > Posting > Record Game Boy games
         if now - self._last_cap < 0.12:
             return
@@ -1621,16 +1533,12 @@ class Desktop:
             frames = [f for f in list(self.replay) if f[0] > time.time() - 30]
             if len(frames) < 4 or frames[-1][0] - frames[0][0] < 6:
                 return                                      # not enough real play to be worth a video
-            from .screencap import SHOTS, encode_mp4
-            SHOTS.mkdir(parents=True, exist_ok=True)
-            out = encode_mp4(frames, SHOTS / time.strftime(f"{app.name}_%Y%m%d_%H%M%S.mp4"))
-            last = Image.open(io.BytesIO(frames[-1][1]))
-            self.r.social.moment("game", note, image=last, video=str(out) if out else None, score=score, key=f"game:{app.name}")
+            self.host.post_moment(app.name, note, frames, score)
         threading.Thread(target=go, daemon=True).start()
 
     def preview(self, name, steps=0):
         """Draw an app off-screen (the real screen is not touched). Returns (image, app)."""
-        cls = APP_BY_NAME[name]
+        cls = self.app_by_name[name]
         with self.lock:
             app = cls(self)
             if hasattr(app, "demo"):
@@ -1665,11 +1573,11 @@ class Desktop:
 
     # ---- main loop (runs while the screen shows the Desktop page)
     def run(self):
-        self.r.log("desktop started", persist=False)
+        self.host.log("desktop started", persist=False)
         self.force = self.dirty = True
         last_tick = 0
         try:
-            while self.r.cyd.page == "desktop" and self.r.cyd.up:
+            while self.host.screen.page == "desktop" and self.host.screen.up:
                 fast = getattr(self.focused(), "fast", False)     # a game in front: do not sit 50 ms waiting for input
                 try:
                     ev = self.q.get(timeout=0.008 if fast else 0.05)
@@ -1687,7 +1595,7 @@ class Desktop:
                             if w.tick() and (w is self.focused()):
                                 self.dirty = True
                         except Exception as e:
-                            self.r.log(f"desktop app {w.name}: {e}", "warn")
+                            self.host.log(f"desktop app {w.name}: {e}", "warn")
                     if self.toast_until and now > self.toast_until:
                         self.toast_until = 0
                         self.dirty = True
@@ -1706,15 +1614,15 @@ class Desktop:
                 except Exception as e:                # an app's own drawing must not stop the desktop
                     if time.time() - getattr(self, "_direct_err_t", 0) > 10:
                         self._direct_err_t = time.time()
-                        self.r.log(f"desktop direct drawing: {e}", "warn")
+                        self.host.log(f"desktop direct drawing: {e}", "warn")
         except Exception as e:
-            self.r.log(f"desktop crashed: {e}", "warn")
+            self.host.log(f"desktop crashed: {e}", "warn")
         finally:
             self.last_sent = None
 
     def on_input(self, ev):
         """Events from a USB mouse/keyboard. While another page is showing, the first one opens the desktop."""
-        if self.r.cyd.page == "desktop":
+        if self.host.screen.page == "desktop":
             self.q.put(ev)
         elif ev[0] != "keyup" and time.time() - self._last_wake > 2:
             self._last_wake = time.time()
@@ -1722,11 +1630,11 @@ class Desktop:
 
     def wake_desktop(self):
         """USB mouse/keyboard used while the screen shows another page: switch to the desktop (and wake the screen)."""
-        if self.r.cyd.page != "desktop" and self.r.cyd.up:
-            if (self.r.cyd.info.get("hb") or {}).get("asleep"):
-                self.r.cyd.send({"t": "cfg", "sleep": False})
-            self.r.cyd.send({"t": "page", "name": "desktop"})
-            self.r.log("desktop opened by the USB mouse/keyboard", persist=False)
+        if self.host.screen.page != "desktop" and self.host.screen.up:
+            if (self.host.screen.info.get("hb") or {}).get("asleep"):
+                self.host.screen.send({"t": "cfg", "sleep": False})
+            self.host.screen.send({"t": "page", "name": "desktop"})
+            self.host.log("desktop opened by the USB mouse/keyboard", persist=False)
 
     def handle(self, ev):
         with self.lock:
@@ -1747,7 +1655,7 @@ class Desktop:
             elif e == "u":
                 self.pointer_up(x, y)
         elif kind == "mmove":
-            if self.r.cyd.page != "desktop":
+            if self.host.screen.page != "desktop":
                 return self.wake_desktop()
             self.cursor[0] = max(0, min(W - 1, self.cursor[0] + ev[1] * 0.7))
             self.cursor[1] = max(0, min(H - 1, self.cursor[1] + ev[2] * 0.7))
@@ -1755,7 +1663,7 @@ class Desktop:
             if self.pressed:
                 self.pointer_move(int(self.cursor[0]), int(self.cursor[1]))
         elif kind == "mbtn":
-            if self.r.cyd.page != "desktop":
+            if self.host.screen.page != "desktop":
                 return self.wake_desktop()
             self.cursor_seen = time.time()
             x, y = int(self.cursor[0]), int(self.cursor[1])
@@ -1769,7 +1677,7 @@ class Desktop:
             if w and not self.start_open:
                 w.scroll(ev[1] * 3)
         elif kind == "key":
-            if self.r.cyd.page != "desktop" and len(ev) < 3:      # physical keyboard: first wake the desktop
+            if self.host.screen.page != "desktop" and len(ev) < 3:      # physical keyboard: first wake the desktop
                 return self.wake_desktop()
             self.key(ev[1])
         elif kind == "keyup":
@@ -1892,7 +1800,7 @@ class Desktop:
         icons = self.cfg()["icons"]
         if name not in icons:
             icons.append(name)
-            self.r.cfg.save()
+            self.host.save()
         self.start_open = False
         self.toast("added to the desktop")
 
@@ -1900,7 +1808,7 @@ class Desktop:
         icons = self.cfg()["icons"]
         if name in icons:
             icons.remove(name)
-            self.r.cfg.save()
+            self.host.save()
         self.toast("removed from the desktop")
 
     def key(self, k):
@@ -1964,12 +1872,12 @@ class Desktop:
         return img
 
     def draw_icons(self, d):
-        icons = [n for n in self.cfg()["icons"] if n in APP_BY_NAME]
+        icons = [n for n in self.cfg()["icons"] if n in self.app_by_name]
         for i, name in enumerate(icons[:20]):     # 5 columns x 4 rows
             col, row = divmod(i, 4)
             x, y = 6 + col * 64, 6 + row * 47
-            app = APP_BY_NAME[name]
-            draw_icon(d, app.icon, x + 20, y, 24, off=(name == "camera" and self.r.cam.privacy))
+            app = self.app_by_name[name]
+            draw_icon(d, app.icon, x + 20, y, 24, off=(name == "camera" and self.host.camera_privacy()))
             label = fit_text(d, app.short or app.title, 62)
             tw = d.textlength(label, font=F_UI)
             d.text((x + 32 - tw / 2 + 1, y + 28), label, font=F_UI, fill=DARK)
@@ -2028,8 +1936,9 @@ class Desktop:
         tray = (W - tray_w, y0 + 3, W - 2, H - 3)
         bevel(d, tray, raised=False)
         cam_box = (tray[0] + 2, tray[1] + 1, tray[0] + 18, tray[3] - 1)
-        draw_icon(d, "camera", cam_box[0], cam_box[1], 16, off=self.r.cam.privacy)
-        self.hits.append((cam_box, lambda: self.set_privacy(not self.r.cam.privacy)))
+        if self.host.has("camera"):
+            draw_icon(d, "camera", cam_box[0], cam_box[1], 16, off=self.host.camera_privacy())
+            self.hits.append((cam_box, lambda: self.set_privacy(not self.host.camera_privacy())))
         ix = tray[0] + 19
         for k in sorted(self.inputs.kinds):
             draw_icon(d, k, ix, tray[1] + 1, 16)
@@ -2047,7 +1956,7 @@ class Desktop:
     def draw_start(self, img, d):
         first, cfirst = len(self.hits), len(self.ctx_hits)        # everything before this is underneath the menu
         row = 18
-        items = [a for a in APPS if a.name != "power" and getattr(a, "menu", True)]
+        items = [a for a in self.apps if a.name != "power" and getattr(a, "menu", True)]
         per_col = (len(items) + 1) // 2
         cw = 132
         h = row * (per_col + 1) + 10
@@ -2064,7 +1973,7 @@ class Desktop:
             col, r = divmod(i, per_col)
             xx, y = x0 + 22 + col * cw, y0 + 4 + r * row
             b = (xx, y, xx + cw - 2, y + row - 1)
-            draw_icon(d, a.icon, xx + 3, y + 1, 16, off=(a.name == "camera" and self.r.cam.privacy))
+            draw_icon(d, a.icon, xx + 3, y + 1, 16, off=(a.name == "camera" and self.host.camera_privacy()))
             d.text((xx + 23, y + 3), fit_text(d, a.short or a.title if d.textlength(a.title, font=F_UI) > cw - 28 else a.title, cw - 28),
                    font=F_UI, fill=DARK)
             self.hits.append((b, lambda n=a.name: self.open_app(n)))
@@ -2161,12 +2070,12 @@ class Desktop:
         else:
             crop.save(buf, "JPEG", quality=88, subsampling=0)
         jpg = buf.getvalue()
-        if len(jpg) > self.r.cyd.info.get("img_max", 49152) - 1024:
+        if len(jpg) > self.host.screen.info.get("img_max", 49152) - 1024:
             buf = io.BytesIO()
             crop.save(buf, "JPEG", quality=60)
             jpg = buf.getvalue()
         t0 = time.time()
-        ok = self.r.cyd.send_image(jpg, timeout=2.0, x=int(box[0]), y=int(box[1]) + SCREEN_Y,
+        ok = self.host.screen.send_image(jpg, timeout=2.0, x=int(box[0]), y=int(box[1]) + SCREEN_Y,
                                    w=int(box[2] - box[0]), h=int(box[3] - box[1]), slot="desk")
         st = self.stats
         st["sent" if ok else "failed"] += 1

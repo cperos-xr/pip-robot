@@ -1,0 +1,252 @@
+# Parts a Pip can be built from. Pip is not one parts list: every robot is made of whatever its owner had lying
+# around. This file is the shared list of parts that people (and their AIs) have already met. tools/discover_parts.py
+# matches what it finds on a robot against it, and writes that robot's own body to data/body.yaml.
+#
+# role:    brain | face | eyes | ears | voice | muscles | balance | senses | power | plumbing
+# support: built_in   robotd uses it today, nothing to do
+#          recipe     it works with a small, known change (the notes say which)
+#          new        nobody has written the code yet: ask your AI to add it (see docs/YOUR_PARTS.md), then add it here
+# detect:  board   text in /proc/device-tree/model (or the PC's maker/product name)
+#          usb     USB ids "vendor:product"
+#          serial  a pattern in /dev/serial/by-id/
+#          i2c     addresses on an I2C bus of the brain board (the first Pip's screen has its own I2C port, which
+#                  only robotd can see: its sensors show up in robotd's device list instead)
+#          video   true = any camera (V4L2)
+#          sound_in / sound_out   ALSA card id (a regular expression)
+#          bluetooth  true = any Bluetooth adapter
+#
+# Found a part that is not here? Add it (one entry, plain words) and send the change back.
+
+parts:
+  # ---------------------------------------------------------------- brains: any Linux computer
+  - id: orange_pi_zero
+    name: Orange Pi Zero (H2+ / H3)
+    role: brain
+    support: built_in
+    detect: {board: "Orange Pi Zero"}
+    notes: "The first Pip's brain. 2.4 GHz Wi-Fi only. The 13-pin header has two extra USB ports and a line out; switch
+      them on with the overlays in docs/INSTALL.md (a boot setting: ask the owner). I2C bus 0."
+
+  - id: raspberry_pi
+    name: Raspberry Pi (Zero 2 W, 3, 4, 5)
+    role: brain
+    support: recipe
+    detect: {board: "Raspberry Pi"}
+    notes: "Works. Raspberry Pi OS Lite (64-bit) is the easy start. I2C is bus 1 and is off until switched on
+      (tools/install.sh --enable-i2c, a boot setting: ask the owner); install.sh sets config i2c_bus to 1. The PIR
+      motion sensor code reads the Orange Pi's pin 7 (robotd/sensors.py, class Pir): change CHIP/LINE for your pin.
+      A Pi Zero (the first one, 32-bit ARMv6) is too slow for the AI libraries: use a Zero 2 W or newer."
+
+  - id: other_arm_board
+    name: Other ARM single-board computer (Rock, Radxa, Libre, Banana, Odroid ...)
+    role: brain
+    support: recipe
+    detect: {board: ""}
+    notes: "Anything that runs Debian or Ubuntu and has USB. Check which /dev/i2c-N is on the header (config i2c_bus)
+      and which GPIO line the PIR is on. 512 MB of memory is enough; 1 GB is comfortable."
+
+  - id: pc
+    name: An old laptop or mini PC (x86, Debian or Ubuntu)
+    role: brain
+    support: recipe
+    detect: {board: "__pc__"}
+    notes: "Works for everything on USB: camera, mic, speaker, the screen board and the motor board. It has no GPIO
+      header, so no PIR or I2C sensors on the brain itself (put them on the screen's or motor board's I2C port).
+      A laptop brings its own battery, screen, camera and mic: a laptop Pip is a fine first robot."
+
+  # ---------------------------------------------------------------- faces
+  - id: cyd
+    name: ESP32 Cheap Yellow Display (ESP32-2432S028R), 2.8" touchscreen
+    role: face
+    support: built_in
+    detect: {usb: ["1a86:7523", "1a86:55d4"], serial: "usb-1a86_USB*"}
+    notes: "The first Pip's face, RoboOS desktop, earpiece and second I2C port (CN1). Flash firmware/cyd_dashboard once
+      from a computer (docs/INSTALL.md, step 7). The same USB chip (CH340) is on many cheap Arduino boards: if it never
+      says hello to robotd, it is probably one of those."
+
+  - id: hdmi_screen
+    name: Any HDMI or DSI screen on the brain
+    role: face
+    support: recipe
+    detect: {}
+    notes: "Show the web app full screen in a kiosk browser (Chromium --kiosk http://localhost:8080). The animated face
+      and RoboOS are drawn for the 320x240 CYD; a big-screen face is a good first project."
+
+  - id: spi_tft
+    name: Small SPI TFT or OLED on the brain's header (ILI9341, ST7789, SSD1306)
+    role: face
+    support: new
+    detect: {i2c: [0x3c, 0x3d]}
+    notes: "An SSD1306 OLED answers at 0x3C/0x3D. Nobody has drawn Pip's face on one yet."
+
+  # ---------------------------------------------------------------- eyes and ears
+  - id: onn_webcam
+    name: onn. webcam (Sonix), with microphone
+    role: eyes
+    support: built_in
+    detect: {usb: ["3938:1300"]}
+    notes: "The first Pip's eyes and ears."
+
+  - id: usb_webcam
+    name: Any USB webcam (UVC)
+    role: eyes
+    support: built_in
+    detect: {video: true}
+    notes: "robotd uses /dev/video0. Most webcams have a microphone too, and robotd finds it by itself (or set
+      config voice.mic)."
+
+  - id: pi_camera
+    name: Raspberry Pi camera (ribbon cable, libcamera)
+    role: eyes
+    support: new
+    detect: {}
+    notes: "robotd reads a V4L2 camera at /dev/video0. Ribbon cameras need libcamera (rpicam-still); a small camera.py
+      change would do it."
+
+  - id: usb_mic
+    name: Microphone (webcam mic, USB mic, USB sound card)
+    role: ears
+    support: built_in
+    detect: {sound_in: "."}
+    notes: "robotd records from the first card that can record (robotd/voice.py, mic_device), or from config voice.mic,
+      for example \"plughw:CARD=Device,DEV=0\"."
+
+  # ---------------------------------------------------------------- voice
+  - id: cyd_earpiece
+    name: Earpiece or small speaker on the CYD's speaker connector
+    role: voice
+    support: built_in
+    detect: {}
+    notes: "Never connect either speaker wire to ground (the amplifier is bridged)."
+
+  - id: usb_speaker
+    name: Speaker output (USB speaker, USB sound card, a headphone jack)
+    role: voice
+    support: built_in
+    detect: {sound_out: "(?i)^(?!.*hdmi)"}
+    notes: "Voice output auto uses an external sound card when there is one (web app Settings > Voice). HDMI sound
+      outputs are left out."
+
+  - id: bluetooth
+    name: Bluetooth adapter (built in or a USB dongle) + a Bluetooth speaker
+    role: voice
+    support: built_in
+    detect: {bluetooth: true, usb: ["33fa:0001"]}
+    notes: "Pair the speaker in RoboOS > Bluetooth or the web app. Needs bluez and bluez-alsa (install.sh adds them)."
+
+  - id: orange_pi_line_out
+    name: Orange Pi line out (13-pin header pins 7 and 8)
+    role: voice
+    support: built_in
+    detect: {sound_out: "^Codec$"}
+    notes: "Too quiet for a bare speaker: add a small amplifier (PAM8403)."
+
+  # ---------------------------------------------------------------- muscles
+  - id: rp2040_motor_board
+    name: RP2040 Zero + L293D board (8 motor channels)
+    role: muscles
+    support: built_in
+    detect: {usb: ["2e8a:000a", "2e8a:00c0", "2e8a:f00a"], serial: "*RP2040*"}
+    notes: "Flash firmware/rp2040_motor_usb once. Stops by itself 0.5 s after the last command. Motors stay locked
+      until the owner unlocks them. Run Tests > Wheel setup to find which channel is which wheel."
+
+  - id: rp2040_bootloader
+    name: An RP2040 in its bootloader (a blank or unflashed Pico / RP2040 Zero)
+    role: muscles
+    support: built_in
+    detect: {usb: ["2e8a:0003"]}
+    notes: "Only when it has no serial port (the first Pip's running motor firmware reports this same id). Waiting for firmware: copy the motor firmware .uf2 onto the RPI-RP2 drive, or picotool load -x."
+
+  - id: other_motor_driver
+    name: Another microcontroller driving motors (Arduino + L298N, ESP32 + TB6612, a cheap car kit ...)
+    role: muscles
+    support: recipe
+    detect: {usb: ["2341:0043", "2341:0001", "2341:8036", "10c4:ea60", "0403:6001", "303a:1001"]}
+    notes: "robotd talks to the motor board in plain text over USB serial: PING, INFO, M v1..v8 (-127..127), STOP,
+      and the board must stop by itself 0.5 s after the last command (firmware/rp2040_motor_usb is the reference).
+      Port that to your board and point MotorLink.PATTERN (robotd/links.py) at its /dev/serial/by-id name."
+
+  - id: pca9685
+    name: PCA9685 16-channel servo driver
+    role: muscles
+    support: new
+    detect: {i2c: [0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47]}
+    notes: "Planned for arms and a head. Its default address 0x40 is the same as the INA219 battery monitor: change one
+      with the address pads. Servos need their own 5-6 V supply."
+
+  # ---------------------------------------------------------------- balance and senses
+  - id: mpu6050
+    name: MPU-6050 / GY-521 tilt and motion sensor
+    role: balance
+    support: built_in
+    detect: {i2c: [0x68, 0x69]}
+    notes: "On the first Pip it sits on the motor board's I2C (for wheelies) or the screen's CN1 port. Put it on one of
+      those; robotd does not read it from the brain's own bus. 0x68 is also the address of DS3231 clocks."
+
+  - id: pcf8574
+    name: PCF8574 8-pin I/O expander
+    role: senses
+    support: built_in
+    detect: {i2c: [0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27]}
+    notes: "robotd uses the one at 0x20 (on the first Pip it drives a salvaged LED display, knowledge/manual/blinkers.md).
+      A BH1750 light sensor also answers at 0x23."
+
+  - id: pir
+    name: PIR motion sensor (HC-SR501 style white dome)
+    role: senses
+    support: recipe
+    detect: {}
+    notes: "VCC to 5 V (on 3.3 V it triggers itself), OUT to a GPIO pin. robotd reads the Orange Pi's pin 7; on another
+      board change Pir.CHIP/LINE in robotd/sensors.py."
+
+  - id: env_sensor
+    name: BME280 / BMP280 temperature, pressure (and humidity) sensor
+    role: senses
+    support: new
+    detect: {i2c: [0x76, 0x77]}
+    notes: "Nobody has added it yet. A good first part: one small class, one self-test, one line in the status."
+
+  - id: distance_sensor
+    name: VL53L0X / VL53L1X laser distance sensor
+    role: senses
+    support: new
+    detect: {i2c: [0x29]}
+    notes: "Would let Pip stop before the edge of the desk."
+
+  - id: adc
+    name: ADS1115 analog-to-digital converter
+    role: senses
+    support: new
+    detect: {i2c: [0x48, 0x49, 0x4a, 0x4b]}
+    notes: "For knobs, light sensors, soil probes, a water sensor on a Pip-boat."
+
+  - id: compass
+    name: Compass (HMC5883L at 0x1E, QMC5883L at 0x0D)
+    role: senses
+    support: new
+    detect: {i2c: [0x1e, 0x0d]}
+    notes: "Heading for a robot that goes outside."
+
+  - id: gps
+    name: USB GPS (u-blox and friends)
+    role: senses
+    support: new
+    detect: {usb: ["1546:01a7", "1546:01a8", "067b:2303"]}
+    notes: "Speaks NMEA text over serial (gpsd can read it). For a Pip that goes outside, or floats."
+
+  # ---------------------------------------------------------------- power
+  - id: ina219
+    name: INA219 battery monitor
+    role: power
+    support: built_in
+    detect: {i2c: [0x40, 0x41, 0x44, 0x45]}
+    notes: "robotd reads it at 0x40 on the brain's I2C bus: level, warnings and a clean shutdown when the pack runs low
+      (knowledge/manual/battery.md). Without one, Pip simply does not know its battery level."
+
+  # ---------------------------------------------------------------- plumbing
+  - id: usb_hub
+    name: USB hub
+    role: plumbing
+    support: built_in
+    detect: {usb: ["05e3:0610", "05e3:0608", "1a40:0101"]}
+    notes: "A powered hub saves a lot of mysterious resets."

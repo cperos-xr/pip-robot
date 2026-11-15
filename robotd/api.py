@@ -446,7 +446,7 @@ class Api(threading.Thread):
                 if p == "/api/music":                 # owner: the Music folder (RoboTube "Save audio" lands here)
                     if role != "owner":
                         return self._send(403, {"error": "owner only"})
-                    from .desktop_apps import MUSIC_DIR, audio_files
+                    from roboos.media import MUSIC_DIR, audio_files
                     au = r.desktop.audio
                     return self._send(200, {"folder": str(MUSIC_DIR), "playing": au.name if au.playing else "",
                                             "files": [{"n": str(f.relative_to(MUSIC_DIR)), "size": f.stat().st_size,
@@ -454,7 +454,7 @@ class Api(threading.Thread):
                 if p == "/api/music/file":            # owner: stream one song to the browser (Range support for phones)
                     if role != "owner":
                         return self._send(403, {"error": "owner only"})
-                    from .desktop_apps import MUSIC_DIR
+                    from roboos.media import MUSIC_DIR
                     f = (MUSIC_DIR / q.get("name", [""])[0]).resolve()
                     if MUSIC_DIR.resolve() not in f.parents or not f.is_file():
                         return self._send(404, {"error": "no such song"})
@@ -1012,7 +1012,7 @@ class Api(threading.Thread):
                     r.log(f"owner deleted {n} photo(s) from the web app")
                     return self._send(200, {"ok": True, "deleted": n, "msg": f"deleted {n} photo{'s' if n != 1 else ''}"})
                 if p == "/api/music/delete":          # owner: {"name"} one file in data/music
-                    from .desktop_apps import MUSIC_DIR
+                    from roboos.media import MUSIC_DIR
                     f = (MUSIC_DIR / str(data.get("name", ""))).resolve()
                     if MUSIC_DIR.resolve() not in f.parents or not f.is_file():
                         return self._send(404, {"error": "no such song"})
@@ -1022,7 +1022,7 @@ class Api(threading.Thread):
                     r.log(f"owner deleted song {f.name}")
                     return self._send(200, {"ok": True, "msg": "song deleted"})
                 if p == "/api/music/play":            # owner: {"name"} play on the robot's speaker, or {"stop": true}
-                    from .desktop_apps import MUSIC_DIR
+                    from roboos.media import MUSIC_DIR
                     if data.get("stop"):
                         r.desktop.audio.stop()
                         return self._send(200, {"ok": True, "msg": "stopped"})

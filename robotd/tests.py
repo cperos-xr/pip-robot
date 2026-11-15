@@ -1,13 +1,14 @@
 """Built-in self tests. Each returns (ok, summary, lines, extra). Every run is stored in long-term memory."""
 import io
 import math
+import re
 import socket
 import time
 
 from PIL import Image
 
 from .camera import fit_jpeg
-from .core import PHOTOS
+from .core import PHOTOS, ROOT
 from .health import usb_devices
 
 TESTS = {}
@@ -162,6 +163,21 @@ def t_sys(r):
         probs.append("low disk")
     return (not probs, "healthy" if not probs else ", ".join(probs),
             [f"temp {st['temp']} C, cpu {st['cpu']}%", f"RAM free {free_mb} MB", f"disk free {disk_free:.1f} GB", f"uptime {st['up'] // 60} min"], {})
+
+
+@test("roboos_portable", "RoboOS stays robot-free")
+def t_roboos_portable(r):
+    """RoboOS (roboos/) also runs without a robot and takes apps from other people, so it must never import robotd or
+    reach for the robot object. Robot features go through the Host API (roboos/host.py, robotd/desktop_host.py)."""
+    bad = []
+    for p in sorted((ROOT / "roboos").rglob("*.py")):
+        for i, line in enumerate(p.read_text().splitlines(), 1):
+            code = line.split("#")[0]
+            if (re.search(r"^\s*(from|import)\s+(robotd|\.\.)", code)
+                    or re.search(r"\b(self|desk|app)\.r\.\w|\bself\.d\.r\.\w|\.robot\.\w", code)):
+                bad.append(f"{p.relative_to(ROOT)}:{i}: {line.strip()[:60]}")
+    n = len(list((ROOT / "roboos").rglob("*.py")))
+    return (not bad, f"{n} files, robot-free" if not bad else f"{len(bad)} places reach for the robot", bad[:8], {"files": n})
 
 
 def run_test(r, tid):

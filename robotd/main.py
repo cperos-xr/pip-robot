@@ -22,7 +22,9 @@ from .social import Social
 from .catalog import Catalog
 from .bench import Bench
 from .vision import Vision
-from .desktop import Desktop
+from roboos.desktop import Desktop
+
+from .desktop_host import RobotHost
 from .settings import Settings
 
 MEDIA_ROOT = DATA
@@ -42,7 +44,7 @@ class Robot:
         self.bus = Bus()
         self.log = RobotLog(self.store, self.bus)
         self.sys = health.SysInfo()
-        self.i2c = I2CBus(0)
+        self.i2c = I2CBus(int(self.cfg.get("i2c_bus", 0)))   # the brain board's own I2C bus (Orange Pi 0, Raspberry Pi 1)
         self.pcf = Pcf8574(self.i2c)
         self.imu = Imu(self.i2c, self.cfg, self.bus, self.log)
         from .sensors import Pir
@@ -63,7 +65,7 @@ class Robot:
         self.bench = Bench(self)
         self.vision = Vision(self)
         self.api = Api(self)
-        self.desktop = Desktop(self)
+        self.desktop = Desktop(RobotHost(self))    # RoboOS (roboos/), with the robot as its host
         self.agent = Agent(self)                 # RoboDev: the robot's own coding agent (RoboOS app, web Dev tab, voice, MCP)
         from .battery import Battery
         self.battery = Battery(self)             # INA219 on Pi I2C bus 0: level, warnings, clean shutdown, black box
@@ -517,7 +519,8 @@ WantedBy=multi-user.target
         try:
             self.pi_i2c = self.i2c.scan()
             self.devices_seen = {a: True for a in self.pi_i2c}
-            self.log("I2C bus 0: " + (" ".join(f"0x{a:02x}" for a in self.pi_i2c) or "nothing found (sensors are on the CYD CN1 port)"))
+            self.log(f"I2C bus {self.i2c.num}: " + (" ".join(f"0x{a:02x}" for a in self.pi_i2c)
+                     or (f"not available ({self.i2c.err})" if self.i2c.err else "nothing found (sensors are on the CYD CN1 port)")))
         except Exception as e:
             self.log(f"I2C scan failed: {e}", "warn")
         for th in (self.cyd, self.motor, self.imu, self.pir):

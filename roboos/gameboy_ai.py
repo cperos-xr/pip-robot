@@ -30,7 +30,7 @@ import time
 import requests
 from PIL import Image
 
-from .core import DATA
+from .paths import DATA
 from .gameboy import BUTTONS
 
 AI_DIR = DATA / "gameboy" / "ai"
@@ -74,7 +74,7 @@ class AIPlayer:
     """Plays one running Emulator. .mask is the buttons it holds right now (the app ORs it into the joypad)."""
 
     def __init__(self, app, emu):
-        self.app, self.emu, self.r = app, emu, app.r
+        self.app, self.emu, self.host = app, emu, app.host
         self.mask = 0
         self.on = False
         self.mode = "play"              # "play" (Pip presses buttons) or "watch" (Pip watches you and comments)
@@ -94,14 +94,14 @@ class AIPlayer:
 
     # ---- settings and limits
     def cfg(self):
-        return self.r.cfg.data.setdefault("desktop", {})
+        return self.host.section("desktop")
 
     def model(self):
         m = self.cfg().get("gb_ai_model")
         if m:
             return m
-        _, active = self.r.brain.active()
-        return active.get("model") if active.get("provider") == "openrouter" else None
+        provider, model = self.host.ai_model()
+        return model if provider == "openrouter" else None
 
     def endpoint(self):
         """(chat/completions URL, API key or None, is_openrouter)"""
@@ -127,10 +127,7 @@ class AIPlayer:
 
     def count_step(self):
         self.cfg()["gb_ai_used"]["n"] += 1
-        try:
-            self.r.cfg.save()
-        except Exception:
-            pass
+        self.host.save()
 
     # ---- notes (per game, kept between sessions)
     def _notes_path(self):
@@ -165,7 +162,7 @@ class AIPlayer:
         self.status = "thinking..." if mode == "play" else "watching you play..."
         self.thread = threading.Thread(target=self._run, args=(self.gen,), daemon=True, name="gameboy-ai")
         self.thread.start()
-        self.r.log(f"gameboy: Pip {'plays' if mode == 'play' else 'watches'} {self.emu.title} ({self.model()})", persist=False)
+        self.host.log(f"gameboy: Pip {'plays' if mode == 'play' else 'watches'} {self.emu.title} ({self.model()})", persist=False)
 
     def stop(self, why=""):
         self.on, self.mask = False, 0
@@ -375,7 +372,7 @@ class AIPlayer:
         """Out loud now and then (Settings > Sound > Talk during games); it is always shown under the game."""
         if not text or time.time() - self.t_said < TALK_GAP:
             return
-        if not self.r.cfg.data.get("desktop", {}).get("game_talk", True):
+        if not self.host.game_talk():
             return
         self.t_said = time.time()
-        threading.Thread(target=self.r.voice.speak, args=(text, "happy"), daemon=True).start()
+        self.host.say(text, "happy")

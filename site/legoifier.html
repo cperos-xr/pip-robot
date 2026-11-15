@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>LEGO-ifier</title>
+  <meta name="description" content="Make a 3D-printed stud plate that clicks any circuit board onto Pip's 8 mm grid: download the STL, or get the exact Fusion 360 values. Calibrate first, then mount the board with bolts or hot glue.">
+  <style>
+    :root { --ink:#203344; --muted:#667783; --blue:#187fbe; --blue2:#0c6aa4; --line:#d9e1e6; --paper:#f4f6f8; --white:#fff; --panel:#edf0f2; --ok:#168268; --amber:#a96b1a; }
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.48 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif} button,input{font:inherit} button{cursor:pointer}
+    .shell{max-width:1360px;padding:28px 30px 45px;margin:auto}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:23px}.brand{display:flex;align-items:center;gap:13px}.logo{width:43px;height:43px;border-radius:11px;background:#1e607c;display:grid;grid-template-columns:repeat(2,11px);grid-template-rows:repeat(2,11px);align-content:center;justify-content:center;gap:5px;box-shadow:inset 0 -4px 0 #134659}.logo i{display:block;background:#c2e7f6;border-radius:100%;box-shadow:0 1px 0 #fff8}.brand h1{margin:0;font-size:24px;letter-spacing:-.7px;line-height:1.1;font-weight:760}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.offline{font-size:12px;display:flex;align-items:center;gap:7px;background:#e8f2ef;border:1px solid #d0e8e0;color:#23715e;border-radius:40px;padding:8px 12px;white-space:nowrap}.offline b{width:7px;height:7px;border-radius:99px;background:#178e65}
+    .topright{display:flex;align-items:center;gap:10px}.back{font-size:12px;font-weight:700;color:#146d9d;text-decoration:none;border:1px solid #cfdce3;background:#fff;border-radius:40px;padding:8px 12px;white-space:nowrap}.back:hover{background:#eef6fb}
+    .layout{display:grid;grid-template-columns:minmax(300px,342px) minmax(380px,1fr) minmax(315px,350px);gap:17px;align-items:start}.panel{border:1px solid var(--line);border-radius:13px;background:var(--white);box-shadow:0 7px 24px #20405609;overflow:hidden}.panel-header{padding:18px 19px 0}.overline{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#6b8493;font-weight:800}.panel h2{font-size:18px;letter-spacing:-.3px;line-height:1.25;margin:4px 0 6px}.sub{font-size:12.5px;color:var(--muted);line-height:1.5;margin:0}.inputs{padding:20px 19px 18px}.field{margin-bottom:15px}.field label{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-weight:650;font-size:13px}.field .hint{color:var(--muted);font-weight:450;font-size:11px}.fieldrow{display:flex;align-items:center;position:relative}.field input{width:100%;appearance:textfield;height:43px;border:1px solid #cdd8df;border-radius:7px;background:#fff;padding:7px 52px 7px 12px;font-size:18px;font-weight:650;font-variant-numeric:tabular-nums;color:#243747;outline:0}.field input::-webkit-inner-spin-button,.field input::-webkit-outer-spin-button{appearance:none;margin:0}.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #2588c51f}.unit{position:absolute;right:12px;color:#85939c;font-size:12px;font-weight:700;pointer-events:none}.splitline{height:1px;background:#ebeff2;margin:18px 0}.presets{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.preset{padding:6px 9px;border:1px solid #d6e1e8;background:#f7f9fa;border-radius:6px;font-size:12px;font-weight:650;color:#456174}.preset:hover,.preset.active{background:#e6f3fb;border-color:#81b4d3;color:#146d9d}.helper{font-size:12px;color:var(--muted);margin-top:10px}.swap{width:100%;margin-top:3px;display:flex;align-items:center;justify-content:center;gap:8px;height:37px;background:#fff;border:1px solid #d7e1e7;border-radius:7px;color:#456174;font-size:12px;font-weight:650}.swap:hover{background:#f5fafc}
+    .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pair .field input{font-size:16px;padding-right:40px}
+    .check{display:flex;align-items:flex-start;gap:9px;font-size:13px;font-weight:650;margin:2px 0 12px;cursor:pointer}.check input{width:17px;height:17px;margin:1px 0 0;accent-color:var(--blue)}.check small{display:block;font-weight:450;color:var(--muted);font-size:11.5px;margin-top:2px}
+    .holes[hidden]{display:none}
+    .result{margin:0 19px 19px;border:1px solid #d5e4e9;background:#f4f9fb;border-radius:9px;padding:14px 15px}.result .total{display:flex;justify-content:space-between;align-items:baseline;gap:5px}.total strong{font-size:28px;line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-1.1px}.total span{font-size:12px;color:var(--muted)}.result small{display:block;color:#536d79;font-size:12px;margin-top:6px}.warn{font-size:12px;color:#82530c;background:#fff7e6;border:1px solid #f2d9a3;border-radius:8px;padding:10px 12px;margin:0 19px 19px;display:none}.warn.show{display:block}
+    .canvas-header{padding:18px 20px 14px;display:flex;align-items:start;justify-content:space-between;gap:10px}.canvas-title h2{margin:3px 0 1px;font-size:17px}.preview-pane{margin:0 14px 14px;border:1px solid #d4dce1;border-radius:9px;position:relative;overflow:hidden;background-color:#e5ecee;background-image:linear-gradient(to right,#7c9aac17 1px, transparent 1px),linear-gradient(to bottom,#7c9aac17 1px,transparent 1px);background-size:17px 17px}.preview-pane svg{width:100%;height:auto;display:block;min-height:290px;max-height:550px}.legend{display:flex;flex-wrap:wrap;gap:16px;padding:4px 21px 17px;font-size:12px;color:#5e7381}.legend span{display:flex;align-items:center;gap:7px}.dot{width:10px;height:10px;background:#187fbe;border-radius:50%}.ring{width:11px;height:11px;border:2px solid #698d9a;border-radius:50%}.hole{width:11px;height:11px;border:2px solid #b4582f;background:#fff;border-radius:50%}.visual-note{font-size:11px;color:#6c808d;padding:0 20px 18px}.first-card{margin:0 14px 15px;border:1px solid #b5dbee;background:#f0f8fc;border-radius:10px;padding:14px}.first-card strong{display:block;color:#1b6488;font-size:13px}.first-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:9px}.measure{border-radius:7px;background:#fff;border:1px solid #d5e9f2;padding:11px 9px}.measure b{font-size:22px;font-variant-numeric:tabular-nums;display:block;line-height:1.2;letter-spacing:-.5px}.measure span{font-size:11px;color:#66808e}.center-note{margin-top:9px;font-size:12px;color:#506879;line-height:1.55}
+    .stl{margin:16px;border:1px solid #b5dbee;background:#f0f8fc;border-radius:10px;padding:14px}.stl strong{display:block;font-size:14px;color:#1b6488;margin-bottom:4px}.stl p{margin:0 0 11px;font-size:12px;color:#506879;line-height:1.55}.stl .primary{margin-bottom:0}.stl small{display:block;margin-top:8px;font-size:11.5px;color:#637985}
+    .orline{display:flex;align-items:center;gap:10px;margin:4px 16px 0;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7c919d}.orline:before,.orline:after{content:"";height:1px;background:#e1e7eb;flex:1}
+    .fusion-wrap{background:#f9fafb;border:1px solid #d9e0e4;border-radius:10px;margin:16px;overflow:hidden;box-shadow:0 1px 2px #00000008}.fusion-top{display:flex;align-items:center;justify-content:space-between;background:#e8ecf0;border-bottom:1px solid #d0d7dc;height:38px;padding:0 12px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#4f5d68}.fusion-x{font-size:16px;color:#8f9ba3}.fbody{padding:12px}.frow{display:grid;grid-template-columns:93px 1fr;gap:7px;align-items:center;font-size:12px;margin-bottom:9px}.frow label{color:#4c5d69}.fbox{height:30px;display:flex;align-items:center;padding:0 9px;border:1px solid #ccd6dc;background:#fff;border-radius:3px;gap:8px;color:#405867;font-size:12px}.fbox.blue{border-color:#7ab4d7;background:#f0f7fc;color:#146a9a}.selectedicon{display:grid;place-items:center;background:#d5edf8;border-radius:3px;width:18px;height:18px;color:#1778b1}.section{border-top:1px solid #dde3e7;margin-top:12px;padding-top:10px}.secthead{display:flex;align-items:center;gap:7px;font-weight:800;color:#485b66;font-size:12px;margin-bottom:9px}.triangle{font-size:10px;color:#7a929f}.fright{text-align:right}.frow.tight{margin-bottom:7px}.valuebox{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#fff;border:1px solid #d1dadf;border-radius:3px;min-height:30px;padding:0 5px 0 10px;font-variant-numeric:tabular-nums;font-size:12px}.valuebox output{font-weight:700;color:#263d4e;white-space:nowrap}.tinycopy{font-size:11px;min-width:30px;height:24px;color:#54849d;background:#f1f6f9;border:1px solid transparent;border-radius:3px;padding:0 5px}.tinycopy:hover{border-color:#9ac4d8;background:#e4f1f8}.fdir{font-size:12px;color:#60717c;display:flex;align-items:center;gap:5px}.glypharrow{color:#bd763c;font-size:15px}.fusion-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#edf0f2;border-top:1px solid #d6dfe3;font-size:11px;color:#6a7a84}.fusion-footer b{background:#fff;border:1px solid #cbd6da;color:#344953;padding:5px 17px;font-size:11px;font-weight:600;border-radius:3px}.f-actions{margin:0 16px 16px;display:grid;gap:8px}.primary{border:0;border-radius:8px;color:white;background:#166e9f;padding:12px 14px;font-weight:800;font-size:13px;width:100%}.primary:hover{background:#095c89}.primary:disabled{background:#9db4c2;cursor:not-allowed}.secondary{border:1px solid #cfdce3;background:#fff;border-radius:8px;padding:10px;color:#395c71;font-size:12px;font-weight:700;width:100%}.secondary:hover{background:#f4f9fc}.tip{font-size:11px;color:#637985;line-height:1.5;margin:0 17px 16px}
+    .steps{margin-top:17px;padding:22px 23px}.stepshead{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:12px}.stepshead h2{margin:0;font-size:18px}.stepshead p{margin:4px 0 0;font-size:13px;color:var(--muted);max-width:760px}.stepgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.step{padding:14px 14px 16px;border:1px solid #e0e6eb;border-radius:10px;background:#fbfcfd;min-height:145px}.stepnum{border-radius:7px;width:26px;height:26px;display:grid;place-items:center;background:#e6f2f8;color:#147aaa;font-weight:800;font-size:12px;margin-bottom:9px}.step strong{display:block;font-size:13px;margin-bottom:5px}.step p{margin:0;color:#5c7280;font-size:12px;line-height:1.55}.step b{color:#28485d}.info-footer{display:flex;justify-content:space-between;gap:14px;color:#7c8f9a;font-size:11px;margin-top:15px;line-height:1.5}.info-footer a{color:#4d7c97}.error{font-weight:800;color:#9b3b2c}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+    .calib{margin-bottom:17px;padding:20px 23px;border-color:#efd59c;background:#fffbf1}.calib .stepshead h2{font-size:18px}.calib .overline{color:#9a6a12}.calib .stepnum{background:#fbecc8;color:#8a5c08}.calib .step{background:#fff;border-color:#f1e2bd;min-height:0}.calib-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.calib-actions .primary,.calib-actions .secondary{width:auto;padding:11px 16px}.calib-actions .primary{background:#a3690d}.calib-actions .primary:hover{background:#86560a}
+    .mount-figure{margin:4px 0 16px;border:1px solid #e0e6eb;border-radius:10px;background:#fff;overflow:hidden}.mount-figure img{display:block;width:100%;height:auto}.methods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.methods .step{min-height:0}.methods .tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:20px;padding:2px 8px;margin-bottom:7px;background:#e6f2f8;color:#147aaa}.methods .tag.quick{background:#e8f2ef;color:#23715e}.methods .tag.extra{background:#f0eef7;color:#5b4e8a}
+    @media(max-width:1220px){.layout{grid-template-columns:minmax(285px,340px) minmax(350px,1fr)}.fusion-panel{grid-column:1/-1}.fusion-panel>*{max-width:510px;margin-left:auto!important;margin-right:auto!important}.fusion-panel .orline{max-width:478px}.stepgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:790px){.shell{padding:18px 12px 30px}.layout{grid-template-columns:1fr}.fusion-panel{grid-column:auto}.stepgrid{grid-template-columns:1fr 1fr}.methods{grid-template-columns:1fr}.brand h1{font-size:21px}.offline{display:none}.preview-pane svg{min-height:260px}.info-footer{display:block}.topbar{align-items:flex-start}}
+    @media(max-width:510px){.stepgrid{grid-template-columns:1fr}.steps,.calib{padding:18px}.brand p{font-size:11px}.panel-header{padding:16px 16px 0}.inputs{padding:16px}.first-card{padding:12px}.back{padding:7px 10px}}
+    @media print{body{background:#fff}.shell{max-width:none;padding:0}.topbar{margin-bottom:10px}.panel{box-shadow:none;break-inside:avoid}.layout{grid-template-columns:260px 1fr 280px;gap:8px}.steps{break-before:page}.swap,.presets,.f-actions,.offline,.back,.stl,.orline,.calib-actions{display:none}.preview-pane svg{min-height:0}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar"><div class="brand"><div class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div><h1>LEGO-ifier</h1><p>Printed plates that click any board onto Pip · 8 mm stud grid</p></div></div><div class="topright"><a class="back" href="index.html">← Pip the robot</a><div class="offline"><b></b> Works completely offline</div></div></header>
+
+  <section class="panel steps calib" aria-labelledby="calib-title">
+    <div class="stepshead"><div><div class="overline">First time? Calibrate before a big print</div><h2 id="calib-title">Print a small one first and make sure it fits</h2><p>Every printer, filament and frame is a little different. Five minutes of test printing saves a plate that will not go in, or falls out.</p></div></div>
+    <div class="stepgrid">
+      <div class="step"><div class="stepnum">1</div><strong>Print the calibration strip</strong><p>Five snap-off tabs, each with one stud, from <b id="calLo">4.80</b> to <b id="calHi">5.20 mm</b>. The dots count the size: <b>1 dot</b> is the smallest, <b>3 dots</b> is your current setting.</p></div>
+      <div class="step"><div class="stepnum">2</div><strong>Press each tab into your frame</strong><p>Into a hole of the grid (or the underside of a LEGO brick). The right one goes in with a firm push and holds upside down, but comes out by hand.</p></div>
+      <div class="step"><div class="stepnum">3</div><strong>Type in the winner</strong><p>Each dot is 0.1 mm. Two dots = 0.1 mm smaller than now, four dots = 0.1 mm bigger. Put that number in <b>Stud diameter</b>.</p></div>
+      <div class="step"><div class="stepnum">4</div><strong>Check with a 2 × 2 plate</strong><p>A 16 × 16 mm plate with four studs: it tests the spacing too. If it fits, every plate you make with these settings will.</p></div>
+    </div>
+    <div class="calib-actions"><button class="primary" id="dlCal" type="button">Download calibration strip (STL)</button><button class="secondary" id="dlTest" type="button">Download 2 × 2 test plate (STL)</button></div>
+  </section>
+
+  <main class="layout">
+    <section class="panel" aria-labelledby="size-title">
+      <div class="panel-header"><div class="overline">01 / Define the plate</div><h2 id="size-title">Enter your dimensions</h2><p class="sub">The outer size of the plate: usually the size of your board, or a little bigger. Everything updates automatically.</p></div>
+      <div class="inputs">
+        <div class="field"><label for="plateWidth">Width <span class="hint">left to right ↔</span></label><div class="fieldrow"><input id="plateWidth" type="number" min="0.1" max="3000" step="0.1" inputmode="decimal" value="23"><span class="unit">mm</span></div></div>
+        <div class="field"><label for="plateLength">Length <span class="hint">top to bottom ↕</span></label><div class="fieldrow"><input id="plateLength" type="number" min="0.1" max="3000" step="0.1" inputmode="decimal" value="18"><span class="unit">mm</span></div></div>
+        <div class="field"><label for="studSize">Stud diameter <span class="hint">your calibrated size</span></label><div class="fieldrow"><input id="studSize" type="number" min="0.5" max="30" step="0.05" inputmode="decimal" value="5.00"><span class="unit">mm</span></div></div>
+        <div class="pair">
+          <div class="field"><label for="studHeight">Stud height</label><div class="fieldrow"><input id="studHeight" type="number" min="0.3" max="10" step="0.1" inputmode="decimal" value="1.8"><span class="unit">mm</span></div></div>
+          <div class="field"><label for="plateThick">Plate thickness</label><div class="fieldrow"><input id="plateThick" type="number" min="0.8" max="20" step="0.1" inputmode="decimal" value="3.0"><span class="unit">mm</span></div></div>
+        </div>
+        <button class="swap" id="swap" type="button">⇄ &nbsp;Swap width / length (rotate the layout)</button>
+        <div class="splitline"></div>
+        <label class="check"><input type="checkbox" id="useHoles"><span>Bolt holes for the board's mounting holes<small>Four holes in a rectangle, centred on the plate. Studs too close to a hole are left out.</small></span></label>
+        <div class="holes" id="holeFields" hidden>
+          <div class="pair">
+            <div class="field"><label for="holeX">Hole spacing ↔</label><div class="fieldrow"><input id="holeX" type="number" min="0" max="3000" step="0.1" inputmode="decimal" value="15"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="holeY">Hole spacing ↕</label><div class="fieldrow"><input id="holeY" type="number" min="0" max="3000" step="0.1" inputmode="decimal" value="10"><span class="unit">mm</span></div></div>
+          </div>
+          <div class="field"><label for="holeD">Hole diameter <span class="hint">M2 2.2 · M2.5 2.7 · M3 3.2</span></label><div class="fieldrow"><input id="holeD" type="number" min="0.5" max="20" step="0.1" inputmode="decimal" value="3.2"><span class="unit">mm</span></div></div>
+          <div class="pair">
+            <div class="field"><label for="pocketD">Head pocket ⌀</label><div class="fieldrow"><input id="pocketD" type="number" min="0" max="30" step="0.1" inputmode="decimal" value="6.2"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="pocketH">Pocket depth</label><div class="fieldrow"><input id="pocketH" type="number" min="0" max="20" step="0.1" inputmode="decimal" value="2.2"><span class="unit">mm</span></div></div>
+          </div>
+          <p class="helper" style="margin-top:0">Hole spacing is centre to centre, from your board's drawing or a ruler. The pocket on the stud side holds the bolt head, so the plate still sits flat on the frame. Depth 0 = no pocket.</p>
+        </div>
+        <div class="splitline"></div>
+        <div class="overline">Recent designs</div>
+        <div class="presets" id="presets">
+          <button class="preset" data-w="23" data-l="18" type="button">23 × 18</button>
+          <button class="preset" data-w="50" data-l="86" type="button">50 × 86</button>
+          <button class="preset" data-w="36.5" data-l="62" type="button">36.5 × 62</button>
+          <button class="preset" data-w="80" data-l="8" type="button">80 × 8</button>
+          <button class="preset" data-w="96" data-l="176" type="button">96 × 176</button>
+        </div>
+        <p class="helper">The grid always uses <b>8.00 mm center-to-center</b>, independent of stud diameter.</p>
+      </div>
+      <div class="result" aria-live="polite"><div class="overline">Your result</div><div class="total"><strong id="headline">3 × 2</strong><span id="count">6 total studs</span></div><small id="pitchNote">8.00 mm between all neighboring centers</small></div>
+      <div class="warn" id="warning" role="status"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="preview-title">
+      <div class="canvas-header"><div class="canvas-title"><div class="overline">02 / Check the layout</div><h2 id="preview-title">Live plate preview</h2><p class="sub">Seen through the plate from the board side. Blue = the first stud (for Fusion).</p></div></div>
+      <div class="preview-pane"><svg id="preview" viewBox="0 0 700 540" role="img" aria-label="Scaled plate rectangle with an 8 millimeter stud grid, the first stud highlighted, and bolt holes if any"></svg></div>
+      <div class="legend"><span><i class="dot"></i> First stud</span><span><i class="ring"></i> Pattern copies</span><span><i class="hole"></i> Bolt hole</span><span>↔ 8 mm center spacing</span></div>
+      <div class="first-card">
+        <strong>🎯 Place the CENTER of your first circle here</strong>
+        <div class="first-grid"><div class="measure"><b id="firstX">3.50 mm</b><span>from the LEFT edge →</span></div><div class="measure"><b id="firstY">5.00 mm</b><span>from the TOP edge ↓</span></div></div>
+        <div class="center-note">Measure to the <b>circle's center dot</b>, not the outside of the circle. Start at the top-left corner; pattern <b>right and down</b>.</div>
+      </div>
+    </section>
+
+    <section class="panel fusion-panel" aria-labelledby="fusion-title">
+      <div class="panel-header"><div class="overline">03 / Get the plate</div><h2 id="fusion-title">Download it, or draw it</h2><p class="sub">The STL is ready to slice. Fusion 360 users can rebuild it from the values below.</p></div>
+      <div class="stl">
+        <strong>Ready-to-print STL</strong>
+        <p>Studs, plate and bolt holes in one file. It prints <b>studs up</b> (the board side flat on the bed): 0.2 mm layers, 3 walls, PLA or PETG. Flip it over to fit it: studs go down into the frame.</p>
+        <button id="dlPlate" class="primary" type="button">Download plate STL</button>
+        <small id="stlNote">23 × 18 mm, 6 studs</small>
+      </div>
+      <div class="orline">or in Fusion 360</div>
+      <div class="fusion-wrap">
+        <div class="fusion-top"><span>▾ &nbsp; RECTANGULAR PATTERN</span><span class="fusion-x">×</span></div>
+        <div class="fbody">
+          <div class="frow"><label>Objects</label><div class="fbox blue"><span class="selectedicon">◉</span> 1 selected &nbsp; ×</div></div>
+          <div class="frow"><label>Direction/s</label><div class="fbox">↔ &nbsp; ↕ &nbsp; Select 2 directions</div></div>
+          <div class="frow"><label>Distribution</label><div class="fbox">▤ &nbsp; Extent <span style="margin-left:auto">⌄</span></div></div>
+          <div class="frow"><label>Suppression</label><div>☐</div></div>
+          <div class="section"><div class="secthead"><span class="triangle">▼</span> Direction 1 · horizontal (↔)</div>
+            <div class="frow tight"><label>Quantity</label><div class="valuebox"><output id="axis1Quantity">3</output><button class="tinycopy" data-copy="axis1Quantity" title="Copy quantity" type="button">Copy</button></div></div>
+            <div class="frow tight"><label>Distance</label><div class="valuebox"><output id="axis1Distance">16.00 mm</output><button class="tinycopy" data-copy="axis1Distance" title="Copy horizontal extent" type="button">Copy</button></div></div>
+            <div class="frow tight"><label>Direction</label><div class="fbox fdir"><span class="glypharrow">➜</span> One Direction <span style="margin-left:auto">⌄</span></div></div>
+          </div>
+          <div class="section"><div class="secthead"><span class="triangle">▼</span> Direction 2 · vertical (↕)</div>
+            <div class="frow tight"><label>Quantity</label><div class="valuebox"><output id="axis2Quantity">2</output><button class="tinycopy" data-copy="axis2Quantity" title="Copy quantity" type="button">Copy</button></div></div>
+            <div class="frow tight"><label>Distance</label><div class="valuebox"><output id="axis2Distance">8.00 mm</output><button class="tinycopy" data-copy="axis2Distance" title="Copy vertical extent" type="button">Copy</button></div></div>
+            <div class="frow tight"><label>Direction</label><div class="fbox fdir"><span class="glypharrow">➜</span> One Direction <span style="margin-left:auto">⌄</span></div></div>
+          </div>
+        </div>
+        <div class="fusion-footer"><span>ⓘ&nbsp; Preview before committing</span><b>OK</b></div>
+      </div>
+      <div class="f-actions"><button id="copyRecipe" class="secondary" type="button">Copy all Fusion values</button><button id="printPage" class="secondary" type="button">Print / save reference sheet</button></div>
+      <p class="tip"><b>Sign rule:</b> These distances are absolute extents. If Fusion's preview goes <em>outside</em> your rectangle, put a minus sign in front of that distance. The correct direction is always <b>from the first stud toward the inside</b>. Bolt holes are not in the pattern: add them after the studs (the copied values include where).</p>
+    </section>
+  </main>
+
+  <section class="panel steps" aria-labelledby="mount-title" id="mount">
+    <div class="stepshead"><div><div class="overline">04 / Mount your board</div><h2 id="mount-title">The plate clicks into the grid. The board goes on top.</h2><p>Use whatever is in the drawer. These are the three ways the first Pip's boards are held on.</p></div></div>
+    <figure class="mount-figure"><img src="img/mounting.svg" width="900" height="470" alt="Exploded side view: the frame grid at the bottom; the printed stud plate above it with studs pressing down into the grid and four bolts pointing up through the plate like prongs, their heads trapped between plate and frame; a spacer on each prong for room under the board; the board on the spacers; a nut on each prong."></figure>
+    <div class="methods">
+      <div class="step"><span class="tag">Board has screw holes</span><strong>Bolts as prongs</strong><p>Push four bolts up through the plate from underneath, heads in the pockets. They stick up like prongs. Slide a <b>spacer</b> (or a stack of nuts, or a cut piece of straw) onto each one so the solder joints under the board have room, drop the board on, and finish with a nut. It is the same idea as the standoffs in a computer case.</p></div>
+      <div class="step"><span class="tag quick">In a hurry, or no holes</span><strong>Hot glue</strong><p>Turn off the bolt holes, print the plate, and glue the board straight onto it. Put the glue on the parts of the board with nothing underneath, or add a few blobs as feet if there are solder joints in the way. It holds well and peels off with a little rubbing alcohol.</p></div>
+      <div class="step"><span class="tag extra">Optional</span><strong>Squishy TPU pads</strong><p>If you are not in a rush, print small washers in TPU and put them between the plate and the board. They take up a little vibration and stop a bolt from cracking a board. Honestly, they do not add much: bolts and spacers are plenty.</p></div>
+    </div>
+  </section>
+
+  <section class="panel steps" aria-labelledby="steps-title">
+    <div class="stepshead"><div><div class="overline">Building it in Fusion 360 instead</div><h2 id="steps-title">Do exactly this in Fusion</h2></div></div>
+    <div class="stepgrid">
+      <div class="step"><div class="stepnum">1</div><strong>Sketch your plate</strong><p>Draw the rectangle at <b id="stepPlate">23 × 18 mm</b> and extrude it <b id="stepThick">3.00 mm</b>.</p></div>
+      <div class="step"><div class="stepnum">2</div><strong>Draw just one stud</strong><p>On the plate's face: circle diameter <b id="stepStud">5.00 mm</b>. Place its <b>center</b> <b id="stepFirst">3.50 mm right, 5.00 mm down</b> from the top-left corner.</p></div>
+      <div class="step"><div class="stepnum">3</div><strong>Sketch → Rectangular Pattern</strong><p>Select that circle. Choose the horizontal and vertical directions. Set <b>Distribution = Extent</b>. Enter the quantities and distances shown above; point the pattern into the plate.</p></div>
+      <div class="step"><div class="stepnum">4</div><strong>Finish Sketch → Extrude</strong><p>Click <b>OK</b>, finish the sketch, select all circular profiles, then <b>Extrude <span id="stepH">1.80</span> mm outward</b> using <b>Join</b> to make raised studs.</p></div>
+    </div>
+  </section>
+  <footer class="info-footer"><span>Offline single-file tool: nothing is uploaded, the STL is made in your browser. Part of <a href="index.html">Pip the robot</a> (code MIT, this page CC BY 4.0).</span><span>Default diameter: the 5.00 mm that fits the first Pip's grid on its printer · Unaffiliated with LEGO or Autodesk.</span></footer>
+</div>
+<script>
+/* GEOMETRY START: triangle meshes and binary STL, no libraries (also tested on its own, see docs/MOUNTING_BOARDS.md) */
+const SEG = 48;                       // segments per circle: a 5 mm stud's flats are within 0.01 mm of round
+function newMesh() {
+  const T = [];
+  function tri(a, b, c, n) {          // keeps the triangle facing along n (outward normal)
+    const u = [b[0]-a[0], b[1]-a[1], b[2]-a[2]], v = [c[0]-a[0], c[1]-a[1], c[2]-a[2]];
+    const cr = [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]];
+    if (cr[0]*n[0] + cr[1]*n[1] + cr[2]*n[2] < 0) T.push(a, c, b); else T.push(a, b, c);
+  }
+  function quad(a, b, c, d, n) { tri(a, b, c, n); tri(a, c, d, n); }
+  return { T, tri, quad };
+}
+function circlePts(cx, cy, r, z) {
+  const p = [];
+  for (let k = 0; k < SEG; k++) { const t = 2 * Math.PI * k / SEG; p.push([cx + r * Math.cos(t), cy + r * Math.sin(t), z]); }
+  return p;
+}
+function addBox(m, x0, y0, z0, x1, y1, z1) {
+  const P = (x, y, z) => [x, y, z];
+  m.quad(P(x0,y0,z0), P(x1,y0,z0), P(x1,y1,z0), P(x0,y1,z0), [0,0,-1]);
+  m.quad(P(x0,y0,z1), P(x1,y0,z1), P(x1,y1,z1), P(x0,y1,z1), [0,0,1]);
+  m.quad(P(x0,y0,z0), P(x1,y0,z0), P(x1,y0,z1), P(x0,y0,z1), [0,-1,0]);
+  m.quad(P(x0,y1,z0), P(x1,y1,z0), P(x1,y1,z1), P(x0,y1,z1), [0,1,0]);
+  m.quad(P(x0,y0,z0), P(x0,y1,z0), P(x0,y1,z1), P(x0,y0,z1), [-1,0,0]);
+  m.quad(P(x1,y0,z0), P(x1,y1,z0), P(x1,y1,z1), P(x1,y0,z1), [1,0,0]);
+}
+function addCylinder(m, cx, cy, z0, z1, r) {
+  const lo = circlePts(cx, cy, r, z0), hi = circlePts(cx, cy, r, z1);
+  for (let k = 0; k < SEG; k++) {
+    const j = (k + 1) % SEG, t = 2 * Math.PI * (k + 0.5) / SEG;
+    m.quad(lo[k], lo[j], hi[j], hi[k], [Math.cos(t), Math.sin(t), 0]);
+    m.tri([cx, cy, z1], hi[k], hi[j], [0, 0, 1]);
+    m.tri([cx, cy, z0], lo[k], lo[j], [0, 0, -1]);
+  }
+}
+// A W x L x T plate (z = 0..T) with round through-holes (radius r) and, if pd > 0, a pocket of radius rp and depth pd
+// opening on the top face (the stud side). One closed, watertight shell: the faces are cut on a grid so every hole
+// sits alone in a square cell whose only edge points are its four corners (no T-junctions anywhere).
+function addPlate(m, W, L, T, holes, r, rp, pd) {
+  const R = pd > 0 ? Math.max(r, rp) : r, eps = 1e-6;
+  let a = R + 1.0;
+  for (const h of holes) a = Math.min(a, h.x, W - h.x, h.y, L - h.y);
+  for (const h of holes) for (const g of holes) {
+    const dx = Math.abs(h.x - g.x), dy = Math.abs(h.y - g.y);
+    if (dx > eps && dx < 2 * a) a = dx / 2;
+    if (dy > eps && dy < 2 * a) a = dy / 2;
+  }
+  if (holes.length && a < R + 0.3) throw new Error('A bolt hole is too close to the edge of the plate or to another hole.');
+  const uniq = v => v.sort((p, q) => p - q).filter((x, i, s) => i === 0 || x - s[i - 1] > eps);
+  const xs = uniq([0, W, ...holes.flatMap(h => [h.x - a, h.x + a])]);
+  const ys = uniq([0, L, ...holes.flatMap(h => [h.y - a, h.y + a])]);
+  const zTop = T, zStep = pd > 0 ? T - pd : T, up = [0, 0, 1], down = [0, 0, -1];
+  function ring(x0, y0, x1, y1, h, rad, z, n) {            // a square face with a round hole in its middle
+    const P = circlePts(h.x, h.y, rad, z), C = [[x1, y1, z], [x0, y1, z], [x0, y0, z], [x1, y0, z]];
+    for (let k = 0; k < SEG; k++) m.tri(P[k], P[(k + 1) % SEG], C[Math.floor((k + 0.5) * 4 / SEG)], n);
+    for (let q = 0; q < 4; q++) m.tri(C[(q + 3) % 4], C[q], P[q * SEG / 4], n);
+  }
+  for (let i = 0; i + 1 < xs.length; i++) for (let j = 0; j + 1 < ys.length; j++) {
+    const x0 = xs[i], x1 = xs[i + 1], y0 = ys[j], y1 = ys[j + 1];
+    const h = holes.find(h => Math.abs(h.x - a - x0) < eps && Math.abs(h.x + a - x1) < eps && Math.abs(h.y - a - y0) < eps && Math.abs(h.y + a - y1) < eps);
+    if (h) { ring(x0, y0, x1, y1, h, pd > 0 ? rp : r, zTop, up); ring(x0, y0, x1, y1, h, r, 0, down); }
+    else { m.quad([x0,y0,zTop], [x1,y0,zTop], [x1,y1,zTop], [x0,y1,zTop], up); m.quad([x0,y0,0], [x1,y0,0], [x1,y1,0], [x0,y1,0], down); }
+  }
+  for (const h of holes) {
+    const b0 = circlePts(h.x, h.y, r, 0), b1 = circlePts(h.x, h.y, r, zStep);
+    for (let k = 0; k < SEG; k++) {
+      const j = (k + 1) % SEG, t = 2 * Math.PI * (k + 0.5) / SEG, inward = [-Math.cos(t), -Math.sin(t), 0];
+      m.quad(b0[k], b0[j], b1[j], b1[k], inward);
+    }
+    if (pd > 0) {
+      const p0 = circlePts(h.x, h.y, rp, zStep), p1 = circlePts(h.x, h.y, rp, zTop);
+      for (let k = 0; k < SEG; k++) {
+        const j = (k + 1) % SEG, t = 2 * Math.PI * (k + 0.5) / SEG;
+        m.quad(b1[k], b1[j], p0[j], p0[k], up);                       // the pocket's floor, where the head rests
+        m.quad(p0[k], p0[j], p1[j], p1[k], [-Math.cos(t), -Math.sin(t), 0]);
+      }
+    }
+  }
+  for (let i = 0; i + 1 < xs.length; i++) {
+    m.quad([xs[i],0,0], [xs[i+1],0,0], [xs[i+1],0,T], [xs[i],0,T], [0,-1,0]);
+    m.quad([xs[i],L,0], [xs[i+1],L,0], [xs[i+1],L,T], [xs[i],L,T], [0,1,0]);
+  }
+  for (let j = 0; j + 1 < ys.length; j++) {
+    m.quad([0,ys[j],0], [0,ys[j+1],0], [0,ys[j+1],T], [0,ys[j],T], [-1,0,0]);
+    m.quad([W,ys[j],0], [W,ys[j+1],0], [W,ys[j+1],T], [W,ys[j],T], [1,0,0]);
+  }
+}
+function toSTL(T, name) {
+  const n = T.length / 3, buf = new ArrayBuffer(84 + 50 * n), dv = new DataView(buf);
+  const head = ('Pip LEGO-ifier: ' + name).slice(0, 80);
+  for (let i = 0; i < head.length; i++) dv.setUint8(i, head.charCodeAt(i) & 0x7f);
+  dv.setUint32(80, n, true);
+  let o = 84;
+  for (let i = 0; i < n; i++) {
+    const a = T[3*i], b = T[3*i+1], c = T[3*i+2];
+    const u = [b[0]-a[0], b[1]-a[1], b[2]-a[2]], v = [c[0]-a[0], c[1]-a[1], c[2]-a[2]];
+    let nx = u[1]*v[2]-u[2]*v[1], ny = u[2]*v[0]-u[0]*v[2], nz = u[0]*v[1]-u[1]*v[0];
+    const len = Math.hypot(nx, ny, nz) || 1;
+    for (const f of [nx/len, ny/len, nz/len, ...a, ...b, ...c]) { dv.setFloat32(o, f, true); o += 4; }
+    o += 2;
+  }
+  return buf;
+}
+// The whole plate: studs (8 mm grid, centred) on top of the plate, bolt holes centred, studs that would hit a hole left out.
+function plateModel(p) {
+  const m = newMesh(), holes = p.holes || [], R = p.pd > 0 ? Math.max(p.r, p.rp) : p.r;
+  addPlate(m, p.W, p.L, p.T, holes, p.r, p.rp, p.pd);
+  let studs = 0, skipped = 0;
+  for (const s of p.studs) {
+    if (holes.some(h => Math.hypot(h.x - s.x, h.y - s.y) < p.d / 2 + R + 0.4)) { skipped++; continue; }
+    addCylinder(m, s.x, s.y, p.T - 0.2, p.T + p.h, p.d / 2);         // sunk 0.2 mm into the plate so the slicer joins them
+    studs++;
+  }
+  return { T: m.T, studs, skipped };
+}
+function calibrationModel(d, h) {     // five snap-off tabs: stud d-0.2 ... d+0.2, with 1..5 dots to tell them apart
+  const m = newMesh();
+  addBox(m, 0, -2.0, 0, 4 * 14 + 12, 0.6, 1.0);
+  for (let i = 0; i < 5; i++) {
+    const x = i * 14;
+    addBox(m, x, 0, 0, x + 12, 12, 2.0);
+    addCylinder(m, x + 6, 6, 1.8, 2.0 + h, (d + (i - 2) * 0.1) / 2);
+    for (let k = 0; k <= i; k++) addCylinder(m, x + 1.6 + k * 2.0, 10.4, 1.8, 2.6, 0.65);
+  }
+  return m.T;
+}
+/* GEOMETRY END */
+
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const W=$('plateWidth'),L=$('plateLength'),D=$('studSize'),H=$('studHeight'),TH=$('plateThick');
+  const HO=$('useHoles'),HX=$('holeX'),HY=$('holeY'),HD=$('holeD'),PD=$('pocketD'),PH=$('pocketH');
+  const PITCH=8, MIN_CENTER_EDGE=3.5;
+  const fmt=(v)=>Number(v).toFixed(2);
+  const read=el=>Number(el.value);
+  const minEdge=diameter=>Math.max(MIN_CENTER_EDGE,diameter/2+0.35);
+  let current=null;
+  function axisInfo(dim,diameter){
+    if(!Number.isFinite(dim)||dim<=0||dim<diameter) return {count:0,inset:0,extent:0};
+    const minInset=minEdge(diameter);
+    // This allows the user's tested examples: 23x18 -> 3x2, 50x86 -> 6x10, 36.5x62 -> 4x7.
+    // Require >= 3.5 mm from each end to the CENTER where possible.
+    let count=dim>=2*minInset ? Math.max(1,Math.floor((dim-2*minInset+1e-7)/PITCH)+1) : 1;
+    let extent=PITCH*(count-1), inset=(dim-extent)/2;
+    return {count,inset,extent};
+  }
+  function holeList(w,l){
+    if(!HO.checked) return [];
+    const sx=read(HX),sy=read(HY),out=[];
+    for(const dx of (sx>0?[-sx/2,sx/2]:[0])) for(const dy of (sy>0?[-sy/2,sy/2]:[0])) out.push({x:w/2+dx,y:l/2+dy});
+    return out;
+  }
+  function calc(){
+    const w=read(W),l=read(L),d=read(D),h=read(H),t=read(TH);
+    if(![w,l,d,h,t].every(Number.isFinite)||w<=0||l<=0||d<=0||h<=0||t<=0||w>3000||l>3000||d>30){return {valid:false,message:'Enter valid, positive dimensions (plate sides up to 3000 mm, stud up to 30 mm).'};}
+    if(w<d||l<d){return {valid:false,message:'The stud diameter is larger than one of your plate dimensions. Enlarge the plate or reduce the stud diameter.'};}
+    const x=axisInfo(w,d),y=axisInfo(l,d);
+    const issues=[];
+    if(d>=PITCH)issues.push('Stud diameter is 8 mm or larger; neighboring studs will touch or overlap.');
+    if(x.inset<minEdge(d)-.0001||y.inset<minEdge(d)-.0001)issues.push('This plate is very narrow; the first stud is close to an edge. Check the remaining material.');
+    if(w>400||l>400)issues.push('Large design: the diagram may simplify some studs for display, but all computed quantities remain exact.');
+    const holes=holeList(w,l), r=read(HD)/2, rp=read(PD)/2, pd=read(PH);
+    let skipped=0;
+    if(holes.length){
+      if(!(r>0)||rp<0||pd<0||!Number.isFinite(rp)||!Number.isFinite(pd)) return {valid:false,message:'Check the bolt hole numbers.'};
+      if(pd>0&&rp<=r) issues.push('The head pocket must be wider than the hole; no pocket will be made.');
+      if(pd>0&&pd>t-0.8) issues.push(`The pocket is almost as deep as the plate: make the plate at least ${fmt(pd+1.6)} mm thick.`);
+      const R=(pd>0&&rp>r)?rp:r;
+      if(holes.some(hh=>hh.x-R<0.3||hh.x+R>w-0.3||hh.y-R<0.3||hh.y+R>l-0.3)) return {valid:false,message:'A bolt hole is outside the plate or touches its edge. Make the plate bigger or the hole spacing smaller.'};
+      for(let j=0;j<y.count;j++)for(let i=0;i<x.count;i++){const sx=x.inset+PITCH*i,sy=y.inset+PITCH*j;if(holes.some(hh=>Math.hypot(hh.x-sx,hh.y-sy)<d/2+R+0.4))skipped++;}
+      if(skipped&&x.count*y.count-skipped<2) issues.push('Almost every stud is in the way of a bolt hole: the plate will barely hold. Make it bigger than the board.');
+    }
+    return {valid:true,w,l,d,h,t,x,y,total:x.count*y.count,issues,holes,r,rp,pd:(pd>0&&rp>r)?pd:0,skipped};
+  }
+  function refresh(){
+    current=calc();
+    const good=current.valid;
+    const warning=$('warning');
+    $('dlPlate').disabled=!good;
+    if(!good){warning.textContent=current.message;warning.classList.add('show');$('headline').textContent='Check inputs';$('count').textContent='';$('stlNote').textContent='';$('preview').innerHTML='<text x="350" y="265" text-anchor="middle" fill="#9b3b2c" font-size="18">Enter valid measurements to see your grid.</text>';['axis1Quantity','axis2Quantity','axis1Distance','axis2Distance','firstX','firstY'].forEach(k=>$(k).textContent='—');return;}
+    const {w,l,d,h,t,x,y,total,issues,holes,skipped}=current;
+    warning.textContent=issues.join(' ');warning.classList.toggle('show',issues.length>0);
+    $('headline').textContent=x.count+' × '+y.count;$('count').textContent=total+' total stud'+(total===1?'':'s')+(skipped?` (${skipped} left out for holes)`:'');
+    $('axis1Quantity').textContent=x.count;$('axis2Quantity').textContent=y.count;
+    $('axis1Distance').textContent=fmt(x.extent)+' mm';$('axis2Distance').textContent=fmt(y.extent)+' mm';
+    $('firstX').textContent=fmt(x.inset)+' mm';$('firstY').textContent=fmt(y.inset)+' mm';
+    $('stepPlate').textContent=fmt(w)+' × '+fmt(l)+' mm';$('stepStud').textContent=fmt(d)+' mm';$('stepThick').textContent=fmt(t)+' mm';$('stepH').textContent=fmt(h);
+    $('stepFirst').textContent=fmt(x.inset)+' mm right, '+fmt(y.inset)+' mm down';
+    $('calLo').textContent=fmt(d-0.2);$('calHi').textContent=fmt(d+0.2)+' mm';
+    $('stlNote').textContent=`${fmt(w)} × ${fmt(l)} × ${fmt(t)} mm, ${total-skipped} studs`+(holes.length?`, ${holes.length} bolt holes Ø${fmt(current.r*2)}`:'');
+    document.querySelectorAll('.preset').forEach(btn=>btn.classList.toggle('active',Number(btn.dataset.w)===w&&Number(btn.dataset.l)===l));
+    draw(current);
+    try{localStorage.setItem('legoifier-last',JSON.stringify({w,l,d,h,t,holes:HO.checked,hx:HX.value,hy:HY.value,hd:HD.value,pdia:PD.value,ph:PH.value}));}catch(e){}
+  }
+  function draw(m){
+    const {w,l,d,x,y,total,holes,r,rp,pd}=m;
+    const R=pd>0?rp:r;
+    const svg=$('preview');
+    const plotW=552,plotH=410;
+    const scale=Math.min(plotW/w,plotH/l),pxW=w*scale,pxL=l*scale;
+    const left=(700-pxW)/2,top=(540-pxL)/2;
+    const p1x=left+x.inset*scale,p1y=top+y.inset*scale;
+    let elements=[];
+    const f=n=>Number(n).toFixed(2);
+    const blocked=(sx,sy)=>holes.some(hh=>Math.hypot(hh.x-sx,hh.y-sy)<d/2+R+0.4);
+    elements.push('<defs><marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7" fill="none" stroke="#447d9b" stroke-width="1.2"/></marker><clipPath id="plateClip"><rect x="'+f(left)+'" y="'+f(top)+'" width="'+f(pxW)+'" height="'+f(pxL)+'"/></clipPath></defs>');
+    elements.push('<rect x="'+f(left)+'" y="'+f(top)+'" width="'+f(pxW)+'" height="'+f(pxL)+'" rx="2" fill="#849ba4" fill-opacity="0.36" stroke="#617d8b" stroke-width="1.8"/>');
+    const rad=d*scale/2;
+    const skip=Math.max(1,Math.ceil(Math.sqrt(total/1400)));
+    elements.push('<g clip-path="url(#plateClip)">');
+    for(let j=0;j<y.count;j+=skip){for(let i=0;i<x.count;i+=skip){
+      const sx=x.inset+PITCH*i,sy=y.inset+PITCH*j,cx=left+sx*scale,cy=top+sy*scale;
+      if(i===0&&j===0)continue;
+      if(blocked(sx,sy)){elements.push('<circle cx="'+f(cx)+'" cy="'+f(cy)+'" r="'+f(Math.max(0.6,rad))+'" stroke="#8aa1ac" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>');continue;}
+      elements.push('<circle cx="'+f(cx)+'" cy="'+f(cy)+'" r="'+f(Math.max(0.6,rad))+'" stroke="#496f81" stroke-width="'+(scale<1.3?'.7':'1.8')+'" fill="#bed2da" fill-opacity="0.53"/>');
+      if(rad>3)elements.push('<circle cx="'+f(cx)+'" cy="'+f(cy)+'" r="1.6" fill="#5d8290"/>');
+    }}
+    for(const hh of holes){
+      const hx=left+hh.x*scale,hy=top+hh.y*scale;
+      if(pd>0)elements.push('<circle cx="'+f(hx)+'" cy="'+f(hy)+'" r="'+f(rp*scale)+'" fill="none" stroke="#b4582f" stroke-width="1.3" stroke-dasharray="4 3"/>');
+      elements.push('<circle cx="'+f(hx)+'" cy="'+f(hy)+'" r="'+f(Math.max(1.5,r*scale))+'" fill="#fff" stroke="#b4582f" stroke-width="2.2"/>');
+    }
+    elements.push('</g>');
+    const firstBlocked=blocked(x.inset,y.inset);
+    elements.push('<path d="M'+f(left)+' '+f(p1y)+' H'+f(p1x)+' V'+f(top)+'" stroke="#187fbe" stroke-width="1.5" fill="none" stroke-dasharray="5 4"/>');
+    elements.push('<circle cx="'+f(p1x)+'" cy="'+f(p1y)+'" r="'+f(Math.max(2,rad))+'" fill="#2f9ad1" fill-opacity="'+(firstBlocked?'.12':'.34')+'" stroke="#006eaf" stroke-width="3.4"'+(firstBlocked?' stroke-dasharray="5 4"':'')+'/>');
+    elements.push('<circle cx="'+f(p1x)+'" cy="'+f(p1y)+'" r="3" fill="#084f7e"/>');
+    elements.push('<circle cx="'+f(p1x)+'" cy="'+f(p1y)+'" r="'+f(Math.max(9,rad+7))+'" fill="none" stroke="#1389ca" stroke-dasharray="4 5" stroke-width="1.6"/>');
+    const topGuide=top-24;
+    elements.push('<path d="M'+f(left)+' '+f(topGuide)+' V'+f(top-12)+' M'+f(left+pxW)+' '+f(topGuide)+' V'+f(top-12)+' M'+f(left)+' '+f(topGuide+6)+' H'+f(left+pxW)+'" stroke="#758e99" stroke-width="1.25" fill="none"/>');
+    elements.push('<text x="'+f(left+pxW/2)+'" y="'+f(topGuide-5)+'" text-anchor="middle" font-size="15" font-weight="700" fill="#304c5c" paint-order="stroke" stroke="#e5ecee" stroke-width="5">'+fmt(w)+' mm wide</text>');
+    const side=left-19;
+    elements.push('<path d="M'+f(side)+' '+f(top)+' H'+f(left-9)+' M'+f(side)+' '+f(top+pxL)+' H'+f(left-9)+' M'+f(side+6)+' '+f(top)+' V'+f(top+pxL)+'" stroke="#758e99" stroke-width="1.25" fill="none"/>');
+    elements.push('<text x="'+f(side-9)+'" y="'+f(top+pxL/2)+'" transform="rotate(-90 '+f(side-9)+' '+f(top+pxL/2)+')" text-anchor="middle" font-size="15" font-weight="700" fill="#304c5c" paint-order="stroke" stroke="#e5ecee" stroke-width="5">'+fmt(l)+' mm long</text>');
+    if(x.count>1&&x.extent*scale>80&&y.count>0){
+      const endX=p1x+x.extent*scale,yy=Math.min(top+pxL+20,523);
+      elements.push('<path d="M'+f(p1x)+' '+f(yy)+' H'+f(endX)+'" stroke="#247fb3" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arr)"/>');
+      elements.push('<text x="'+f((p1x+endX)/2)+'" y="'+f(yy+18)+'" font-size="13" text-anchor="middle" fill="#326f94">Extent '+fmt(x.extent)+' mm</text>');
+    }
+    if(y.count>1&&y.extent*scale>90&&pxW<440){
+      const xx=left+pxW+17,endY=p1y+y.extent*scale;
+      elements.push('<path d="M'+f(xx)+' '+f(p1y)+' V'+f(endY)+'" stroke="#247fb3" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arr)"/>');
+      elements.push('<text x="'+f(xx+8)+'" y="'+f((p1y+endY)/2)+'" transform="rotate(90 '+f(xx+8)+' '+f((p1y+endY)/2)+')" text-anchor="middle" font-size="13" fill="#326f94">Extent '+fmt(y.extent)+' mm</text>');
+    }
+    elements.push('<text x="350" y="528" text-anchor="middle" font-size="11" fill="#6c8491">Centers 8 mm apart · layout centered automatically · diagram drawn to scale'+(holes.length?' · dashed studs are left out':'')+'</text>');
+    svg.innerHTML=elements.join('');
+  }
+  function save(T,name){
+    const blob=new Blob([toSTL(T,name)],{type:'model/stl'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+  }
+  function studsOf(c){const s=[];for(let j=0;j<c.y.count;j++)for(let i=0;i<c.x.count;i++)s.push({x:c.x.inset+PITCH*i,y:c.y.inset+PITCH*j});return s;}
+  $('dlPlate').addEventListener('click',()=>{
+    if(!current||!current.valid)return;
+    const c=current;
+    try{
+      const res=plateModel({W:c.w,L:c.l,T:c.t,d:c.d,h:c.h,studs:studsOf(c),holes:c.holes,r:c.r,rp:c.rp,pd:c.pd});
+      save(res.T,`pip-plate-${c.w}x${c.l}mm-${c.x.count}x${c.y.count}.stl`);
+    }catch(e){const w=$('warning');w.textContent=e.message;w.classList.add('show');}
+  });
+  $('dlCal').addEventListener('click',()=>{const d=read(D),h=read(H);if(d>0&&d<11&&h>0)save(calibrationModel(d,h),`pip-stud-calibration-${fmt(d-0.2)}-to-${fmt(d+0.2)}mm.stl`);});
+  $('dlTest').addEventListener('click',()=>{
+    const d=read(D),h=read(H);if(!(d>0&&d<8&&h>0))return;
+    const x=axisInfo(16,d),y=axisInfo(16,d);
+    save(plateModel({W:16,L:16,T:2.4,d,h,studs:studsOf({x,y}),holes:[],r:0,rp:0,pd:0}).T,`pip-test-2x2-stud-${fmt(d)}mm.stl`);
+  });
+  async function clipboardCopy(s){
+    let copied=false;
+    try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(s);copied=true;}}catch(e){}
+    if(!copied){
+      const ta=document.createElement('textarea');ta.value=s;ta.style.cssText='position:fixed;left:-9999px;top:0;';document.body.appendChild(ta);ta.focus();ta.select();try{copied=document.execCommand('copy');}catch(e){}ta.remove();
+    }
+    return copied;
+  }
+  function btnFeedback(btn,ok){const old=btn.textContent;btn.textContent=ok?'Copied ✓':'Select value';setTimeout(()=>{btn.textContent=old;},1200);}
+  document.querySelectorAll('[data-copy]').forEach(btn=>btn.addEventListener('click',async()=>{const s=$(btn.dataset.copy).textContent;btnFeedback(btn,await clipboardCopy(s));}));
+  $('copyRecipe').addEventListener('click',async()=>{
+    if(!current||!current.valid)return;
+    const {w,l,d,h,t,x,y,total,holes,r,rp,pd,skipped}=current;
+    let recipe=`LEGO-ifier — Fusion 360 Sketch Rectangular Pattern\nPlate: ${fmt(w)} mm wide × ${fmt(l)} mm long × ${fmt(t)} mm thick\nFirst circle: Ø${fmt(d)} mm\nFirst center: ${fmt(x.inset)} mm from LEFT, ${fmt(y.inset)} mm from TOP\nObjects: select first circle\nDistribution: Extent\nDirection 1 / Horizontal: Quantity ${x.count}, Distance ${fmt(x.extent)} mm\nDirection 2 / Vertical: Quantity ${y.count}, Distance ${fmt(y.extent)} mm\nDirection: One Direction for both; arrows must point right and down from the first circle. Reverse distance sign if preview goes outside.\nResult: ${x.count} × ${y.count} = ${total} studs; 8.00 mm center spacing\nThen Finish Sketch → Extrude circle profiles outward ${fmt(h)} mm using Join.`;
+    if(holes.length){
+      recipe+=`\nBolt holes: Ø${fmt(r*2)} mm through, centers at `+holes.map(hh=>`(${fmt(hh.x)} from LEFT, ${fmt(hh.y)} from TOP)`).join(', ');
+      if(pd>0)recipe+=`\nHead pockets on the stud side: Ø${fmt(rp*2)} mm, ${fmt(pd)} mm deep.`;
+      if(skipped)recipe+=`\nRemove the ${skipped} studs that overlap a hole or pocket (within ${fmt(d/2+(pd>0?rp:r)+0.4)} mm of its center).`;
+    }
+    const btn=$('copyRecipe'),old=btn.textContent;btn.textContent=(await clipboardCopy(recipe))?'Copied to clipboard ✓':'Copy unavailable — use the values above';setTimeout(()=>btn.textContent=old,2000);
+  });
+  $('swap').addEventListener('click',()=>{let s=W.value;W.value=L.value;L.value=s;s=HX.value;HX.value=HY.value;HY.value=s;refresh();});
+  $('printPage').addEventListener('click',()=>window.print());
+  HO.addEventListener('change',()=>{
+    $('holeFields').hidden=!HO.checked;
+    if(HO.checked){
+      if(read(HX)>read(W)-7)HX.value=Math.max(0,read(W)-7).toFixed(1);
+      if(read(HY)>read(L)-7)HY.value=Math.max(0,read(L)-7).toFixed(1);
+      if(read(PH)>0&&read(TH)<read(PH)+1.6)TH.value=(read(PH)+1.8).toFixed(1);
+    }
+    refresh();
+  });
+  [W,L,D,H,TH,HX,HY,HD,PD,PH].forEach(inp=>inp.addEventListener('input',refresh));
+  document.querySelectorAll('.preset').forEach(btn=>btn.addEventListener('click',()=>{W.value=btn.dataset.w;L.value=btn.dataset.l;refresh();}));
+  try{const s=JSON.parse(localStorage.getItem('legoifier-last')||'null');if(s&&Number(s.w)>0&&Number(s.l)>0&&Number(s.d)>0){W.value=s.w;L.value=s.l;D.value=s.d;if(Number(s.h)>0)H.value=s.h;if(Number(s.t)>0)TH.value=s.t;if(s.hx!=null){HX.value=s.hx;HY.value=s.hy;HD.value=s.hd;PD.value=s.pdia;PH.value=s.ph;}HO.checked=!!s.holes;$('holeFields').hidden=!HO.checked;}}catch(e){}
+  refresh();
+})();
+</script>
+</body>
+</html>

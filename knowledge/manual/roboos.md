@@ -42,6 +42,7 @@ the pictures and sends touches back.
 | Camera | Camera privacy switch and the eye-follow options (those keep the camera on while the face shows). |
 | Settings | The robot's one settings list (`settings.md`): tabs Sound, Screen, Camera, AI, Posting, Robot. The same list as the touchscreen's Settings page and the web app. Replaced the Robot Control Panel on 2026-11-09. |
 | Bluetooth | Speaker setup: adapter, whether the speaker is connected, Scan + tap to pair a new speaker, Connect. Connecting switches the voice to auto and says hello on it. |
+| App Store | Apps other people made (`roboos/store.py`). Lists the index at `desktop.store_url` (default: the roboos-apps repo's GitHub Pages), installs a zip after checking its SHA-256 into `data/apps/<id>/` (the app's own `data/` folder is kept on updates), opens, updates and removes apps (asks first). Tabs All apps / Installed; **Reload** loads apps put into `data/apps` by hand. An app that fails to load shows as Broken with the reason, it never stops RoboOS. Apps run with the same rights as robotd: the official index lists only apps a person read. |
 | Logs | The robot's log, live. |
 | About | Versions and tips. |
 | Shut Down | Restart robotd, reboot the Pi, or shut down (asks first). |
@@ -67,13 +68,29 @@ Only one sound plays at a time (Music, Recorder playback, RoboTube). It goes to 
 
 ## For programmers
 
-- Code: `robotd/desktop.py` (window manager, input, first apps), `robotd/desktop_apps.py` (Keyboard, AudioOut, media/web apps)
-  and `robotd/desktop_games.py` (RoboMines, Tic-Tac-Toe, Checkers).
+- **RoboOS is its own package, `roboos/`, next to `robotd/`.** It never imports robotd (self-test `roboos_portable`),
+  so it also runs without a robot (`python -m roboos`: any Linux board with a CYD) and takes apps from other people.
+  It is published on its own as the RoboOS repo (`tools/publish_roboos.sh`; its README, installer and CI are in
+  `roboos-repo/`). Apps other people share live in the roboos-apps repo (the Store's index).
+- Code: `roboos/desktop.py` (window manager, input, Terminal, Files, Paint, Monitor, Logs, About, Shut Down),
+  `roboos/media.py` (Keyboard, AudioOut, Recorder, Music, Notepad, RoboWeb, RoboTube), `roboos/games.py`,
+  `roboos/munch.py`, `roboos/gameboy_app.py` + `gameboy.py` + `gameboy_ai.py` + `gameboy_c/`, `roboos/store.py`
+  (installed apps, App Store), `roboos/screen.py` (`CydLink`, the screen's serial link), `roboos/sdk.py` (what apps
+  import), `roboos/__main__.py` (RoboOS without a robot).
+- **The host.** Apps reach the machine only through `self.host` (`roboos/host.py`: settings sections, log, `say`,
+  `data_dir`, sound and mic devices, camera privacy, AI model, manual pages, power, system information). robotd passes
+  `RobotHost` (`robotd/desktop_host.py`), which adds the voice, camera, AI brain, Bluesky clips, the event log and the
+  robot-only apps. Robot-only apps (they may use `self.r`, the robot): Camera + Settings (`robotd/desktop_robot.py`),
+  Bluetooth (`robotd/desktop_bluetooth.py`), RoboDev, BLINKERS, Weather, Battery; `RobotHost.apps()` puts them in the
+  Start menu.
 - All coordinates are whole-desktop pixels: 320 x 220 (the area under the screen's 20 px bar).
-- Add an app: subclass `App` (or `ListApp` for lists), set `name`, `title`, `icon`, implement `draw()` and the
-  input methods you need (`click`, `press`, `drag`, `release`, `hold`, `context`, `key`, `key_up`, `scroll`, `tick`), then add it
-  to `APPS` at the bottom of `desktop.py`. Icons are drawn in `draw_icon()`. `long_press = 0.45` makes long-press
-  faster for that app; `None` turns it off (Paint).
+- Add a built-in app: subclass `App` (or `ListApp` for lists) in `roboos/`, set `name`, `title`, `icon`,
+  `portable = True`, implement `draw()` and the input methods you need (`click`, `press`, `drag`, `release`, `hold`,
+  `context`, `key`, `key_up`, `scroll`, `tick`), then add it to `APPS` at the bottom of `roboos/desktop.py`. Icons are
+  drawn in `draw_icon()`. `long_press = 0.45` makes long-press faster for that app; `None` turns it off (Paint).
+- Add an app without touching RoboOS: a folder `data/apps/<id>/` with `app.json` + `app.py` (`from roboos.sdk import *`),
+  optional `icon.png`. Guide: `roboos-repo/docs/WRITING_APPS.md`. Test any app without a screen:
+  `python -m roboos --snapshot shot.png --app <id>`; all apps at once: `tools/roboos_smoke_test.py` (CI runs it).
 - Only the changed rectangle is sent to the screen as a JPEG (slot `desk`). Set `video = True` and `fast = True` on an
   app that shows moving pictures; the desktop then sends smaller frames more often.
 - USB input is read straight from `/dev/input/event*` (no extra libraries). The webcam also shows up as an input

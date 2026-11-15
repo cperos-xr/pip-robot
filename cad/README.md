@@ -10,4 +10,8 @@ attaches_to: chassis top plate (LEGO-style studs)
 printed: PLA, 0.2 mm, 20% infill
 ```
 
+Boards are held on the frame by printed stud plates that click into the 8 mm grid. Make one for any board with the
+LEGO-ifier (`site/legoifier.html`): calibrate first, then download the STL. How the boards are bolted or glued on:
+`docs/MOUNTING_BOARDS.md`.
+
 The robot reads this folder to learn its own shape (planned: render views and compare them with what its camera sees).
