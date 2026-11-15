@@ -39,6 +39,8 @@ apt update
 apt install -y git python3-venv python3-pip python3-numpy python3-opencv opencv-data python3-pil python3-serial \
   python3-requests python3-yaml python3-smbus2 python3-libgpiod gpiod i2c-tools usbutils v4l-utils alsa-utils \
   espeak-ng ffmpeg tesseract-ocr tesseract-ocr-eng sqlite3 picotool
+# the Game Boy app compiles its emulator on the robot the first time it runs:
+apt install -y gcc libc6-dev
 # optional, for a Bluetooth speaker through a USB dongle:
 apt install -y bluez bluez-alsa-utils libasound2-plugin-bluez
 ```

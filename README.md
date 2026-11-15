@@ -22,7 +22,7 @@ Project page: <https://cperos-xr.github.io/pip-robot/>
   it, never from faces).
 - **RoboOS.** A tiny retro desktop on the touchscreen (USB mouse and keyboard work): terminal, files, notepad, text web
   browser, music, paint, system monitor, weather, battery, and games (checkers and tic-tac-toe against the robot,
-  a minesweeper, a maze-chase game).
+  a minesweeper, a maze-chase game, and a Game Boy emulator for your own games).
 - **RoboDev.** A coding agent that lives on the robot. Ask by voice or text for a new app or a fix: it edits the code,
   commits, restarts, and rolls back by itself if the robot does not come up healthy. Risky steps wait for your tap.
 - **Drives.** Two wheels, a joystick in the web app, and a wheelie: it kicks up and balances on two wheels.

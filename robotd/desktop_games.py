@@ -139,6 +139,7 @@ class Games(App):
     name, title, icon = "games", "Games", "games"
     GAMES = [("mines", "RoboMines", "Find the mines without stepping on one."),
              ("munch", "RoboMunch", "Eat every dot and dodge the ghosts."),
+             ("gameboy", "Game Boy", "Play Game Boy games from the shared folder."),
              ("tictactoe", "Tic-Tac-Toe", "Three in a row against the robot."),
              ("checkers", "Checkers", "Jump all of the robot's pieces.")]
     COLS, GAP = 3, 6
@@ -159,6 +160,10 @@ class Games(App):
             return ""
         if name == "munch":
             return f"best {c['munch_best']}" if c.get("munch_best") else ""
+        if name == "gameboy":
+            from .gameboy import find_roms
+            n = len(find_roms())
+            return f"{n} game{'s' if n != 1 else ''}" if n else "add games"
         key = {"tictactoe": "ttt", "checkers": "checkers"}.get(name)
         sc = c.get(key + "_score") if key else None
         return f"you {sc.get('you', 0)} : {sc.get('robot', 0)} robot" if sc else ""

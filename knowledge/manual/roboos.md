@@ -34,6 +34,7 @@ the pictures and sends touches back.
 | Paint | Finger painting. Save puts a PNG in `data/photos/`. The robot also paints self-portraits here (off-screen, see `social.md`). |
 | Games | A grid of game tiles (3 across, like the screen's menu) with each game's score. The screen's Menu > Games tile opens it. Add a game: one line in `Games.GAMES` (`desktop_games.py`); 7-9 games get smaller tiles, more scroll. |
 | RoboMunch | A maze-chase game: eat every dot, dodge the four ghosts, eat them after a power pellet. Swipe or tap a direction, or arrows / WASD. 3 lives, levels get faster, best score kept. It pauses when its window is covered or the screen leaves RoboOS. The robot says the score at game over, and a record (or 1000+) can become a show-off clip. Opened from the Games launcher or its desktop icon (not in the Start menu). Code: `robotd/desktop_munch.py`. |
+| Game Boy | Plays original Game Boy games (`.gb`) put in `data/files/games` (web app > Files > Upload). None come with the robot; free homebrew games work. Pick a game, then: D-pad on the left, A and B on the right, SELECT and START below; slide between buttons, touch between A and B for both. The touchscreen feels one finger at a time: for two buttons together use a USB keyboard (arrows/WASD, X or K = A, Z or J = B, Enter = START, Backspace or Tab = SELECT, Esc = list). The game runs at full speed; the screen shows what the USB link carries (number top right): about 5-7 frames a second while the whole screen scrolls, more when only a little moves (measured 2026-11-14: grid scroll 5.0, platformer scroll 6.8). Good for puzzle games and RPGs; fast action looks choppy until the screen firmware gets a compact frame message. Pauses when covered; saves in `data/gameboy/saves/`. No Game Boy Color, no sound yet. Never recorded for posts. Code: `robotd/desktop_gameboy.py`, emulator `robotd/gameboy.py` (Peanut-GB, compiled on the robot on first use into `data/gameboy/gbcore.so`). |
 | RoboMines | Find the mines. Tap = dig, long-press or right-click = flag (the Dig/Flag button swaps them). Tap an open number whose mines are flagged to open the rest. Tap the robot face for a new game; the level button cycles Easy/Medium/Hard and keeps best times. Keys: arrows, Space, F, N. |
 | Tic-Tac-Toe | Play against the robot (you are X). Who starts swaps every game. Levels: Easy, Normal, Hard (Hard never loses). Keys 1-9 pick a square. |
 | Checkers | Play against the robot (you are red, at the bottom). Tap a piece, then a green dot (or drag it). Jumps are compulsory and multi-jumps must be finished; a yellow ring shows which pieces must jump. Levels: Easy, Normal, Hard (Hard thinks up to 3 s). |
@@ -70,7 +71,7 @@ Only one sound plays at a time (Music, Recorder playback, RoboTube). It goes to 
   and `robotd/desktop_games.py` (RoboMines, Tic-Tac-Toe, Checkers).
 - All coordinates are whole-desktop pixels: 320 x 220 (the area under the screen's 20 px bar).
 - Add an app: subclass `App` (or `ListApp` for lists), set `name`, `title`, `icon`, implement `draw()` and the
-  input methods you need (`click`, `press`, `drag`, `release`, `hold`, `context`, `key`, `scroll`, `tick`), then add it
+  input methods you need (`click`, `press`, `drag`, `release`, `hold`, `context`, `key`, `key_up`, `scroll`, `tick`), then add it
   to `APPS` at the bottom of `desktop.py`. Icons are drawn in `draw_icon()`. `long_press = 0.45` makes long-press
   faster for that app; `None` turns it off (Paint).
 - Only the changed rectangle is sent to the screen as a JPEG (slot `desk`). Set `video = True` and `fast = True` on an
@@ -78,6 +79,8 @@ Only one sound plays at a time (Music, Recorder playback, RoboTube). It goes to 
 - USB input is read straight from `/dev/input/event*` (no extra libraries). The webcam also shows up as an input
   device (its snapshot button); it is ignored because it has no letter keys.
 - Status: `GET /api/desktop` (frames sent/failed, open windows, connected input devices).
-- Tools installed for it on the Pi: ffmpeg, nodejs (Debian), yt-dlp + yt-dlp-ejs (in the venv). RoboTube needs Node
+- `key_up(k)` (USB keyboard only) tells an app that a key was let go; the Game Boy uses it to hold buttons. Keys from
+  the web app have no release.
+- Tools installed for it on the Pi: ffmpeg, nodejs (Debian), yt-dlp + yt-dlp-ejs (in the venv), gcc (the Game Boy). RoboTube needs Node
   because YouTube streams require a JavaScript runtime.
 - Never add big buffers to the screen firmware for this; the screen has very little memory (see `screen.md`).

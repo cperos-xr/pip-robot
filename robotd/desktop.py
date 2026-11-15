@@ -293,6 +293,11 @@ def draw_icon(d, kind, x, y, s=24, off=False):
     elif kind == "munch":
         d.pieslice(R(2, 3, 22, 23), 40, 320, fill=YELLOW)
         d.ellipse(R(14, 9, 17, 12), fill=(20, 20, 20))
+    elif kind == "gameboy":                     # a little grey handheld with a green screen
+        d.rounded_rectangle(R(4, 1, 20, 23), radius=max(1, int(3 * k)), fill=(200, 200, 205), outline=DARK)
+        d.rectangle(R(6, 3, 18, 11), fill=(48, 98, 48))
+        d.rectangle(R(7, 15, 9, 19), fill=DARK); d.rectangle(R(6, 16, 10, 18), fill=DARK)
+        d.ellipse(R(13, 16, 16, 19), fill=(150, 25, 85)); d.ellipse(R(16, 14, 19, 17), fill=(150, 25, 85))
     elif kind == "games":
         d.rounded_rectangle(R(1, 7, 23, 19), radius=max(2, int(6 * k)), fill=(70, 70, 90), outline=DARK)
         d.rectangle(R(4, 12, 10, 14), fill=LIGHT); d.rectangle(R(6, 10, 8, 16), fill=LIGHT)
@@ -445,8 +450,11 @@ class InputDevices(threading.Thread):
         if code in SHIFTS | CTRLS | ALTS:
             (self.mods.add if val else self.mods.discard)(code)
             return
-        if val == 0:
-            return                       # key release
+        if val == 0:                     # key release: only apps that hold buttons (the Game Boy) use it
+            name = KEYS[code][0] if code in KEYS else NAMED.get(code)
+            if name:
+                self.on_event(("keyup", name))
+            return
         if code == 58:
             self.caps = not self.caps
             return
@@ -505,6 +513,10 @@ class App:
         pass
 
     def key(self, k):
+        pass
+
+    def key_up(self, k):
+        """A USB keyboard key was let go (same names as key(); only lower-case letters). Most apps ignore it."""
         pass
 
     def tick(self):
@@ -1399,17 +1411,18 @@ class About(App):
 from .desktop_apps import Browser, Music, Notepad, Recorder, Tube   # noqa: E402  (they build on the classes above)
 from .desktop_games import Checkers, Games, Mines, TicTacToe        # noqa: E402
 from .desktop_munch import Munch                                    # noqa: E402
+from .desktop_gameboy import GameBoy                                # noqa: E402
 from .desktop_apps import Bluetooth                                 # noqa: E402
 from .desktop_dev import RoboDev                                    # noqa: E402
 from .desktop_blinkers import BlinkersApp                           # noqa: E402
 from .desktop_weather import WeatherApp                             # noqa: E402
 from .desktop_battery import BatteryApp                             # noqa: E402
 
-APPS = [RoboDev, Terminal, Files, Notepad, Browser, Tube, Music, Recorder, Paint, Games, Mines, TicTacToe, Checkers, Munch, Monitor, BlinkersApp, WeatherApp, BatteryApp, CameraApp,
+APPS = [RoboDev, Terminal, Files, Notepad, Browser, Tube, Music, Recorder, Paint, Games, Mines, TicTacToe, Checkers, Munch, GameBoy, Monitor, BlinkersApp, WeatherApp, BatteryApp, CameraApp,
         SettingsApp, Bluetooth, Logs, About, Power]
 APP_BY_NAME = {a.name: a for a in APPS}
 DEFAULT_ICONS = ["robodev", "terminal", "files", "browser", "tube", "music", "recorder", "notepad", "paint", "monitor", "camera", "settings", "power",
-                 "mines", "munch", "tictactoe", "checkers"]
+                 "mines", "munch", "gameboy", "tictactoe", "checkers"]
 
 
 # ---------------------------------------------------------------- the desktop (window manager)
@@ -1477,6 +1490,11 @@ class Desktop:
             if "battery" not in c["icons"]:
                 c["icons"].append("battery")
             c["icons_v9"] = True
+        if not c.get("icons_v10"):                 # the Game Boy (2026-11-14), next to RoboMunch, added once
+            if "gameboy" not in c["icons"]:
+                i = c["icons"].index("munch") + 1 if "munch" in c["icons"] else len(c["icons"])
+                c["icons"].insert(i, "gameboy")
+            c["icons_v10"] = True
         return c
 
     def _wallpaper(self):
@@ -1651,8 +1669,9 @@ class Desktop:
         last_tick = 0
         try:
             while self.r.cyd.page == "desktop" and self.r.cyd.up:
+                fast = getattr(self.focused(), "fast", False)     # a game in front: do not sit 50 ms waiting for input
                 try:
-                    ev = self.q.get(timeout=0.05)
+                    ev = self.q.get(timeout=0.008 if fast else 0.05)
                     self.handle(ev)
                     while True:
                         self.handle(self.q.get_nowait())
@@ -1660,7 +1679,7 @@ class Desktop:
                     pass
                 self.long_press_check()
                 now = time.time()
-                if now - last_tick > (0.04 if getattr(self.focused(), "fast", False) else 0.25):
+                if now - last_tick > (0.015 if fast else 0.25):
                     last_tick = now
                     for w in list(self.windows):
                         try:
@@ -1690,7 +1709,7 @@ class Desktop:
         """Events from a USB mouse/keyboard. While another page is showing, the first one opens the desktop."""
         if self.r.cyd.page == "desktop":
             self.q.put(ev)
-        elif time.time() - self._last_wake > 2:
+        elif ev[0] != "keyup" and time.time() - self._last_wake > 2:
             self._last_wake = time.time()
             self.wake_desktop()
 
@@ -1746,6 +1765,10 @@ class Desktop:
             if self.r.cyd.page != "desktop" and len(ev) < 3:      # physical keyboard: first wake the desktop
                 return self.wake_desktop()
             self.key(ev[1])
+        elif kind == "keyup":
+            w = self.focused()
+            if w:
+                w.key_up(ev[1])
 
     # ---- pointer logic
     def pointer_down(self, x, y, btn="left"):
