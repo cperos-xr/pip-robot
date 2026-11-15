@@ -1,0 +1,6 @@
+# /etc/systemd/dnssd/pip-web.dnssd: advertises the robot's web app to phones and laptops on the home network
+[Service]
+Name=Pip the robot
+Type=_http._tcp
+Port=8080
+TxtText=path=/

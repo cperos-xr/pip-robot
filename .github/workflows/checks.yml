@@ -1,0 +1,20 @@
+# Runs on every push and pull request: the Python must compile and nothing private may be in the tree.
+# It uploads nothing: firmware for robots is only ever built by firmware.yml from a push to this repo.
+name: checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Python compiles
+        run: python -m compileall -q robotd mcp tools
+      - name: Nothing private in the tree
+        run: python tools/privacy_scan.py

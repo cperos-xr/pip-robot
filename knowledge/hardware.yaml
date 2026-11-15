@@ -1,0 +1,77 @@
+# Robot self-model. The robot reads this to know its body and updates it after every verified test.
+# status: assumed | verified | failed | not_installed.  Never mark "verified" without a logged test.
+version: 1
+updated: 2026-11-08
+brain:
+  board: Orange Pi Zero LTS (Allwinner H2+, 4x Cortex-A7, 484 MiB usable), DT model 'Xunlong Orange Pi Zero', SD 7.1G   # status: verified 2026-11-05
+  clock: no RTC - boots with stale time; NTP enabled (set-ntp true). Wrong clock breaks apt.
+  overlays: 'usbhost2 usbhost3 i2c0' + user overlay i2c0-robot (25 kHz, internal pull-ups) - backups /boot/armbianEnv.txt.bak-*
+  os: Armbian community Trixie, kernel 6.18 sunxi
+  network: {end0: 192.168.77.2 direct to laptop, wlan0: home Wi-Fi (DHCP)}
+power:
+  source: single-cell LiPo -> charger + 5V boost -> 5V rail
+  limits: unknown; brownouts = suspect power first
+  status: assumed
+usb:
+  host_port_typeA:
+    hub: {chip: Genesys Logic 05e3:0610, bus 2, ports: "2x USB-A, 2x USB-C", powered: unknown, status: verified}
+    devices:
+      webcam: {model: onn. Sonix 3938:1300, dev: /dev/video0, formats: MJPG+YUYV up to 2592x1944, has_mic: true (snd-usb-audio), capture: "fswebcam -d /dev/video0 -r 640x480 --skip 10", status: verified}
+      bluetooth_dongle: {usb: 33fa:0001 "USB2.0-BT", hci0, adapter name follows the hostname (pip), status: verified}
+      cyd: {location: "MOVED 2026-11-13 off the hub to the 13-pin header USB3 (pin 5 = DM3, pin 6 = DP3, 5 V from pin 1 and GND from pin 2, shared with the RP2040); bus 8 full-speed, still found via /dev/serial/by-id (ttyUSB0). The rest of this entry is unchanged.",
+            chip: ESP32-D0WD-V3 rev3.1, usb: CH340 1a86:7523 /dev/ttyUSB0 (esptool connects OK; use pip esptool - Debian pkg lacks stub), model: ESP32-2432S028R "Cheap Yellow Display" (revision unknown), expect: /dev/ttyUSB* (CH340),
+            firmware: old/unknown - may be wiped freely, flash_with: esptool (auto-reset via DTR/RTS; else hold BOOT),
+            display: ILI9341 or ST7789 320x240, touch: XPT2046 resistive, audio: speaker amp on GPIO26 DAC (BTL - never ground either pin),
+            headphone: single earpiece on speaker connector,
+            bluetooth_audio: "tried 2026-11-06 (A2DP source, fw 0.5.0) - does NOT fit: ~190 KB usable heap, face canvas 70 KB, classic BT controller + Bluedroid A2DP need well over 100 KB -> crashed in l2c_init. Use the Pi + USB Bluetooth dongle instead.",
+            firmware: cyd_dashboard 0.1.0 (face, dashboard, camera, photos, IMU, tests) flashed 2026-11-05 via esptool on the Pi,
+            protocol: 921600 baud JSON lines + JPEG frames (see firmware/cyd_dashboard), panel reads as ILI9341,
+            orientation: rotated 180 (owner request), touch calibrated by owner 2026-11-05, status: verified}
+  header13_pins1-4 (USB2, needs overlay usbhost2; pin 1 5 V + pin 2 GND also feed the CYD on USB3 pins 5/6 since 2026-11-13):
+    rp2040_zero:
+      role: motor controller (board: github.com/cperos-xr/l293d, owner's design)
+      firmware: blank from factory -> enumerates as RPI-RP2 boot drive (2e8a:0003) until flashed
+      flash_with: copy .uf2 to RPI-RP2 drive, or picotool; re-enter bootloader: hold BOOT while plugging/reset, or 1200-baud touch on CDC
+      our_firmware: ../firmware/rp2040_motor_usb (USB CDC text: PING, M v1..v8, STOP, INFO; binary 0xAA+8xint8+xor; 500ms failsafe)
+      motor_board: {drivers: 4x L293D, motors: 8 bidirectional, pins: "motor n -> fwd GPIO 2(n-1), rev GPIO 2(n-1)+1",
+                    uart: "GPIO28 TX / GPIO29 RX 9600", led: WS2812 GPIO16 (GRB), spare: GPIO26/27 (I2C capable),
+                    motor_supply: "EXT VOLTAGE screw terminal (VCC/GND). Since late 2026-11-08: an 11.1 V airsoft battery (bare 3S LiPo, no protection board; never below 9.9 V resting) through a 7.5 V regulator (motors get ~5.5 V after the L293D drop). Before: a 7.4 V airsoft 2S LiPo (died: left plugged in ~1 h, drained too low) and 3x AA (too weak). No low-voltage cutoff on the board: unplug it when not driving, charge only with a balance charger. Never feed it to the 5 V boost board (a boost cannot step down)",
+                    first_drive: "2026-11-08 on the 7.4 V pack: moves at 70/127 (55%), veers slightly left going forward; spins both ways, wiggles, reverses. motor_max now 110. status: verified (owner saw it)",
+                    motors_installed: "2 wheel motors on U5 (the right-hand L293D; its outputs are the two right-hand terminals, top U10 and bottom U11), fitted by the owner 2026-11-08. Firmware motor 7 (GPIO 12/13) = LEFT wheel, motor 8 (GPIO 14/15) = RIGHT wheel, positive value = forward for both. Wheels up on 3x AA: nothing at 47% (60/127), both turn at 74% (95/127). status: verified 2026-11-08 by test 'wheels' (owner tapped the answers); saved as config wheels",
+                    chips: "U2 U3 U4 U5 = the four L293Ds left to right (U2 next to the RP2040); terminals U7-U10 top row, U11-U14 bottom row (right to left)"}
+      dev: /dev/serial/by-id/usb-Waveshare_RP2040_Zero_*-if00 (ttyACM0), bus 7 full-speed (13-pin D+/D- wiring OK)
+      flashed: rp2040_motor_usb v0.1 on 2026-11-05 via 'picotool load -x'; PING/INFO/M/STOP and 500ms failsafe verified
+      status: verified (no motors attached)
+i2c:
+  # 2026-11-05 evening: ALL I2C sensors moved to the CYD CN1 port (owner's idea). Pi bus 0 is now unused.
+  cyd_cn1_bus: {pins: "IO27 SDA, IO22 SCL, 3.3V, GND (JST cable that came with the CYD)", speed: 100 kHz,
+                read_by: CYD firmware sensors.ino; IMU streamed to the Pi as imu_raw at 50 Hz, PCF via pcf_read, status: verified, errors 0%}
+  pi_bus0: {pins: "26-pin header 3 SDA / 5 SCL", speed: 25 kHz (overlay i2c0-robot), status: unused,
+            history: "GY-521 there kept losing power (PWR_MGMT reverted to 0x40, 1000+ resets); owner measured ~1.3V where 5V was expected. Cause found 2026-11-06 by the owner: a bad ground connection, not the Pi. Sensors stay on the CYD CN1 bus (0% errors); this bus is free again if needed - check the ground wire first."}
+  devices:
+    pcf8574: {addr: 0x20, bus: cyd_cn1, power: 3.3V (must stay 3.3V - its pull-ups go to its VCC), inputs 0xFF (nothing connected), status: verified}
+    mpu6050_gy521: {addr: 0x68, bus: cyd_cn1, power: 3.3V from CN1 (red LED on), WHO_AM_I 0x68, status: verified,
+                    mount: changed when moved - owner must tap IMU > LEVEL on a flat surface, then GYRO 0}
+    pca9685: {addr: 0x40, status: not_installed, note: put it on the CYD CN1 bus too; servos need own supply}
+sensors_other:
+  pir_motion: {what: "white-dome PIR motion sensor (pyroelectric; the owner first called it piezo), 2 pots = sensitivity + hold time",
+               wiring: "26-pin header: VCC = 5 V (pin 2 or 4; on 3.3 V it triggered itself), GND, OUT = pin 7 (PA6 = gpiochip0 line 6, 3.3 V logic)", fitted: 2026-11-08,
+               test: "2026-11-08 listened with gpiod edges for 90 s: ~14 detections, OUT high ~1.1 s per detection",
+               note: "HC-SR501-style boards are made for 5 V VCC (their output is 3.3 V either way, safe for the Pi); if it is unreliable, move VCC to 5 V (pin 2 or 4)",
+               false_triggers: "2026-11-08: 13 pulses per 60 s in a steady 3.3/5.8 s rhythm uncovered, and 11 per 60 s with the dome covered by a cup (owner tapped Ready on the screen first) -> it triggers itself. Likely cause: 3.3 V VCC (HC-SR501 regulates to 3.3 V inside and needs ~4.5 V+). Fix: VCC to 5 V (pin 2 or 4), wait 60 s after power-up, keep it away from the Pi's Wi-Fi; the 2 knobs are sensitivity and hold time",
+               fixed: "2026-11-08 on 5 V: dome covered 60 s = 0 detections (signal off throughout); uncovered, owner waving 30 s = 4 detections, signal high 1.4-3.3 s each",
+               status: "verified (works on 5 V); not used by robotd yet"}
+audio_alt: H2+ analog line-out on 13-pin pins 7/8 (analog-codec overlay enabled 2026-11-06, ALSA card "Codec", Line Out Source = Mono Differential so a small passive speaker sits across pins 7 and 8 with no DC through it; unamplified: owner hears speech only very quietly even at 31/31 with tanh loudness boost; a PAM8403 amp or the Bluetooth speaker is the upgrade, or move the passive speaker to the CYD speaker connector which has an amp), status: speaker removed by owner 2026-11-06 (line out still enabled, voice on the CYD earpiece)
+not_installed: [servos, pca9685]
+rules:
+  - Ask owner before flashing firmware, changing /boot or system services, or energizing motors.
+  - Motors: always via failsafe firmware; test at low duty with wheels off the ground first.
+  - Log every test (time, result, firmware version, assumptions) to the experience log.
+software:   # what runs on this body (2026-11-05); details in README.md
+  robotd: systemd service, enabled at boot, web app + API + MCP-compatible JSON on port 8080
+  brain: hot-swappable (Claude Opus/Sonnet/Haiku via Anthropic API key, any OpenRouter model, offline fallback); shared personality.md + memories table
+  voice: Vosk small-en offline speech recognition from the webcam mic; espeak-ng voice to the Pi speaker, the CYD earpiece or a USB/Bluetooth speaker (config voice.output, web Settings > Voice); the CYD mouth lip-syncs either way
+  vision: camera stills/live, local tesseract OCR, AI vision when a key is configured
+  self_improvement: devagent.py edits this git repo; restart/flash need owner approval; tools/safe_restart.sh rolls back on failure
+  firmware_builds: this 32-bit board cannot compile ESP32 code or run Claude Code (arm64/x64 only) - GitHub Actions builds firmware
+  social: drafts posts, privacy check, owner approval, Bluesky + Pinterest

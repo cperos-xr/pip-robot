@@ -1,0 +1,2 @@
+# /etc/udev/rules.d/10-wifi-disable-powermanagement.rules: the built-in Wi-Fi drops out with power saving on
+KERNEL=="wlan*", ACTION=="add", RUN+="/sbin/iw dev %k set power_save off"

@@ -1,0 +1,13 @@
+# systemd unit for the robot's program. Install:  cp tools/robotd.service /etc/systemd/system/ && systemctl enable --now robotd
+[Unit]
+Description=Robot supervisor (face, dashboard, sensors, memory)
+After=network.target
+
+[Service]
+WorkingDirectory=/root/robot
+ExecStart=/root/robot/venv/bin/python -m robotd
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

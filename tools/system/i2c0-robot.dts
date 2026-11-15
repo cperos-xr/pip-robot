@@ -1,0 +1,23 @@
+// I2C bus 0 of the Orange Pi Zero (26-pin header pins 3/5) for the robot: slow (25 kHz) with the pins pulled up,
+// which is what the battery monitor (INA219) on long jumper wires needs. Install on Armbian:
+//   armbian-add-overlay tools/system/i2c0-robot.dts      (adds user_overlays=i2c0-robot to /boot/armbianEnv.txt)
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "allwinner,sun8i-h3";
+
+	fragment@0 {
+		target = <&i2c0>;
+		__overlay__ {
+			clock-frequency = <25000>;
+		};
+	};
+
+	fragment@1 {
+		target = <&i2c0_pins>;
+		__overlay__ {
+			bias-pull-up;
+		};
+	};
+};

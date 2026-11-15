@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meet the robot</title>
+<style>body{margin:0;background:#0b0e14;color:#e8ecf4;font:16px/1.5 system-ui,sans-serif;padding:16px}main{max-width:640px;margin:auto}
+.card{background:#151a24;border:1px solid #2c3546;border-radius:16px;padding:16px;margin-bottom:12px}
+.face{font-size:64px;text-align:center}.mood{text-align:center;color:#8a94a8}img{width:100%;border-radius:10px;background:#000}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px}.kv div:nth-child(odd){color:#8a94a8}a{color:#00c8f0}</style></head>
+<body><main><h1>🤖 Meet the robot</h1>
+<div class="card" id="faceCard"><div class="face" id="face">🙂</div><div class="mood" id="mood"></div><p id="said" style="text-align:center"></p></div>
+<div class="card" id="camCard" style="display:none"><img id="cam" alt="robot camera"></div>
+<div class="card" id="postCard" style="display:none"><h3 style="margin-top:0">My posts</h3><div id="posts"></div></div>
+<div class="card" id="stCard" style="display:none"><div class="kv" id="st"></div></div>
+<p style="color:#8a94a8;font-size:13px">A modular, self-improving robot built from an Orange Pi Zero, an ESP32 touchscreen, an RP2040 motor board and sensors. <a href="/login">Owner sign-in</a></p></main>
+<script>
+const E={happy:"😄",curious:"🤔",thinking:"💭",surprised:"😮",sleepy:"😴",sad:"😢",warning:"⚠️",love:"😍",idle:"🙂",booting:"⚙️"};
+async function tick(){if(document.hidden)return;try{const d=await (await fetch("/public/data")).json();try{localStorage.setItem("pipLastSeen",Date.now())}catch(e){}
+ if(d.face){document.getElementById("face").textContent=E[d.face.mood]||"🙂";document.getElementById("mood").textContent="mood: "+d.face.mood;}
+ document.getElementById("said").textContent=d.said?("“"+d.said+"”"):"";
+ if(d.status){document.getElementById("stCard").style.display="";document.getElementById("st").innerHTML=Object.entries(d.status).map(([k,v])=>`<div>${k}</div><div>${String(v).replace(/</g,"&lt;")}</div>`).join("");}
+ if(d.camera){document.getElementById("camCard").style.display="";document.getElementById("cam").src="/public/live.jpg?t="+Date.now();}
+}catch(e){}}
+async function posts(){try{const p=await (await fetch("/public/posts")).json(); if(!p.length) return;
+ document.getElementById("postCard").style.display="";
+ document.getElementById("posts").innerHTML=p.map(x=>`<div style="padding:8px 0;border-bottom:1px solid #2c3546">${x.img?`<img src="/public/post_image?id=${x.id}" alt="${String(x.alt).replace(/"/g,"&quot;")}" style="margin-bottom:6px">`:""}<div>${String(x.text).replace(/</g,"&lt;")}</div><small style="color:#8a94a8">${new Date(x.ts*1000).toLocaleDateString()}</small></div>`).join("");}catch(e){}}
+if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")) navigator.serviceWorker.register("/sw.js").catch(()=>{});   // offline placeholder (sw.js)
+tick();posts();setInterval(tick,3000);setInterval(posts,60000);
+</script></body></html>

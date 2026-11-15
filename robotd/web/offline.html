@@ -1,0 +1,66 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pip is offline</title>
+<meta name="description" content="Shown by the browser when the robot cannot be reached (robotd/web/sw.js).">
+<style>
+:root{--bg:#0b0e14;--panel:#151a24;--line:#2c3546;--text:#e8ecf4;--dim:#8a94a8;--acc:#00c8f0;--warn:#f0b400}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px;min-height:100vh;display:flex;align-items:center}
+main{max-width:520px;margin:auto;width:100%}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:12px}
+.face{font-size:64px;line-height:1;text-align:center;margin:4px 0 12px;animation:doze 3.2s ease-in-out infinite}
+@keyframes doze{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+@media (prefers-reduced-motion:reduce){.face{animation:none}}
+h1{font-size:24px;margin:0 0 6px;text-align:center}
+p{margin:0 0 10px}.muted{color:var(--dim);font-size:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:14px}
+button{font:inherit;color:var(--text);background:#1f6feb;border:0;border-radius:10px;padding:10px 18px;cursor:pointer}
+button:disabled{opacity:.5}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--warn);margin-right:6px;vertical-align:middle}
+details summary{cursor:pointer;color:var(--dim);font-size:14px}
+ul{margin:8px 0 0;padding-left:20px;color:var(--dim);font-size:14px}
+a{color:var(--acc)}
+</style></head>
+<body><main>
+<div class="card">
+  <div class="face" aria-hidden="true">😴</div>
+  <h1>Pip is offline</h1>
+  <p class="muted" style="text-align:center">The robot can't be reached right now. This page checks again by itself and opens the app as soon as Pip is back.</p>
+  <p id="seen" style="text-align:center;display:none"></p>
+  <div class="row"><span class="muted" id="state"><span class="dot"></span>Waiting for Pip…</span><button id="retry" onclick="check(true)">Try now</button></div>
+</div>
+<div class="card">
+  <details><summary>Things to check</summary>
+    <ul>
+      <li>Is Pip switched on? Its screen should be lit.</li>
+      <li>If Pip just restarted, give it about a minute.</li>
+      <li>At home you can also try <a href="http://pip.local:8080/">pip.local:8080</a>.</li>
+      <li>If your own device is offline, this page waits until it is back online.</li>
+    </ul>
+  </details>
+</div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+function ago(ms){ const m = Math.round(ms / 60000); if (m < 1) return "less than a minute ago"; if (m < 60) return m + " min ago";
+  const h = Math.round(m / 60); return h < 48 ? h + " h ago" : Math.round(h / 24) + " days ago"; }
+let seen = 0; try { seen = +localStorage.getItem("pipLastSeen") || 0; } catch (e) {}
+if (seen) { const s = $("#seen"); s.style.display = ""; s.textContent = "Last seen " + ago(Date.now() - seen) + " (" + new Date(seen).toLocaleString([], {weekday:"short", hour:"2-digit", minute:"2-digit"}) + ")"; }
+let wait = 10, timer = null;
+async function check(now){
+  clearTimeout(timer); $("#retry").disabled = true;
+  if (!navigator.onLine) { $("#state").innerHTML = '<span class="dot"></span>Your device is offline'; }
+  else {
+    $("#state").innerHTML = '<span class="dot"></span>Checking…';
+    try {
+      const r = await fetch("/api/whoami", {cache: "no-store"});
+      if (r.status < 500) { location.reload(); return; }        // the robot answered: load the real page
+    } catch (e) {}
+    $("#state").innerHTML = '<span class="dot"></span>Still offline, checking again in ' + wait + ' s';
+  }
+  $("#retry").disabled = false;
+  timer = setTimeout(check, wait * 1000); wait = Math.min(60, Math.round(wait * 1.5));
+}
+window.addEventListener("online", () => check(true));
+timer = setTimeout(check, 3000);
+</script>
+</body></html>

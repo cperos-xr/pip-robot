@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pip the Robot</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Pip is a little open-source home robot you can build, teach and take apart. It sees, talks, remembers, pops wheelies and can rewrite its own software.">
+<meta property="og:title" content="Pip the Robot">
+<meta property="og:description" content="A little open-source home robot you can build, teach and take apart.">
+<meta property="og:image" content="img/pip-wheels.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23f2c230'/%3E%3Crect x='2' y='3' width='12' height='9' fill='%23000'/%3E%3Crect x='4' y='5' width='3' height='4' rx='1' fill='%2345d3ec'/%3E%3Crect x='9' y='5' width='3' height='4' rx='1' fill='%2345d3ec'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Pixelify+Sans:wght@500;700&display=swap">
+<style>
+/* Layout: the page is Pip's own screen. A teal desktop, and every section is a RoboOS window on it;
+   the hero is the robot's real face on its yellow touchscreen board. */
+:root {
+  --desk: #157a78;        /* the desktop */
+  --desk-ink: #ffffff;
+  --desk-dim: #cfeeed;
+  --desk-shadow: #0a3f47;
+  --win: #c6c9cc;         /* window chrome */
+  --win-hi: #ffffff;
+  --win-lo: #7d8287;
+  --win-edge: #17191c;
+  --title: #0b1f7a;       /* title bars */
+  --title-ink: #ffffff;
+  --paper: #fbfbf7;       /* inside a window */
+  --ink: #14171a;
+  --dim: #555c63;
+  --rule: #d9dcd6;
+  --accent: #f2c230;      /* the yellow of the touchscreen board */
+  --accent-ink: #1b1600;
+  --link: #0b3bb5;
+  --icon-w: #ffffff;
+  --icon-g: #8a9096;
+  --icon-c: #1aa7c4;
+  --icon-r: #d8433b;
+  --display: "Pixelify Sans", "Courier New", monospace;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #0c2f33; --desk-ink: #e9f4f3; --desk-dim: #9cc4c2; --desk-shadow: #021316;
+    --win: #33383e; --win-hi: #5b636b; --win-lo: #16191c; --win-edge: #000000;
+    --title: #1b3fae; --title-ink: #ffffff;
+    --paper: #1d2125; --ink: #e6e9ec; --dim: #a2abb3; --rule: #33393f;
+    --accent: #f2c230; --accent-ink: #1b1600; --link: #8fb4ff;
+    --icon-w: #dfe3e6; --icon-g: #7c858d; --icon-c: #45d3ec; --icon-r: #ef6a61;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #0c2f33; --desk-ink: #e9f4f3; --desk-dim: #9cc4c2; --desk-shadow: #021316;
+  --win: #33383e; --win-hi: #5b636b; --win-lo: #16191c; --win-edge: #000000;
+  --title: #1b3fae; --title-ink: #ffffff;
+  --paper: #1d2125; --ink: #e6e9ec; --dim: #a2abb3; --rule: #33393f;
+  --accent: #f2c230; --accent-ink: #1b1600; --link: #8fb4ff;
+  --icon-w: #dfe3e6; --icon-g: #7c858d; --icon-c: #45d3ec; --icon-r: #ef6a61;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font: 400 1rem/1.55 var(--body);
+  -webkit-text-size-adjust: 100%;
+}
+.wrap {
+  max-width: 68rem;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.desk { display: flex; flex-direction: column; gap: 2.25rem; padding-block: 1.25rem 3rem; }
+a { color: var(--link); }
+h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+img { max-width: 100%; height: auto; display: block; }
+:focus-visible { outline: 2px dotted var(--accent); outline-offset: 2px; }
+code, .mono { font-family: var(--mono); font-size: 0.875em; }
+
+/* ---- the bevel every RoboOS control shares */
+.raised { background: var(--win); border: 1px solid var(--win-edge);
+  box-shadow: inset 1px 1px 0 var(--win-hi), inset -1px -1px 0 var(--win-lo); }
+.sunken { border: 1px solid; border-color: var(--win-lo) var(--win-hi) var(--win-hi) var(--win-lo); }
+
+/* ---- taskbar (top) */
+.taskbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px; color: var(--ink); }
+.taskbar a, .taskbar .clock { font: 500 0.9375rem/1 var(--display); color: var(--ink); text-decoration: none; padding: 7px 10px; }
+.taskbar a.raised:active { box-shadow: inset -1px -1px 0 var(--win-hi), inset 1px 1px 0 var(--win-lo); }
+.taskbar .start { font-weight: 700; display: inline-flex; align-items: center; gap: 7px; }
+.taskbar .start i { width: 14px; height: 11px; background: #000; border: 2px solid var(--accent); display: inline-block; }
+.taskbar nav { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; min-width: 0; }
+.taskbar .clock { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* ---- hero */
+.hero { display: grid; grid-template-columns: minmax(0, 23rem) minmax(0, 1fr); gap: 2.5rem; align-items: center; }
+.hero h1 { font: 700 clamp(2.4rem, 6.2vw, 4.25rem)/0.98 var(--display); color: var(--desk-ink);
+  text-shadow: 3px 3px 0 var(--desk-shadow); letter-spacing: -0.01em; }
+.hero .eyebrow { font: 500 0.875rem/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.hero .lede { color: var(--desk-ink); font-size: 1.125rem; max-width: 34rem; }
+.hero .copy { display: flex; flex-direction: column; gap: 1.1rem; min-width: 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { font: 500 1rem/1 var(--display); color: var(--ink); text-decoration: none; padding: 11px 16px; display: inline-flex; align-items: center; gap: 8px; }
+.btn:active { box-shadow: inset -1px -1px 0 var(--win-hi), inset 1px 1px 0 var(--win-lo); }
+.btn.go { background: var(--accent); color: var(--accent-ink); box-shadow: inset 1px 1px 0 #fff3bf, inset -1px -1px 0 #8a6d0f; }
+.btn[aria-disabled="true"] { cursor: default; opacity: 0.78; }
+.btn .soon { font: 400 0.75rem/1 var(--mono); border: 1px solid currentColor; padding: 2px 5px; }
+
+.cyd { background: var(--accent); border-radius: 12px; padding: 22px 22px 30px; position: relative;
+  box-shadow: 0 0 0 1px #8a6d0f, 7px 7px 0 var(--desk-shadow); }
+.cyd::before, .cyd::after { content: ""; position: absolute; left: 9px; right: 9px; height: 9px; pointer-events: none;
+  background: radial-gradient(circle at 4.5px 4.5px, #3a2f08 0 2.5px, #c9a227 2.6px 4.5px, transparent 4.6px) left / 9px 9px no-repeat,
+              radial-gradient(circle at 4.5px 4.5px, #3a2f08 0 2.5px, #c9a227 2.6px 4.5px, transparent 4.6px) right / 9px 9px no-repeat; }
+.cyd::before { top: 7px; } .cyd::after { bottom: 7px; }
+.screen { display: block; width: 100%; padding: 0; border: 3px solid #23272b; border-radius: 4px; background: #000; cursor: pointer; line-height: 0; }
+.screen canvas { width: 100%; aspect-ratio: 4 / 3; display: block; }
+.cyd .silk { position: absolute; bottom: 9px; left: 26px; right: 26px; display: flex; justify-content: space-between;
+  font: 500 0.6875rem/1 var(--mono); color: #5c4a06; letter-spacing: 0.04em; }
+.hint { color: var(--desk-dim); font-size: 0.875rem; margin-top: 0.9rem; }
+
+/* ---- windows */
+.win { padding: 3px; box-shadow: inset 1px 1px 0 var(--win-hi), inset -1px -1px 0 var(--win-lo), 6px 6px 0 var(--desk-shadow); scroll-margin-top: 12px; }
+.bar { background: var(--title); color: var(--title-ink); display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 6px 5px 10px; }
+.bar h2 { font: 700 1.0625rem/1.15 var(--display); letter-spacing: 0.01em; min-width: 0; }
+.bar .ctl { display: flex; gap: 3px; flex: none; }
+.bar .ctl i { width: 17px; height: 15px; display: block; position: relative; }
+.bar .ctl i::after { content: ""; position: absolute; background: var(--ink); }
+.bar .ctl i:nth-child(1)::after { left: 4px; right: 5px; bottom: 3px; height: 2px; }
+.bar .ctl i:nth-child(2)::after { inset: 3px 4px 3px 3px; background: none; border: 1px solid var(--ink); border-top-width: 2px; }
+.bar .ctl i:nth-child(3)::after { left: 3px; right: 4px; top: 6px; height: 2px; transform: rotate(45deg); box-shadow: 0 0 0 0 var(--ink); }
+.bar .ctl i:nth-child(3)::before { content: ""; position: absolute; left: 3px; right: 4px; top: 6px; height: 2px; background: var(--ink); transform: rotate(-45deg); }
+.pane { background: var(--paper); margin-top: 3px; padding: 1.5rem; }
+.pane > p + p { margin-top: 0.8rem; }
+.pane p, .pane li { max-width: 65ch; }
+.note { color: var(--dim); font-size: 0.9375rem; }
+
+/* What it does: a folder of icons */
+.icons { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.6rem 1.25rem; }
+.icons li { display: flex; flex-direction: column; gap: 0.45rem; min-width: 0; }
+.icons svg { width: 48px; height: 48px; display: block; }
+.icons h3 { font: 700 1.0625rem/1.2 var(--display); }
+.icons p { font-size: 0.9375rem; line-height: 1.45; color: var(--dim); }
+
+/* The body: a photo and a details list */
+.split { display: grid; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); gap: 1.75rem; align-items: start; }
+.photo img { width: 100%; }
+.photo figcaption { font-size: 0.8125rem; color: var(--dim); margin-top: 0.5rem; }
+.parts { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+.parts th { text-align: left; font: 500 0.8125rem/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 10px; color: var(--ink); background: var(--win); border: 1px solid var(--win-edge); box-shadow: inset 1px 1px 0 var(--win-hi), inset -1px -1px 0 var(--win-lo); }
+.parts td { padding: 9px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.parts td:first-child { font-weight: 600; width: 44%; }
+.scroll { overflow-x: auto; min-width: 0; }
+.spec { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 1.1rem; font: 400 0.8125rem/1.5 var(--mono); color: var(--dim); }
+
+/* Growing up: dated milestones */
+.grow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 14rem); gap: 1.75rem; align-items: center; }
+.days { list-style: none; padding: 0; display: grid; gap: 0.9rem; }
+.days li { display: grid; grid-template-columns: 6.25rem minmax(0, 1fr); gap: 0.9rem; align-items: baseline; }
+.days time { font: 500 0.8125rem/1.5 var(--mono); color: var(--dim); font-variant-numeric: tabular-nums; }
+.days b { font-weight: 600; }
+
+/* Build one: steps and a terminal */
+.steps { list-style: none; padding: 0; counter-reset: s; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; }
+.steps li { counter-increment: s; min-width: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.steps li::before { content: counter(s); font: 700 1.6rem/1 var(--display); color: var(--accent-ink); background: var(--accent); width: 2.1rem; height: 2.1rem; display: grid; place-items: center; border: 1px solid var(--win-edge); }
+.steps h3 { font: 700 1.0625rem/1.2 var(--display); margin-top: 0.3rem; }
+.steps p { font-size: 0.9375rem; color: var(--dim); line-height: 1.45; }
+.term { margin-top: 1.5rem; background: #0b0d10; color: #d7f6fb; padding: 1rem 1.1rem; overflow-x: auto; font: 400 0.875rem/1.7 var(--mono); }
+.term .p { color: #45d3ec; user-select: none; }
+.term .c { color: #8a97a3; }
+.term pre { margin: 0; font: inherit; }
+
+/* Teach it / Safe at home */
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.25rem; align-items: start; }
+.list { padding: 0; list-style: none; display: grid; gap: 0.7rem; }
+.list li { padding-left: 1.35rem; position: relative; }
+.list li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 8px; height: 8px; background: var(--accent); border: 1px solid var(--win-edge); }
+.pane h3.sub { font: 700 1.0625rem/1.2 var(--display); margin-bottom: 0.7rem; }
+
+.foot { color: var(--desk-dim); font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 6px 22px; justify-content: space-between; }
+.foot a { color: var(--desk-ink); }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
+  .hero .board { max-width: 23rem; }
+  .icons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .split, .grow, .cols { grid-template-columns: minmax(0, 1fr); }
+  .grow .photo { max-width: 20rem; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pane { padding: 1.1rem; }
+}
+@media (max-width: 430px) {
+  .steps { grid-template-columns: minmax(0, 1fr); }
+  .days li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap desk">
+
+  <header class="taskbar raised">
+    <a class="start raised" href="#top"><i aria-hidden="true"></i>Pip</a>
+    <nav aria-label="Sections">
+      <a class="raised" href="#does">What it does</a>
+      <a class="raised" href="#body">The body</a>
+      <a class="raised" href="#build">Build one</a>
+      <a class="raised" href="#teach">Teach it</a>
+    </nav>
+    <span class="clock sunken" id="clock" aria-hidden="true">--:--</span>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="board">
+      <div class="cyd">
+        <button class="screen" id="screen" type="button" aria-label="Pip's face on its touchscreen. Press to change its mood.">
+          <canvas id="face" width="640" height="480"></canvas>
+        </button>
+        <div class="silk" aria-hidden="true"><span>ESP32-2432S028R</span><span>320 x 240</span></div>
+      </div>
+      <p class="hint">Tap the screen. Pip is feeling <span id="mood">idle</span>.</p>
+    </div>
+    <div class="copy">
+      <p class="eyebrow">Open source · build it yourself</p>
+      <h1>Pip is a little home robot.</h1>
+      <p class="lede">It sees, talks, remembers, pops wheelies, and rewrites its own software when you ask. The code, the firmware and the printable body are free to build on.</p>
+      <div class="actions">
+        <a class="btn raised go" data-link="github" href="#build">Get the code</a>
+        <a class="btn raised" data-link="thingiverse" href="#body">Print the body</a>
+        <a class="btn raised" data-link="bluesky" href="#does">Follow Pip</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="win raised" id="does">
+    <div class="bar"><h2>What Pip does</h2><span class="ctl" aria-hidden="true"><i class="raised"></i><i class="raised"></i><i class="raised"></i></span></div>
+    <div class="pane sunken">
+      <ul class="icons">
+        <li><span data-icon="talk"></span><h3>Talks</h3><p>Listens through its microphone and answers out loud, in one to three short sentences.</p></li>
+        <li><span data-icon="see"></span><h3>Sees</h3><p>A webcam for looking around, reading text, and spotting faces, smiles and QR codes.</p></li>
+        <li><span data-icon="think"></span><h3>Thinks</h3><p>Runs on the AI model you choose. Swap models and it keeps one personality and one memory.</p></li>
+        <li><span data-icon="remember"></span><h3>Remembers</h3><p>Long-term memory, a journal of your talks, and notes about the people it lives with.</p></li>
+        <li><span data-icon="os"></span><h3>RoboOS</h3><p>A retro desktop on its touchscreen: terminal, paint, music, a web browser, checkers against the robot.</p></li>
+        <li><span data-icon="dev"></span><h3>RoboDev</h3><p>A coding agent on board. Ask for a new app. It edits, restarts, and rolls back if something breaks.</p></li>
+        <li><span data-icon="drive"></span><h3>Drives</h3><p>Two wheels, a joystick on your phone, and one trick: it kicks up and balances in a wheelie.</p></li>
+        <li><span data-icon="phone"></span><h3>Web app</h3><p>Live camera, chat, files and settings from your phone, at home or from anywhere.</p></li>
+        <li><span data-icon="post"></span><h3>Posts</h3><p>Shares its day on Bluesky if you let it, with faces blurred and a safety check first.</p></li>
+        <li><span data-icon="care"></span><h3>Checks itself</h3><p>A self-test for every part, a battery gauge, and a clean shutdown before the pack runs dry.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="win raised" id="body">
+    <div class="bar"><h2>The body</h2><span class="ctl" aria-hidden="true"><i class="raised"></i><i class="raised"></i><i class="raised"></i></span></div>
+    <div class="pane sunken">
+      <div class="split">
+        <figure class="photo">
+          <img src="img/pip-wheels.jpg" width="960" height="1280" alt="Pip the robot: a yellow touchscreen showing two heart-shaped eyes, a black webcam on top, two large black wheels with red hubs, and two red spring skids at the front.">
+          <figcaption>Pip on its wheels, three days after its first boot. The front rests on two spring skids.</figcaption>
+        </figure>
+        <div style="min-width:0">
+          <p>Pip is built from cheap hobby boards on perforated plates and bricks, so every part can come off and something new can go on.</p>
+          <div class="scroll" style="margin-top:1.1rem">
+            <table class="parts">
+              <thead><tr><th scope="col">Part</th><th scope="col">Job</th></tr></thead>
+              <tbody>
+                <tr><td>Orange Pi Zero</td><td>The brain. A 32-bit board with 512 MB of memory runs everything.</td></tr>
+                <tr><td>Cheap Yellow Display</td><td>The face: an ESP32 with a 2.8" touchscreen and a tiny speaker output.</td></tr>
+                <tr><td>RP2040 Zero + L293D board</td><td>Eight motor channels. Stops by itself after half a second without commands.</td></tr>
+                <tr><td>USB webcam</td><td>Eyes and ears.</td></tr>
+                <tr><td>MPU-6050</td><td>Balance. Read 500 times a second during a wheelie.</td></tr>
+                <tr><td>PIR sensor, INA219</td><td>Notices movement. Watches the battery.</td></tr>
+                <tr><td>Two gear motors, 3S pack</td><td>Wheels and the power to turn them.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="spec"><span>I2C on the screen's CN1 port</span><span>USB on the Pi's 13-pin header</span><span>5 V logic, 7.5 V motors</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="win raised" id="grow">
+    <div class="bar"><h2>Growing up</h2><span class="ctl" aria-hidden="true"><i class="raised"></i><i class="raised"></i><i class="raised"></i></span></div>
+    <div class="pane sunken">
+      <div class="grow">
+        <ol class="days">
+          <li><time datetime="2026-11-05">Nov 5, 2026</time><span><b>First boot.</b> A stack of boards on a desk.</span></li>
+          <li><time datetime="2026-11-06">Nov 6</time><span><b>A face and a voice.</b> Eyes on the screen, words through an earpiece.</span></li>
+          <li><time datetime="2026-11-08">Nov 8</time><span><b>First drive.</b> Forward, a spin, a wiggle, and back. RoboDev moves in the same day.</span></li>
+          <li><time datetime="2026-11-09">Nov 9</time><span><b>A louder voice.</b> A Bluetooth speaker through a USB dongle.</span></li>
+          <li><time datetime="2026-11-13">Nov 13</time><span><b>Its own inbox.</b> Pip reads email and writes drafts. A person approves every send.</span></li>
+          <li><time datetime="2026-11-14">Nov 14</time><span><b>First wheelie.</b> Six seconds balanced on two wheels.</span></li>
+        </ol>
+        <figure class="photo">
+          <img src="img/pip-desk.jpg" width="825" height="1100" loading="lazy" alt="An early Pip on a desk: the webcam on a stand above a plate of boards and jumper wires, with the touchscreen in front showing a smiling face.">
+          <figcaption>Day two: no wheels yet, already smiling.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="win raised" id="build">
+    <div class="bar"><h2>Build one</h2><span class="ctl" aria-hidden="true"><i class="raised"></i><i class="raised"></i><i class="raised"></i></span></div>
+    <div class="pane sunken">
+      <ol class="steps">
+        <li><h3>Put it together</h3><p>The wiring, the pins and the lessons learned the hard way are in the manual's body page.</p></li>
+        <li><h3>Install</h3><p>Armbian on an SD card, a handful of packages, and the code.</p></li>
+        <li><h3>Give it a brain</h3><p>One API key, from OpenRouter or Anthropic. A cheap model is enough.</p></li>
+        <li><h3>Say hello</h3><p>Scan the QR code on its screen with your phone. You are now its owner.</p></li>
+      </ol>
+      <div class="term" role="group" aria-label="Install commands">
+<pre><span class="c"># on the robot's Orange Pi, as root</span>
+<span class="p">$ </span>git clone <span id="repo">&lt;address of the code&gt;</span> /root/robot
+<span class="p">$ </span>cd /root/robot
+<span class="p">$ </span>python3 -m venv --system-site-packages venv
+<span class="p">$ </span>venv/bin/pip install -r requirements.txt
+<span class="p">$ </span>cp tools/robotd.service /etc/systemd/system/ &amp;&amp; systemctl enable --now robotd
+<span class="c"># then open http://pip.local:8080 on your phone</span></pre>
+      </div>
+      <p class="note" style="margin-top:0.9rem">The full guide is <code>docs/INSTALL.md</code> in the code.</p>
+    </div>
+  </section>
+
+  <section class="win raised" id="teach">
+    <div class="bar"><h2>Teach it something</h2><span class="ctl" aria-hidden="true"><i class="raised"></i><i class="raised"></i><i class="raised"></i></span></div>
+    <div class="pane sunken">
+      <div class="cols">
+        <div>
+          <h3 class="sub">An afternoon is enough for</h3>
+          <ul class="list">
+            <li>A new game or app for RoboOS. One Python class, drawn on a 320 x 240 screen.</li>
+            <li>A new move for the wheels: a spin, a rock, a dance.</li>
+            <li>A new sensor on the I2C port, with a self-test so Pip knows it is there.</li>
+            <li>A new tool for its mind, so it can do one more thing when you ask.</li>
+          </ul>
+          <p class="note" style="margin-top:1rem">Pip keeps a manual about itself, written in short plain sentences because its own AI reads it too. Start there: <code>knowledge/manual/README.md</code>.</p>
+        </div>
+        <div>
+          <h3 class="sub">Safe at home</h3>
+          <ul class="list">
+            <li>The motors stay locked until the owner unlocks them.</li>
+            <li>The camera has an off switch on the screen. Nothing is public unless you turn it on.</li>
+            <li>Flashing, deleting and other risky steps ask on the touchscreen first.</li>
+            <li>When Pip changes its own code and breaks, it rolls back to the last version that worked.</li>
+            <li>Your robot's keys, memories and photos stay on your robot. They are never part of the shared code.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>Code under the MIT license. Manual, photos and models under CC BY 4.0.</span>
+    <span><a data-link="github" href="#build">Code</a> · <a data-link="thingiverse" href="#body">Printable body</a> · <a data-link="bluesky" href="#does">Bluesky</a></span>
+  </footer>
+</div>
+
+<script>
+// ---- the three addresses of the project: fill these in when they exist (empty = the button says "soon")
+const LINKS = {
+  github: "https://github.com/cperos-xr/pip-robot",
+  thingiverse: "",   // e.g. "https://www.thingiverse.com/thing:1234567"
+  bluesky: ""        // e.g. "https://bsky.app/profile/yourrobot.bsky.social"
+};
+document.querySelectorAll("[data-link]").forEach(a => {
+  const url = LINKS[a.dataset.link];
+  if (url) { a.href = url; a.target = "_blank"; a.rel = "noopener"; }
+  else if (a.classList.contains("btn")) {
+    a.setAttribute("aria-disabled", "true");
+    a.insertAdjacentHTML("beforeend", ' <span class="soon">soon</span>');
+  }
+});
+if (LINKS.github) document.getElementById("repo").textContent = LINKS.github;
+
+// ---- clock in the taskbar
+const clock = document.getElementById("clock");
+const tick = () => { clock.textContent = new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}); };
+tick(); setInterval(tick, 20000);
+
+// ---- pixel icons: 12 x 12 maps. k ink, w white, c cyan, y yellow, r red, g grey, b title blue
+const ICONS = {
+  talk: ["............", ".kkkkkkkkkk.", ".kwwwwwwwwk.", ".kwcccccwwk.", ".kwwwwwwwwk.", ".kwccccwwwk.", ".kwwwwwwwwk.", ".kkkkkkkkkk.", "...kkk......", "..kkk.......", ".kk.........", "............"],
+  see: ["............", "..kkkkkkkk..", ".kggggggggk.", ".kggkkkkggk.", ".kgkcccckgk.", ".kgkcwcckgk.", ".kgkcccckgk.", ".kgkcccckgk.", ".kggkkkkggk.", ".kggggggggk.", "..kkkkkkkk..", "............"],
+  think: ["...k.kk.k...", "...k.kk.k...", ".kkkkkkkkkk.", ".kyyyyyyyyk.", "kkyykkkkyykk", ".kyykcckyyk.", ".kyykcckyyk.", "kkyykkkkyykk", ".kyyyyyyyyk.", ".kkkkkkkkkk.", "...k.kk.k...", "...k.kk.k..."],
+  remember: ["............", ".kkkkkkkkkk.", ".kcwwwwwwck.", ".kcwwwkwwck.", ".kcwwwwwwck.", ".kcccccccck.", ".kcccccccck.", ".kcckkkkcck.", ".kcckwwkcck.", ".kcckwwkcck.", ".kkkkkkkkkk.", "............"],
+  os: ["............", "kkkkkkkkkkkk", "kbbbbbbbbwwk", "kkkkkkkkkkkk", "kwwwwwwwwwwk", "kwyywwccwwwk", "kwyywwccwwwk", "kwwwwwwwwwwk", "kwrrwwggwwwk", "kwrrwwggwwwk", "kwwwwwwwwwwk", "kkkkkkkkkkkk"],
+  dev: ["............", "kkkkkkkkkkkk", "kbbbbbbbbbbk", "kbcbbbbbbbbk", "kbbcbbbbbbbk", "kbbbcbbbbbbk", "kbbcbbbbbbbk", "kbcbbbccccbk", "kbbbbbbbbbbk", "kbbbbbbbbbbk", "kkkkkkkkkkkk", "............"],
+  drive: ["....kkkk....", "..kkggggkk..", ".kggggggggk.", ".kggkkkkggk.", "kggkrrrrkggk", "kggkrrrrkggk", "kggkrrrrkggk", "kggkrrrrkggk", ".kggkkkkggk.", ".kggggggggk.", "..kkggggkk..", "....kkkk...."],
+  phone: ["...kkkkkk...", "...kwwwwk...", "...kcccck...", "...kcccck...", "...kcccck...", "...kwwwwk...", "...kyywwk...", "...kwwwwk...", "...kwwrrk...", "...kwwwwk...", "...kkggkk...", "...kkkkkk..."],
+  post: ["............", "..rr....rr..", ".rrrr..rrrr.", "rrrrrrrrrrrr", "rrwrrrrrrrrr", "rrrrrrrrrrrr", ".rrrrrrrrrr.", "..rrrrrrrr..", "...rrrrrr...", "....rrrr....", ".....rr.....", "............"],
+  care: ["............", "....kkkk....", "..kkkkkkkk..", "..kwwwwwwk..", "..kwwwwwwk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kkkkkkkk..", "............"]
+};
+const FILL = {k: "var(--ink)", w: "var(--icon-w)", c: "var(--icon-c)", y: "var(--accent)", r: "var(--icon-r)", g: "var(--icon-g)", b: "var(--title)"};
+document.querySelectorAll("[data-icon]").forEach(el => {
+  const rows = ICONS[el.dataset.icon]; let out = "";
+  rows.forEach((row, y) => {                      // one rect for each run of the same colour
+    for (let x = 0; x < row.length;) {
+      const ch = row[x]; let n = 1;
+      while (x + n < row.length && row[x + n] === ch) n++;
+      if (FILL[ch]) out += `<rect x="${x}" y="${y}" width="${n}" height="1" style="fill:${FILL[ch]}"/>`;
+      x += n;
+    }
+  });
+  el.innerHTML = `<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true">${out}</svg>`;
+});
+
+// ---- Pip's face, drawn the way its touchscreen draws it (320 x 240): eyes that blink and wander, a mouth, a mood
+const cv = document.getElementById("face"), g = cv.getContext("2d");
+const MOODS = ["idle", "happy", "love", "curious", "sleepy", "surprised"];
+const EYE = {idle: "#45d3ec", happy: "#45d3ec", love: "#c39bff", curious: "#45d3ec", sleepy: "#3f9fb3", surprised: "#7fe7ff"};
+const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const f = {mood: 0, lx: 0, ly: 0, tx: 0, ty: 0, nextLook: 0, nextBlink: 1500, blinkAt: -1};
+function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function heart(cx, cy, s) { g.beginPath(); g.moveTo(cx, cy + s * 0.9); g.bezierCurveTo(cx - s * 1.5, cy - s * 0.1, cx - s * 0.8, cy - s * 1.1, cx, cy - s * 0.35); g.bezierCurveTo(cx + s * 0.8, cy - s * 1.1, cx + s * 1.5, cy - s * 0.1, cx, cy + s * 0.9); g.fill(); }
+function eye(cx, cy, w, h, open, m) {
+  if (m === "love") return heart(cx, cy, 30 * (0.35 + 0.65 * open));
+  if (m === "sleepy") { rr(cx - w / 2, cy + 14, w, 9, 4); return g.fill(); }
+  if (m === "surprised") { w *= 0.8; h *= 0.9; }
+  const hh = Math.max(7, h * open);
+  rr(cx - w / 2, cy - hh / 2, w, hh, Math.min(22, hh / 2)); g.fill();
+  if (m === "happy" && open > 0.5) {               // a smile pushes the lower lid up
+    g.fillStyle = "#000"; g.beginPath(); g.ellipse(cx, cy + h / 2 + 6, w * 0.62, h * 0.36, 0, 0, 7); g.fill();
+  }
+}
+function draw(t) {
+  const m = MOODS[f.mood], col = EYE[m];
+  g.setTransform(cv.width / 320, 0, 0, cv.height / 240, 0, 0);
+  g.fillStyle = "#000"; g.fillRect(0, 0, 320, 240);
+  if (!still) {
+    if (t > f.nextLook) { f.tx = (Math.random() * 2 - 1) * 0.8; f.ty = (Math.random() * 2 - 1) * 0.5; if (Math.random() < 0.35) f.tx = f.ty = 0; f.nextLook = t + 1200 + Math.random() * 3000; }
+    f.lx += (f.tx - f.lx) * 0.12; f.ly += (f.ty - f.ly) * 0.12;
+    if (f.blinkAt < 0 && t > f.nextBlink) { f.blinkAt = t; f.nextBlink = t + 2200 + Math.random() * 3800; }
+  }
+  let open = 1;
+  if (f.blinkAt >= 0) { const d = t - f.blinkAt; if (d < 170) open = Math.abs(1 - 2 * d / 170); else f.blinkAt = -1; }
+  const dx = f.lx * 22, dy = f.ly * 12 + (still ? 0 : 2 * Math.sin(t / 900));
+  let hl = 84, hr = 84;
+  if (m === "curious") { hl = 96; hr = 62; }
+  g.fillStyle = col; eye(106 + dx, 100 + dy, 64, hl, open, m);
+  g.fillStyle = col; eye(214 + dx, 100 + dy, 64, hr, open, m);
+  // mouth
+  g.strokeStyle = col; g.fillStyle = col; g.lineWidth = 9; g.lineCap = "round";
+  const mx = 160 + dx / 2, my = 172 + dy / 2;
+  g.beginPath();
+  if (m === "surprised") { g.lineWidth = 7; g.arc(mx, my + 4, 11, 0, 7); }
+  else if (m === "sleepy") { g.moveTo(mx - 14, my + 8); g.lineTo(mx + 14, my + 8); }
+  else if (m === "curious") { g.arc(mx + 6, my - 4, 18, 0.25 * Math.PI, 0.8 * Math.PI); }
+  else { g.arc(mx, my - 8, m === "idle" ? 20 : 26, 0.12 * Math.PI, 0.88 * Math.PI); }
+  g.stroke();
+  // little extras
+  g.font = "bold 18px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  if (m === "curious") g.fillText("?", 270, 34 + (still ? 0 : 3 * Math.sin(t / 300)));
+  if (m === "sleepy") { const p = still ? 0.4 : (t % 3000) / 3000; g.fillText("z", 256 + p * 20, 52 - p * 28); g.font = "bold 13px sans-serif"; g.fillText("z", 240 + p * 14, 66 - p * 20); }
+  // the screen's own furniture: clock, battery, TALK and MENU
+  g.fillStyle = "#6fb9c7"; g.font = "600 12px monospace"; g.textAlign = "left";
+  g.fillText(new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}), 10, 13);
+  g.strokeStyle = "#6fb9c7"; g.lineWidth = 1.5; g.strokeRect(286, 7, 22, 11); g.fillRect(308, 10, 3, 5); g.fillRect(288.5, 9.5, 14, 6);
+  g.font = "600 12px monospace";
+  g.fillStyle = "#12343b"; rr(8, 212, 62, 22, 9); g.fill(); rr(250, 212, 62, 22, 9); g.fill();
+  g.fillStyle = "#7fe7ff"; g.textAlign = "center"; g.fillText("TALK", 39, 223.5); g.fillText("MENU", 281, 223.5);
+}
+function frame(t) { draw(t); if (!still && !document.hidden) requestAnimationFrame(frame); }
+function fit() { const d = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth || 320; cv.width = Math.round(w * d); cv.height = Math.round(w * 0.75 * d); draw(performance.now()); }
+document.getElementById("screen").addEventListener("click", () => {
+  f.mood = (f.mood + 1) % MOODS.length; document.getElementById("mood").textContent = MOODS[f.mood]; draw(performance.now());
+});
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !still) requestAnimationFrame(frame); });
+window.addEventListener("resize", fit);
+fit(); if (!still) requestAnimationFrame(frame);
+</script>
+</body>
+</html>

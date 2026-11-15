@@ -1,0 +1,47 @@
+{
+  "about": "Slow practice routines for Pip's two wheels. Not loaded by robotd: run one with tools/practice_drive.py (owner approval on the screen first). Moves use the existing drive commands (forward, back, arc, wiggle, wait); the motor firmware stops the wheels 0.5 s after the last command (failsafe), and the runner also sends STOP.",
+  "limits": {
+    "max_duty": 60,
+    "max_secs_per_move": 1.5,
+    "max_run_secs": 12,
+    "tilt_stop_deg": 20,
+    "imu_stale_secs": 1.0
+  },
+  "routines": {
+    "straight_forward": {
+      "title": "Straight forward",
+      "steps": [
+        {"cmd": "forward", "secs": 1.0, "speed": 60},
+        {"cmd": "wait", "secs": 1.0}
+      ]
+    },
+    "straight_back": {
+      "title": "Straight back",
+      "steps": [
+        {"cmd": "back", "secs": 1.0, "speed": 60},
+        {"cmd": "wait", "secs": 1.0}
+      ]
+    },
+    "gentle_spin_left": {
+      "title": "Gentle spin left",
+      "steps": [
+        {"cmd": "arc", "left": -55, "right": 55, "secs": 0.5},
+        {"cmd": "wait", "secs": 1.0}
+      ]
+    },
+    "gentle_spin_right": {
+      "title": "Gentle spin right",
+      "steps": [
+        {"cmd": "arc", "left": 55, "right": -55, "secs": 0.5},
+        {"cmd": "wait", "secs": 1.0}
+      ]
+    },
+    "wiggle": {
+      "title": "Small wiggle",
+      "steps": [
+        {"cmd": "wiggle", "n": 4, "speed": 60, "secs": 0.25},
+        {"cmd": "wait", "secs": 1.0}
+      ]
+    }
+  }
+}

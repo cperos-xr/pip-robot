@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Robot login</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0e14;color:#e8ecf4;font:15px/1.4 system-ui,sans-serif;padding:16px}
+.card{background:#151a24;border:1px solid #2c3546;border-radius:16px;padding:22px;max-width:380px;width:100%}
+h1{margin:0 0 6px;font-size:22px}p{color:#8a94a8}input,button{font:inherit;width:100%;padding:11px;border-radius:10px;border:1px solid #2c3546;background:#1f2633;color:#e8ecf4;margin-top:8px}
+button{background:#1f6feb;border-color:#1f6feb;cursor:pointer}.err{color:#ff453a}ol{color:#8a94a8;padding-left:18px}</style></head>
+<body><div class="card"><h1>🤖 Robot</h1><p>Owner sign-in</p>
+<div class="err">{{ERR}}</div>
+<form method="post" action="/login"><input name="password" type="password" placeholder="owner password or API token" autofocus><button>Sign in</button></form>
+<p style="margin-top:18px"><b style="color:#e8ecf4">No password yet? Pair with the robot:</b></p>
+<ol><li>On the robot's touchscreen open <b>Menu → About</b></li><li>Tap <b>PAIR A PHONE</b></li><li>Scan the QR code with this phone</li></ol>
+<p><a href="/public" style="color:#00c8f0">Public page →</a></p></div></body></html>

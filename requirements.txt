@@ -1,0 +1,8 @@
+# Python packages for robotd that do not come from Debian/Armbian packages (see docs/INSTALL.md for the apt list).
+# The robot's venv is made with --system-site-packages, so numpy, OpenCV, Pillow, pyserial, requests, PyYAML,
+# smbus2 and gpiod come from apt. Versions are the ones the first robot runs (Python 3.13, 32-bit ARM).
+anthropic==2.6.0
+esptool==4.8.1
+pypdf==7.0.0
+vosk==0.3.45
+yt-dlp

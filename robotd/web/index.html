@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Robot</title>
+<style>
+table th{cursor:pointer;text-align:left;color:var(--dim);font-weight:600;padding:6px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+table td{padding:6px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+table td button{padding:4px 8px;font-size:12px}
+:root{--bg:#0b0e14;--panel:#151a24;--panel2:#1f2633;--line:#2c3546;--text:#e8ecf4;--dim:#8a94a8;--acc:#00c8f0;--ok:#30d158;--warn:#ffb020;--bad:#ff453a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:64px}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(11,14,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header b{font-size:17px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--bad);display:inline-block}
+.dot.on{background:var(--ok)}
+header .sp{flex:1}
+.batt{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.batt .bico{position:relative;display:inline-block;width:22px;height:11px;border:1.5px solid var(--muted,#8a94a8);border-radius:2px;box-sizing:border-box}
+.batt .bico::after{content:"";position:absolute;right:-4px;top:2.5px;width:2px;height:4px;background:var(--muted,#8a94a8);border-radius:0 1px 1px 0}
+.batt .bfill{position:absolute;left:1px;top:1px;bottom:1px;border-radius:1px;background:#3ccf6e}
+.batt.low .bfill{background:#ffb020}.batt.low .btxt{color:#ffb020}
+.batt.crit .bfill{background:#ff5050}.batt.crit .btxt{color:#ff5050}
+.batt.charging .bfill{background:#4aa8ff}
+.batt.external .bico,.batt.mismatch .bico{display:none}
+header small{color:var(--dim)}
+main{max-width:900px;margin:0 auto;padding:12px 16px}
+section{display:none}
+section.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 10px;font-size:14px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,select,input,textarea{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+button{cursor:pointer}
+button.pri{background:#1f6feb;border-color:#1f6feb}
+button.red{background:#8b1f1f;border-color:#8b1f1f}
+button:disabled{opacity:.45}
+input,textarea{width:100%}
+textarea{min-height:44px;resize:vertical}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+.kv div:nth-child(odd){color:var(--dim)}
+.cam{width:100%;border-radius:10px;background:#000;aspect-ratio:4/3;object-fit:contain;display:block}
+.feed{max-height:420px;overflow:auto;font-size:14px}
+.feed div{padding:6px 0;border-bottom:1px solid var(--line)}
+.feed .k{display:inline-block;min-width:64px;font-size:12px;color:var(--dim)}
+.heard{color:#9ad1ff}.said{color:#b6f5c8}.ai{color:#d9c2ff}
+.setrows>div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.setrows .lab{flex:1;min-width:140px}.setrows .lab small{display:block;color:var(--dim);font-size:12px}
+.setrows select{width:auto;min-width:150px}.setrows input[type=range]{width:150px}
+#setTabs{margin-bottom:4px}#setTabs button{padding:6px 12px}
+.convo{max-height:280px;overflow:auto;margin-bottom:8px}.convo:empty{display:none}
+.convo div{padding:5px 8px;margin:4px 0;border-radius:10px;background:var(--panel2);max-width:90%}
+.convo div.you{margin-left:auto;background:#123a4a}
+.ptt{width:100%;padding:18px;font-size:18px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
+.ptt.rec{background:var(--bad);border-color:var(--bad)}
+.list div{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}
+.badge{font-size:12px;padding:2px 8px;border-radius:8px;background:var(--panel2);white-space:nowrap}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;cursor:pointer}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(21,26,36,.97);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;border-radius:0;background:none;padding:12px 2px;font-size:13px;color:var(--dim)}
+nav button.on{color:var(--acc)}
+canvas{width:100%;max-width:360px;display:block;margin:auto}
+.muted{color:var(--dim);font-size:13px}
+.frow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);min-width:0}
+.frow .fn{flex:1;min-width:0;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .ft{width:38px;height:38px;flex:none;border-radius:6px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden}
+.frow .ft img{width:100%;height:100%;object-fit:cover}
+.frow button{padding:5px 9px;font-size:12px;flex:none}
+.fpath{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;word-break:break-all}
+#fDrop.over{outline:2px dashed var(--acc);outline-offset:4px}
+#fView pre{white-space:pre-wrap;word-break:break-word;max-height:55vh;overflow:auto;margin:8px 0 0;font-size:12px}
+#fView img,#fView video{max-width:100%;max-height:60vh;border-radius:8px;display:block;margin-top:8px;image-rendering:auto}
+@media (max-width:560px){ .frow .fhide{display:none} }
+#toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--acc);padding:8px 14px;border-radius:10px;display:none;z-index:9}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;max-width:95vw}
+dialog img{max-width:90vw;max-height:75vh}
+.pad{position:relative;width:min(260px,72vw);aspect-ratio:1;margin:12px auto 0;border-radius:50%;background:var(--panel2);border:1px solid var(--line);touch-action:none;user-select:none;-webkit-user-select:none}
+.pad::before,.pad::after{content:"";position:absolute;background:var(--line)}
+.pad::before{left:50%;top:10%;bottom:10%;width:1px}.pad::after{top:50%;left:10%;right:10%;height:1px}
+.knob{position:absolute;width:64px;height:64px;border-radius:50%;background:var(--acc);left:50%;top:50%;transform:translate(-50%,-50%);opacity:.85;pointer-events:none;z-index:1}
+.pad.off{opacity:.4}
+/* driving: camera + joystick together. Wide screens and phones held sideways: side by side.
+   Phones held upright: the camera sticks to the top while you scroll down to the joystick. */
+.drvwrap:not(.driving) #drvCtl{display:none}
+.drvwrap.driving{display:grid;gap:10px;align-items:start}
+.drvwrap.driving .pad{width:min(210px,52vw,30vh);margin-top:8px}
+.drvbtns{margin-top:8px;justify-content:center}
+.drvbtns button{padding:7px 10px}
+@media (min-width:700px),(orientation:landscape){
+  .drvwrap.driving{grid-template-columns:minmax(0,1fr) min(290px,44vw)}
+  .drvwrap.driving .cam{max-height:calc(100vh - 140px)}
+  .drvwrap.driving .pad{width:min(230px,40vw,42vh)}
+}
+@media (orientation:landscape) and (max-height:520px){       /* phone sideways: the drive view gets the whole screen */
+  body.driving nav{display:none} body.driving header{position:static} body.driving{padding-bottom:0}
+  .drvwrap.driving .cam{max-height:calc(100vh - 36px)}
+  .drvwrap.driving .pad{width:max(110px,calc(100vh - 175px))}
+  body.driving #drvInfo{display:none}
+  .drvbtns button{padding:4px 8px;font-size:13px}
+}
+@media (orientation:portrait) and (max-width:699px){
+  .drvwrap.driving .cam{position:sticky;top:46px;z-index:3;max-height:38vh;box-shadow:0 6px 12px rgba(0,0,0,.5)}
+}
+/* RoboDev chat */
+#devLog{max-height:62vh;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+#devLog .du{align-self:flex-end;max-width:88%;background:#1f3b63;border-radius:12px 12px 2px 12px;padding:8px 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+#devLog .du img{max-width:160px;max-height:120px;border-radius:6px;display:block;margin-top:6px}
+#devLog .da{max-width:96%;background:var(--panel2);border-radius:12px 12px 12px 2px;padding:8px 10px;overflow-wrap:anywhere}
+#devLog .da pre,#devLog .dt pre,#devLog .dap pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0b0e14;border-radius:8px;padding:8px;margin:6px 0 0;font-size:12px;max-height:340px;overflow:auto}
+#devLog code{background:#0b0e14;border-radius:4px;padding:0 4px;font-size:13px}
+#devLog .dt summary{cursor:pointer;color:var(--dim);font:12px/1.5 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#devLog .dap{border:1px solid var(--warn);border-radius:12px;padding:8px 10px;background:#2a2410}
+#devLog .di{color:var(--acc);font-size:13px}#devLog .de{color:var(--bad);font-size:13px}
+#devChips span{font-size:12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:2px 8px}
+.ph{position:relative}
+.ph .bar{display:flex;gap:4px;margin-top:3px;align-items:center}
+.ph .bar button{flex:1;padding:4px;font-size:12px}
+.ph .tag{position:absolute;left:4px;top:4px;font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(0,0,0,.7);color:var(--warn);pointer-events:none}
+</style>
+</head>
+<body>
+<header><span class="dot" id="link"></span><b>Robot</b><span class="sp"></span><span id="batt" class="batt" hidden onclick="document.querySelector('nav button[data-tab=settings]').click()"><i class="bico"><i class="bfill"></i></i><small class="btxt"></small></span><small id="hdr">…</small></header>
+<main>
+<!-- LIVE -->
+<section id="live" class="on">
+  <div class="card">
+    <div id="drvWrap" class="drvwrap">
+      <img id="cam" class="cam" alt="" style="display:none"><canvas id="faceCv" class="cam" width="640" height="480" style="cursor:pointer" title="Pip's face right now. Tap to start the live view." onclick="setCam(true)"></canvas>
+      <div id="drvPanel" data-owner-card>
+        <div class="row" style="margin-top:8px"><button id="drvLock" onclick="drvToggle()">Unlock motors to drive</button>
+          <span id="drvSpeed" class="row" style="flex:1;min-width:150px;flex-wrap:nowrap"><label style="white-space:nowrap">Speed</label><input id="drvMax" type="range" min="50" max="127" value="127" style="flex:1;min-width:60px" oninput="$('#drvMaxN').textContent=this.value"><span id="drvMaxN">127</span></span></div>
+        <div id="drvCtl">
+          <div id="pad" class="pad off"><div id="knob" class="knob"></div></div>
+          <div class="row drvbtns">
+            <button onclick="drv({cmd:'turn',deg:90})">&#8634; 90&deg;</button><button onclick="drv({cmd:'forward',secs:0.6,speed:+$('#drvMax').value})">Fwd</button><button onclick="drv({cmd:'turn',deg:-90})">90&deg; &#8635;</button>
+            <button onclick="drv({cmd:'turn',deg:360})">Spin</button><button onclick="drv({cmd:'back',secs:0.6,speed:+$('#drvMax').value})">Back</button><button class="red" onclick="drv({cmd:'stop'})">STOP</button>
+            <button style="flex-basis:100%" title="Kick up onto two wheels, balance, land. Asks Start on the robot's screen." onclick="api('/api/wheelie',{cmd:'show'}).then(r=>toast(r.msg||r.error||'ok')).catch(e=>toast(e.message))">Wheelie!</button>
+          </div>
+        </div>
+        <p class="muted" id="drvInfo" style="margin:6px 0 0">…</p>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button id="camBtn" class="pri">Start live view</button>
+      <button data-owner onclick="act('/api/snap',{}, 'Photo saved')">Snap HD photo</button>
+      <button data-owner id="privBtn" onclick="togglePrivacy()">Camera: ...</button>
+      <span class="muted" id="camInfo"></span>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <select id="cvMode" data-owner onchange="act('/api/vision',{mode:this.value},'CV: '+this.value)"><option value="off">CV off</option><option value="faces">faces</option><option value="gaze">gaze (eyes)</option><option value="motion">motion</option><option value="qr">QR codes</option><option value="all">all</option></select>
+      <label><input type="checkbox" id="cvFollow" style="width:auto" data-owner onchange="act('/api/vision',{follow:this.checked},this.checked?'eyes follow faces':'follow off')"> eyes follow faces</label>
+      <label><input type="checkbox" id="cvGaze" style="width:auto" data-owner onchange="act('/api/vision',{gaze_mirror:this.checked},this.checked?'robot copies your eyes':'gaze mirror off')"> mirror my eyes</label>
+      <span class="muted" id="cvInfo"></span>
+    </div>
+    <p class="muted" data-owner-card style="margin:8px 0 0">Driving: unlock the motors and the joystick appears next to the camera (the live view starts by itself). Drag the pad, or hold the arrow keys / WASD; let go and it stops. The buttons use the robot's own steering (turns measured by its motion sensor).</p>
+  </div>
+  <div class="card">
+    <h3>Talk</h3>
+    <div id="convo" class="convo"></div>
+    <button id="ptt" class="pri ptt" data-owner>&#127908; Hold to talk</button>
+    <p class="muted" id="pttNote" style="margin:4px 0 0"></p>
+    <div class="row" style="margin-top:8px"><textarea id="chatIn" placeholder="Type to the robot, or use your keyboard's mic button. Enter sends."></textarea></div>
+    <div class="row" style="margin-top:8px">
+      <button class="pri" data-owner onclick="chat()">Send</button>
+      <button data-owner onclick="say()">Just say it</button>
+      <button data-owner onclick="act('/api/listen',{}, 'Listening through the robot mic…')">Use robot mic</button>
+      <button data-owner onclick="act('/api/brain/rate',{good:true},'👍 noted')">👍</button>
+      <button data-owner onclick="act('/api/brain/rate',{good:false},'👎 noted')">👎</button>
+      <label data-owner style="white-space:nowrap"><input type="checkbox" id="phoneVoice" style="width:auto"> read replies here too</label>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Face</h3>
+    <div class="row" id="moods"></div>
+  </div>
+  <div class="card">
+    <h3>What it hears, says and does</h3>
+    <div class="feed" id="feed"></div>
+  </div>
+</section>
+
+<!-- BODY -->
+<section id="body">
+  <div class="card" data-owner-card><h3>Robot desktop (RoboOS)</h3>
+    <p class="muted">The tiny desktop on the robot's screen. Click it here to use it remotely. On the robot: Settings &gt; Desktop.</p>
+    <img id="deskImg" style="width:100%;max-width:640px;image-rendering:pixelated;cursor:pointer;border:1px solid #444" alt="desktop">
+    <div class="row" style="margin-top:6px"><button onclick="deskRefresh()">Refresh</button><button onclick="act('/api/desktop/open',{},'opened on the screen')">Show on the robot screen</button>
+      <input id="deskKey" placeholder="type here, Enter sends" style="flex:1"></div></div>
+  <div class="card"><h3>Brain (Orange Pi)</h3><div class="kv" id="sys"></div></div>
+  <div class="card"><h3>Balance (IMU)</h3><canvas id="imu" width="360" height="220"></canvas>
+    <div class="row" style="margin-top:8px"><button data-owner onclick="act('/api/imu/level',{}, 'Level set')">Set level here</button>
+    <button data-owner onclick="act('/api/imu/gyro_cal',{}, 'Gyro calibrated')">Gyro zero (keep still)</button>
+    <span class="muted" id="imuTxt"></span></div></div>
+  <div class="card" data-owner-card><h3>Motion sensor</h3>
+    <p class="muted" id="motInfo">…</p>
+    <div class="row" id="motModes">
+      <button data-m="off" onclick="motSet({mode:'off'})">Off</button><button data-m="wake" onclick="motSet({mode:'wake'})">Wake</button>
+      <button data-m="greet" onclick="motSet({mode:'greet'})">Greet</button><button data-m="security" onclick="motSet({mode:'security'})">Security</button>
+    </div>
+    <p class="muted" id="motHelp" style="margin:8px 0"></p>
+    <label class="row" style="padding:2px 0"><input type="checkbox" id="motAi" style="width:auto" onchange="motSet({greet_ai:this.checked})"> Greet: let the AI look at the photo to say something about who or what moved (the photo goes to the AI model, it is not saved)</label>
+    <label class="row" style="padding:2px 0"><input type="checkbox" id="motWarn" style="width:auto" onchange="motSet({security_warn:this.checked})"> Security: say a warning out loud when something moves</label>
+    <div id="secBox" style="display:none;margin-top:8px"><h3 style="margin-top:6px">Security photos (only you can see these)</h3>
+      <div class="grid" id="secGrid"></div>
+      <button class="red" style="margin-top:8px" onclick="if(confirm('Delete all security photos?'))act('/api/security/clear',{},'deleted').then(loadMotion)">Delete security photos</button></div>
+  </div>
+  <div class="card"><h3>Devices</h3><div class="list" id="devs"></div></div>
+  <div class="card"><h3>Self tests</h3><div class="list" id="tests"></div></div>
+</section>
+
+<!-- AI -->
+<section id="ai">
+  <div class="card"><h3>Active AI model</h3>
+    <div class="row"><select id="pack" style="flex:1;min-width:0"></select><button data-owner class="pri" onclick="usePack()">Use</button></div>
+    <div class="row" style="margin-top:8px"><select id="model" style="flex:1;min-width:0"></select><button data-owner onclick="selectModel()">Switch</button></div>
+    <p class="muted" id="aiInfo"></p></div>
+  <div class="card"><h3>Model catalog (live OpenRouter prices, $ per million tokens)</h3>
+    <div class="row"><input id="cq" placeholder="search, e.g. deepseek, glm, gemini, nvidia" style="flex:1"><select id="csort"><option value="price">cheapest</option><option value="context">biggest context</option><option value="company">company</option><option value="newest">newest</option><option value="name">name</option><option value="score">benchmark score</option></select></div>
+    <div class="row" style="margin-top:6px"><label><input type="checkbox" id="cv" style="width:auto" checked> vision</label><label><input type="checkbox" id="ct" style="width:auto" checked> tools</label><label><input type="checkbox" id="cf" style="width:auto"> free only</label><button onclick="loadCatalog()">Refresh</button><span class="muted" id="cinfo"></span></div>
+    <div style="overflow-x:auto;margin-top:8px"><table id="ctab" style="width:100%;border-collapse:collapse;font-size:13px"></table></div></div>
+  <div class="card"><h3>Benchmarks</h3>
+    <p class="muted">Same 7 tasks for every model: spoken persona, reasoning, arithmetic, tool use, structured JSON, vision counting, reading text. Scored 0-100 with speed and real cost recorded.</p>
+    <div class="row"><button data-owner class="pri" onclick="benchPack()">Benchmark the variety pack</button><span class="muted" id="bjob"></span></div>
+    <div style="overflow-x:auto;margin-top:8px"><table id="btab" style="width:100%;border-collapse:collapse;font-size:13px"></table></div></div>
+  <div class="card"><h3>Model report card</h3><div class="list" id="stats"></div>
+    <p class="muted">Every request is logged with latency, tokens, tools used and your 👍/👎, so you can see which models suit which jobs.</p></div>
+  <div class="card" data-owner-card><h3>API keys (stored on the robot, file mode 600)</h3>
+    <div class="row"><select id="keyProv"><option value="anthropic">Anthropic (Claude API)</option><option value="openrouter">OpenRouter</option></select></div>
+    <div class="row" style="margin-top:8px"><input id="keyVal" type="password" placeholder="paste key"><button onclick="saveKey()">Save key</button></div></div>
+  <div class="card" data-owner-card><h3>Add a model</h3>
+    <div class="row"><input id="mKey" placeholder="short name, e.g. hermes"><input id="mId" placeholder="model id, e.g. nousresearch/… or claude-sonnet-5-5"></div>
+    <div class="row" style="margin-top:8px"><select id="mProv"><option>openrouter</option><option>anthropic</option></select><button onclick="addModel()">Add</button></div></div>
+  <div class="card" data-owner-card><h3>Self-improvement</h3>
+    <p class="muted" style="margin:0">The robot changes its own code with <b>RoboDev</b>: open the <a href="#dev" onclick="document.querySelector('nav button[data-tab=dev]').click();return false" style="color:var(--acc)">Dev tab</a>, the RoboDev app on RoboOS, or just ask it out loud.</p></div>
+  <div class="card"><h3>Memories</h3><div class="row" data-owner><input id="memIn" placeholder="Teach it something to remember"><button onclick="addMem()">Remember</button></div>
+    <div class="list" id="mems" style="margin-top:8px"></div></div>
+</section>
+
+<!-- PHOTOS -->
+<section id="photos">
+  <div class="card" data-owner-card id="fDrop"><h3>Files</h3>
+    <p class="muted" style="margin:0 0 8px">Everything in Pip's folders. Put files and pictures for Pip in <b>Shared</b>, then tell it the path (for example <span class="fpath">data/files/cat.jpg</span>) or press <b>Ask Pip</b>. Pip's drawings and photos are under <b>Photos &amp; drawings</b>. You can also drop files here, or paste a picture.</p>
+    <div class="row" id="fShort"></div>
+    <div class="row" style="margin:10px 0 4px"><span class="fpath" id="fCrumb" style="flex:1;min-width:0"></span>
+      <select id="fSort" style="width:auto" onchange="drawFiles()"><option value="new">Newest first</option><option value="name">By name</option></select>
+      <button onclick="loadFiles()">Refresh</button></div>
+    <div class="row" id="fTools" style="margin-bottom:6px">
+      <label style="cursor:pointer"><span class="badge" style="padding:9px 12px;font-size:15px;border:1px solid var(--line);background:#1f6feb">&#11014; Upload</span><input id="fInput" type="file" multiple style="display:none" onchange="fileUpload(this.files);this.value=''"></label>
+      <button id="fMk" onclick="fileMkdir()">New folder</button><span class="muted" id="fInfo"></span></div>
+    <div id="fDone"></div>
+    <div id="fList"></div>
+    <div id="fView" style="display:none;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px"></div></div>
+  <div class="card"><h3>Photos</h3>
+    <div class="row" style="margin-bottom:8px"><label style="flex:1;min-width:200px"><input type="checkbox" id="phPosts" style="width:auto;vertical-align:middle;margin:0 6px 0 0" onchange="loadPhotos()">Show the copies made for posts <span class="muted" id="phPostsN"></span></label>
+      <button data-owner id="phDupBtn" style="display:none" onclick="delLookAlikes()">Delete look-alikes</button></div>
+    <p class="muted" id="phInfo" style="margin:0 0 8px"></p>
+    <div class="grid" id="grid"></div></div>
+  <div class="card" data-owner-card><h3>Music</h3>
+    <p class="muted" id="musInfo"></p>
+    <audio id="musAudio" controls style="width:100%;display:none;margin-bottom:8px"></audio>
+    <div class="list" id="musList"></div></div>
+</section>
+
+<!-- SOCIAL -->
+<section id="social">
+  <div class="card"><h3>Drafts waiting for you</h3><div id="drafts"></div>
+    <div class="row" data-owner style="margin-top:8px"><input id="sNote" placeholder="Give it something to post about (optional)"><button onclick="draftPost(false)">Draft update</button><button onclick="draftPost(true)">Draft with camera photo</button></div>
+    <p class="muted">Faces are blurred on the robot before anything else sees a photo, then an AI safety check blocks nudity, recognisable faces and personal info. With autonomous posting on, safe posts go out by themselves (rate-limited); otherwise they wait here.</p></div>
+  <div class="card"><h3>Posted</h3><div id="posted" class="grid"></div></div>
+  <div class="card" data-owner-card><h3>Accounts (stored on the robot, mode 600)</h3>
+    <div class="row"><input id="bh" placeholder="Bluesky handle, e.g. myrobot.bsky.social"><input id="bp" type="password" placeholder="Bluesky app password"></div>
+    <div class="row" style="margin-top:8px"><input id="pt" type="password" placeholder="Pinterest access token"><input id="pb" placeholder="Pinterest board id"></div>
+    <div class="row" style="margin-top:8px"><button onclick="saveSocial()">Save accounts</button><span class="muted" id="chans"></span></div>
+    <label class="row" style="margin-top:8px"><input type="checkbox" style="width:auto" id="autoUp" onchange="act('/api/social/settings',{autonomous:this.checked},'saved')"> Autonomous posting: the robot posts on its own (faces blurred, nudity/personal info blocked, max 4/day)</label>
+    <label class="row"><input type="checkbox" style="width:auto" id="diary" onchange="act('/api/social/settings',{daily_diary:this.checked},'saved')"> Draft a daily diary post at 7 pm</label></div>
+</section>
+
+<!-- DEV: RoboDev, the robot's own coding agent -->
+<section id="dev">
+  <div class="card" data-owner-card><h3>RoboDev <span id="devState" class="muted" style="text-transform:none;letter-spacing:0;font-weight:400"></span></h3>
+    <div id="devLog"></div>
+    <div id="devChips" class="row" style="margin-top:8px"></div>
+    <textarea id="devIn" rows="2" style="margin-top:8px" placeholder="Ask for a change, e.g. 'Add a stopwatch app to RoboOS' or 'Make the face blink more often'. Enter sends, Shift+Enter = new line."></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="pri" onclick="devSend()">Send</button>
+      <button id="devMic" onclick="devMic()" title="dictate">&#127908; Talk</button>
+      <label class="row" style="cursor:pointer;gap:0"><span class="badge" style="padding:9px 12px;font-size:15px;border:1px solid var(--line)">&#128206; Attach</span><input id="devFile" type="file" multiple style="display:none" onchange="devAddFiles(this.files);this.value=''"></label>
+      <button id="devStop" class="red" onclick="api('/api/agent/stop',{}).then(devPoll)" style="display:none">Stop</button>
+      <span class="sp" style="flex:1"></span>
+      <button onclick="if(confirm('Start a new conversation? (the old one is kept on the robot)')) api('/api/agent/new',{}).then(r=>{toast(r.msg);devReset()})">New chat</button>
+    </div></div>
+  <div class="card" data-owner-card><h3>How RoboDev works</h3>
+    <div class="row"><label style="white-space:nowrap">Permissions</label>
+      <select id="devMode" onchange="devModeSet(this.value)"><option value="manual">Manual: every step asks</option><option value="auto">Auto: risky steps ask</option><option value="full">Full: never asks (sudo)</option></select></div>
+    <div class="row" style="margin-top:8px"><label style="white-space:nowrap">Model</label><select id="devModel" style="flex:1;min-width:0" onchange="devModelSet(this.value)"></select></div>
+    <div class="row" style="margin-top:8px"><label style="white-space:nowrap">Voice may use up to</label>
+      <select id="devVoice" onchange="devSet({voice_max_mode:this.value})"><option value="manual">Manual</option><option value="auto">Auto</option><option value="full">Full</option></select>
+      <label style="white-space:nowrap">Daily budget $</label><input id="devBudget" type="number" min="0" step="0.5" style="width:90px" onchange="devSet({daily_budget_usd:+this.value})"></div>
+    <p class="muted" id="devInfo"></p>
+    <p class="muted">Auto mode asks before: flashing firmware, motors, installing packages, system or boot files, deleting things, rewriting git history, files in <code>data/</code> and public posts. Everything else (reading, editing code, commands, restarts) just runs. Every change is a git commit, and a restart that breaks robotd rolls back by itself. Anyone near the robot can talk to it, so voice requests are limited to the mode chosen above. Secrets (API keys, passwords) are never shown to the model. You can also reach RoboDev from Claude Code or other agents through the robot's MCP server (<code>robot_dev_send</code>).</p></div>
+</section>
+
+<!-- SETTINGS -->
+<section id="settings">
+  <div class="card"><h3>Your access</h3><p id="who" class="muted"></p>
+    <div class="row" data-owner><input id="pw" type="password" placeholder="new owner password (8+ chars)"><button onclick="setPw()">Set password</button></div>
+    <div class="row" style="margin-top:8px"><a href="/logout"><button>Log out</button></a><button data-owner class="red" onclick="if(confirm('Sign out every device?'))act('/api/web/revoke',{},'Everyone signed out')">Sign out all devices</button></div></div>
+  <div class="card" data-owner-card><h3>Robot settings</h3>
+    <p class="muted" style="margin:0 0 8px">The same list as the robot's touchscreen (Menu &gt; Settings) and RoboOS (Settings app): change a setting in any of them and all three show it.</p>
+    <div class="row" id="setTabs"></div>
+    <div id="setRows" class="setrows"></div></div>
+  <div class="card" data-owner-card id="mailCard"><h3>Email <span id="mailAddr" class="muted" style="text-transform:none;letter-spacing:0;font-weight:400"></span></h3>
+    <p class="muted" style="margin:0 0 8px">Pip can read its mail and write drafts, but nothing is sent until you press Send: here, or on the touchscreen (each new draft pops up there). You can edit a draft before sending it.</p>
+    <div id="mailDrafts"></div>
+    <div class="row" style="margin:10px 0 6px"><b style="flex:1">Inbox</b><span class="muted" id="mailInfo"></span><button onclick="mailCheck(this)">Check now</button></div>
+    <div id="mailInbox"></div>
+    <div id="mailView" style="display:none;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:10px"></div>
+    <details id="mailCompose" style="margin-top:10px"><summary class="muted" style="cursor:pointer">Write an email from Pip's address</summary>
+      <input id="mcTo" placeholder="To (email address)" style="margin-top:8px"><input id="mcSubj" placeholder="Subject" style="margin-top:8px">
+      <textarea id="mcText" rows="5" placeholder="Text" style="margin-top:8px"></textarea><input id="mcReply" type="hidden">
+      <div class="row" style="margin-top:8px"><button class="pri" onclick="mailSendOwn(this)">Send</button><span class="muted" id="mcInfo"></span></div></details>
+    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer">Sent and discarded</summary><div id="mailDone"></div></details></div>
+  <div class="card" data-owner-card><h3>Invite a guest (view only)</h3>
+    <button onclick="invite()">Create 24 h guest link</button><p class="muted" id="inv"></p></div>
+  <div class="card" data-owner-card><h3>Public page (show off)</h3>
+    <p class="muted">Anyone with the link can see <a href="/public" style="color:var(--acc)">/public</a>. Choose what it shows:</p>
+    <div id="pub"></div></div>
+  <div class="card"><h3>Motors</h3><p class="muted">Two wheels (left = motor 7, right = motor 8) on the motor battery. Unlock and drive them on the Live tab; press Lock (or unplug the battery) when you are done. The motor firmware stops everything if commands stop for 0.5 s.</p></div>
+</section>
+</main>
+<nav>
+  <button class="on" data-tab="live">Live</button><button data-tab="body">Body</button><button data-tab="ai">AI</button><button data-tab="photos">Media</button><button data-tab="social">Social</button><button data-tab="dev" data-owner-nav>Dev</button><button data-tab="settings">Settings</button>
+</nav>
+<div id="toast"></div>
+<dialog id="dlg" onclick="this.close()"><img id="dlgImg"></dialog>
+<script>
+if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")) navigator.serviceWorker.register("/sw.js").catch(()=>{});   // offline placeholder (sw.js)
+const $ = s => document.querySelector(s);
+let role = "guest", feedSince = 0, camOn = false, camTimer = null, tab = "live";
+const MOODS = ["happy","curious","thinking","surprised","sleepy","sad","warning","love","idle"];
+
+function toast(t){const e=$("#toast");e.textContent=t;e.style.display="block";clearTimeout(e._t);e._t=setTimeout(()=>e.style.display="none",2500)}
+async function api(path, body){
+  const r = await fetch(path, body===undefined ? {} : {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  if (r.status === 401) { location.href = "/login"; throw new Error("auth"); }
+  const ct = r.headers.get("content-type")||"";
+  return ct.includes("json") ? r.json() : r.text();
+}
+// ---- the one settings list (robotd/settings.py): same groups and rows as the touchscreen and RoboOS
+let setG = +(localStorage.getItem("setG")||0), setData = null;
+async function loadSettings(){ try{ setData = (await api("/api/settings")).groups; drawSettings(); }catch(e){} }
+function drawSettings(){
+  if(!setData || $("#setRows").contains(document.activeElement) && document.activeElement.tagName==="SELECT") return;
+  setG = Math.max(0, Math.min(setG, setData.length-1));
+  setHTML("#setTabs", setData.map((g,i)=>`<button class="${i===setG?"pri":""}" onclick="setG=${i};try{localStorage.setItem('setG',${i})}catch(e){};drawSettings()">${esc(g.name)}</button>`).join(""));
+  setHTML("#setRows", setData[setG].rows.map(r=>{
+    const id = esc(r.id); let c = "", sub = r.note ? esc(r.note) : "";
+    if(r.kind==="choice"){
+      const cur = JSON.stringify(r.value), lbl = (r.options.find(o=>JSON.stringify(o[0])===cur)||[0,""])[1];
+      if(r.text !== lbl) sub = esc(r.text) + (sub ? " · " + sub : "");
+      c = `<select onchange="setSet('${id}',{value:JSON.parse(this.value)})">` + r.options.map(o=>`<option value="${esc(JSON.stringify(o[0]))}"${JSON.stringify(o[0])===cur?" selected":""}>${esc(o[1])}</option>`).join("") + `</select>`;
+    } else if(r.kind==="toggle") c = `<button class="${r.value?"pri":""}" onclick="setSet('${id}',{op:'toggle'})">${esc(r.text)}</button>`;
+    else if(r.kind==="range") c = `<span class="row" style="flex-wrap:nowrap"><input type="range" min="${r.lo}" max="${r.hi}" step="${r.step}" value="${r.value}" onchange="setSet('${id}',{value:+this.value})"><b style="min-width:2em;text-align:right">${esc(r.text)}</b></span>`;
+    else if(r.kind==="action") c = `<button onclick="setRun('${id}')">${esc(r.text)}</button>`;
+    else c = `<span class="muted">${esc(r.text)}</span>`;
+    return `<div><span class="lab">${esc(r.label)}${sub?`<small>${sub}</small>`:""}</span>${c}</div>`;
+  }).join(""));
+}
+async function setSet(id, body){ try{ const r = await api("/api/settings", {id, ...body}); if(r.groups){ setData = r.groups; drawSettings(); } if(!r.ok && r.msg!=="confirm") toast(r.msg); }catch(e){ toast("failed: "+e.message) } }
+function setRun(id){ const r = setData[setG].rows.find(x=>x.id===id); if(r && r.confirm && !confirm(r.confirm)) return; setSet(id, {op:"run", confirmed:true}); }
+async function togglePrivacy(){ const c = await api("/api/camera"); await act("/api/camera",{privacy:!c.privacy}); loadPrivacy(); }
+async function loadPrivacy(){ try{ const c = await api("/api/camera"); $("#privBtn").textContent = c.privacy ? "Camera is OFF - turn on" : "Turn camera off"; $("#privBtn").className = c.privacy ? "red" : ""; }catch(e){} }
+function deskRefresh(){ $("#deskImg").src = "/api/desktop.png?t=" + Date.now(); }
+async function deskSend(b){ await api("/api/desktop/input", b); setTimeout(deskRefresh, 350); }
+document.addEventListener("DOMContentLoaded", ()=>{
+  const im = $("#deskImg"); if(!im) return;
+  let downT = 0;
+  im.addEventListener("mousedown", ()=>{ downT = Date.now(); });
+  im.addEventListener("mouseup", e=>{ const r = im.getBoundingClientRect(); const x = Math.round((e.clientX-r.left)*320/r.width), y = Math.round((e.clientY-r.top)*220/r.height);
+    deskSend(Date.now()-downT > 600 ? {long:[x,y]} : {click:[x,y]}); });
+  im.addEventListener("contextmenu", e=>{ e.preventDefault(); const r = im.getBoundingClientRect(); deskSend({long:[Math.round((e.clientX-r.left)*320/r.width), Math.round((e.clientY-r.top)*220/r.height)]}); });
+  $("#deskKey").addEventListener("keydown", async e=>{ if(e.key==="Enter"){ for(const ch of $("#deskKey").value) await api("/api/desktop/input",{key:ch}); await deskSend({key:"ENTER"}); $("#deskKey").value=""; } });
+});
+async function act(path, body, msg){ try{ const r = await api(path, body); toast(r && r.msg ? r.msg : (msg||"ok")); refresh(); return r; }catch(e){ toast("failed: "+e.message) } }
+function setHTML(sel, html){ const e = typeof sel === "string" ? $(sel) : sel; if(e && e._h !== html){ e._h = html; e.innerHTML = html; } }
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+// ---- Files (robotd/files.py): browse Pip's folders, upload into the shared folder, copy a path to use in chat
+let fPath = null, fData = null, fBusy = false;
+try{ fPath = localStorage.getItem("fPath"); }catch(e){}
+const F_SHORT = [["Shared", "data/files"], ["Photos & drawings", "data/photos"], ["Videos", "data/social"], ["Plans", "plans"], ["Everything", ""]];
+const F_ICON = {folder:"📁", image:"🖼", video:"🎞", audio:"🎵", pdf:"📕", text:"📄", file:"📦"};
+const fUrl = (p, dl) => "/api/files/get?path=" + encodeURIComponent(p) + (dl ? "&dl=1" : "");
+const fSize = n => n < 1024 ? n + " B" : n < 1048576 ? (n/1024).toFixed(0) + " KB" : (n/1048576).toFixed(1) + " MB";
+const fFull = n => (fData.path ? fData.path + "/" : "") + n;
+async function loadFiles(path){
+  if(path === undefined) path = fPath === null ? "data/files" : fPath;
+  let d; try{ d = await api("/api/files?path=" + encodeURIComponent(path)); }catch(e){ return; }
+  if(d.error){ toast(d.error); if(path !== "data/files") return loadFiles("data/files"); return; }
+  fData = d; fPath = d.path; try{ localStorage.setItem("fPath", fPath); }catch(e){}
+  $("#fView").style.display = "none"; $("#fDone").innerHTML = ""; drawFiles();
+}
+function drawFiles(){
+  if(!fData) return;
+  setHTML("#fShort", F_SHORT.map(([l,p]) => `<button class="${fData.path===p?"pri":""}" onclick="loadFiles('${p}')">${l}</button>`).join(""));
+  const parts = fData.path ? fData.path.split("/") : [];
+  setHTML("#fCrumb", `<a href="#" onclick="loadFiles('');return false" style="color:var(--acc)">pip</a>` + parts.map((s,i) =>
+    ` / <a href="#" data-p="${esc(parts.slice(0,i+1).join("/"))}" onclick="loadFiles(this.dataset.p);return false" style="color:var(--acc)">${esc(s)}</a>`).join(""));
+  $("#fMk").style.display = fData.writable ? "" : "none";
+  $("#fInfo").textContent = (fData.writable ? "" : "Uploads go to Shared (data/files). ") + `${fData.free_mb} MB free · ${fData.max_upload_mb} MB a file at most`;
+  const ents = fData.entries.slice();
+  if($("#fSort").value === "new") ents.sort((a,b) => (b.dir - a.dir) || (b.t - a.t));
+  fData.shown = ents;
+  setHTML("#fList", ents.length ? ents.map((e,i) => { const p = fFull(e.n);
+    const thumb = e.kind === "image" && e.size < 700000 ? `<img loading="lazy" src="${fUrl(p)}" alt="">` : F_ICON[e.kind] || "📦";
+    return `<div class="frow"><span class="ft">${thumb}</span>
+      <span class="fn" onclick="fileOpen(${i})" title="${esc(p)}">${esc(e.n)}${e.dir?"/":""}<br><span class="muted">${e.dir ? "folder" : fSize(e.size)} · ${new Date(e.t*1000).toLocaleString([], {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"})}</span></span>
+      ${e.dir ? "" : `<button onclick="fileCopy(${i})" title="Copy the path to use in chat">Copy path</button><button class="fhide" onclick="fileAsk(${i})">Ask Pip</button><a href="${fUrl(p, true)}" download="${esc(e.n)}"><button title="Download to this device">&#11015;</button></a>`}
+      ${fData.writable ? `<button class="fhide" onclick="fileRename(${i})" title="Rename">&#9998;</button><button class="red" onclick="fileDelete(${i})" title="Delete">&#10005;</button>` : ""}</div>`; }).join("")
+    : `<p class="muted">${fData.writable ? "Nothing here yet. Upload a file or picture for Pip." : "This folder is empty."}</p>`);
+}
+function copyText(t){
+  const done = () => toast("copied: " + t);
+  if(navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t).then(done, () => copyOld(t, done));
+  copyOld(t, done);
+}
+function copyOld(t, done){ const i = document.createElement("textarea"); i.value = t; i.style.position = "fixed"; i.style.opacity = "0"; document.body.appendChild(i); i.select();
+  try{ document.execCommand("copy"); done(); }catch(e){ prompt("Copy this path:", t); } i.remove(); }
+function fileCopy(i){ copyText(fFull(fData.shown[i].n)); }
+function askPip(p){ document.querySelector('nav button[data-tab="live"]').click(); const c = $("#chatIn");
+  c.value = `Look at the file ${p} and tell me what you think.`; c.focus(); c.setSelectionRange(c.value.length, c.value.length); window.scrollTo(0, c.getBoundingClientRect().top + scrollY - 120); }
+function fileAsk(i){ askPip(fFull(fData.shown[i].n)); }
+async function fileOpen(i){
+  const e = fData.shown[i], p = fFull(e.n), v = $("#fView");
+  if(e.dir) return loadFiles(p);
+  const head = `<div class="row"><b class="fpath" style="flex:1 1 220px;min-width:0">${esc(p)}</b><button onclick="copyText(${esc(JSON.stringify(p))})">Copy path</button><button onclick="askPip(${esc(JSON.stringify(p))})">Ask Pip</button><a href="${fUrl(p, true)}" download="${esc(e.n)}"><button>Download</button></a><button onclick="$('#fView').style.display='none'">Close</button></div>`;
+  v.style.display = "";
+  if(e.kind === "image") v.innerHTML = head + `<img src="${fUrl(p)}" alt="" style="${e.size < 60000 ? "image-rendering:pixelated;width:100%" : ""}">`;
+  else if(e.kind === "video") v.innerHTML = head + `<video controls playsinline src="${fUrl(p)}"></video>`;
+  else if(e.kind === "audio") v.innerHTML = head + `<audio controls src="${fUrl(p)}" style="width:100%;margin-top:8px"></audio>`;
+  else if(e.kind === "pdf") v.innerHTML = head + `<p class="muted" style="margin:8px 0 0"><a href="${fUrl(p)}" target="_blank" rel="noopener" style="color:var(--acc)">Open the PDF in a new tab</a></p>`;
+  else if(e.kind === "text" || e.size < 200000){
+    v.innerHTML = head + `<pre>Loading…</pre>`;
+    try{ const r = await fetch(fUrl(p), {headers: {Range: "bytes=0-199999"}}); const t = await r.text();
+      v.querySelector("pre").textContent = t + (e.size > 200000 ? "\n\n[… the first 200 KB; download for the rest]" : ""); }
+    catch(err){ v.querySelector("pre").textContent = "Could not load it."; }
+  } else v.innerHTML = head + `<p class="muted" style="margin:8px 0 0">No preview for this kind of file (${fSize(e.size)}). Use Download.</p>`;
+  v.scrollIntoView({block: "nearest", behavior: "smooth"});
+}
+async function fileUpload(list){
+  const files = Array.from(list || []); if(!files.length || fBusy) return;
+  if(!fData) await loadFiles("data/files");
+  const dir = fData.writable ? fData.path : fData.shared, done = [];
+  fBusy = true;
+  try{
+    for(let k = 0; k < files.length; k++){
+      const f = files[k];
+      if(f.size > fData.max_upload_mb * 1048576){ toast(`${f.name} is too big (limit ${fData.max_upload_mb} MB)`); continue; }
+      $("#fInfo").textContent = `Uploading ${k+1} of ${files.length}: ${f.name} (${fSize(f.size)})…`;
+      try{
+        const r = await fetch(`/api/files/upload?dir=${encodeURIComponent(dir)}&name=${encodeURIComponent(f.name || "file")}`, {method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: f});
+        const j = await r.json(); if(j.ok) done.push(j.path); else toast(j.msg || "upload failed");
+      }catch(err){ toast("upload failed: " + f.name); }
+    }
+  } finally { fBusy = false; }
+  await loadFiles(dir);
+  if(done.length) $("#fDone").innerHTML = done.map(p => `<div class="row" style="padding:6px 0"><span class="badge ok">uploaded</span><span class="fpath" style="flex:1 1 220px;min-width:0">${esc(p)}</span><button onclick="copyText(${esc(JSON.stringify(p))})">Copy path</button><button class="pri" onclick="askPip(${esc(JSON.stringify(p))})">Ask Pip</button></div>`).join("");
+}
+async function fileMkdir(){ const n = prompt("Name of the new folder:"); if(!n) return; const r = await api("/api/files", {cmd:"mkdir", path:fData.path, name:n}); if(!r.ok) toast(r.msg || "failed"); loadFiles(fData.path); }
+async function fileRename(i){ const e = fData.shown[i], n = prompt("New name:", e.n); if(!n || n === e.n) return; const r = await api("/api/files", {cmd:"rename", path:fFull(e.n), name:n}); if(!r.ok) toast(r.msg || "failed"); loadFiles(fData.path); }
+async function fileDelete(i){ const e = fData.shown[i]; if(!confirm(`Delete ${e.n}? This cannot be undone.`)) return; const r = await api("/api/files", {cmd:"delete", path:fFull(e.n)}); toast(r.msg || (r.ok ? "deleted" : "failed")); loadFiles(fData.path); }
+document.addEventListener("DOMContentLoaded", () => {
+  const z = $("#fDrop"); if(!z) return;
+  ["dragenter","dragover"].forEach(ev => z.addEventListener(ev, e => { if(role !== "owner") return; e.preventDefault(); z.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev => z.addEventListener(ev, e => { z.classList.remove("over"); }));
+  z.addEventListener("drop", e => { if(role !== "owner") return; e.preventDefault(); fileUpload(e.dataTransfer.files); });
+  document.addEventListener("paste", e => {            // paste a screenshot or copied picture while the Media tab is open
+    if(tab !== "photos" || role !== "owner" || ["INPUT","TEXTAREA"].includes((document.activeElement||{}).tagName)) return;
+    const fs = Array.from((e.clipboardData || {}).files || []); if(!fs.length) return;
+    e.preventDefault(); const stamp = new Date().toISOString().slice(0,19).replace(/[-:T]/g, "");
+    fileUpload(fs.map((f,i) => new File([f], f.name && f.name !== "image.png" ? f.name : `pasted_${stamp}${i?"_"+i:""}.${(f.type.split("/")[1]||"png").replace("jpeg","jpg")}`, {type: f.type})));
+  });
+});
+// ---- Pip's email (robotd/mail.py): drafts wait for the owner's Send; the inbox list is the robot's cached copy
+const mailWhen = ts => { const d = new Date(ts); return isNaN(d) ? "" : d.toLocaleString([], {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"}); };
+async function loadMail(){
+  let m; try{ m = await api("/api/mail"); }catch(e){ return; }
+  $("#mailAddr").textContent = m.configured ? m.address : "not set up (data/agentmail.env missing)";
+  $("#mailInfo").textContent = (m.error ? "⚠ " + m.error + " · " : "") + (m.last_check_s_ago==null ? "" : `checked ${m.last_check_s_ago}s ago`) + (m.unread ? ` · ${m.unread} unread` : "");
+  const pend = m.drafts.filter(d=>d.status==="pending"), done = m.drafts.filter(d=>d.status!=="pending");
+  if(!$("#mailDrafts").contains(document.activeElement)) setHTML("#mailDrafts", pend.length ? pend.map(d=>`<div class="card" style="background:var(--panel2);margin-bottom:8px">
+      <div class="row"><b style="flex:1">Draft #${d.id}${d.reply_n?` · reply to #${d.reply_n}`:""}</b><span class="badge warn">waiting for you</span><span class="muted">${esc(mailWhen(d.ts*1000))} · by ${esc(d.src)}</span></div>
+      <input id="md${d.id}to" value="${esc(d.to)}" style="margin-top:8px" aria-label="To"><input id="md${d.id}subj" value="${esc(d.subject)}" style="margin-top:8px" aria-label="Subject">
+      <textarea id="md${d.id}text" rows="6" style="margin-top:8px" aria-label="Text">${esc(d.body)}</textarea>
+      <div class="row" style="margin-top:8px"><button class="pri" onclick="mailApprove(${d.id},this)">Send</button><button class="red" onclick="mailDiscard(${d.id})">Discard</button></div></div>`).join("")
+    : `<p class="muted">No drafts waiting.</p>`);
+  setHTML("#mailInbox", m.inbox.length ? m.inbox.map(x=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line);cursor:pointer;flex-wrap:nowrap" onclick="mailOpen(${x.n})">
+      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.unread?"<b>":""}#${x.n} ${x.sent?"→ "+esc(x.to.join(", ")):esc(x.from)} · ${esc(x.subject)}${x.unread?"</b>":""}<br><span class="muted">${esc(x.preview)}</span></span>
+      <span class="muted" style="white-space:nowrap">${esc(mailWhen(x.ts))}</span></div>`).join("") : `<p class="muted">${m.configured ? "Empty (or not checked yet)." : ""}</p>`);
+  setHTML("#mailDone", done.length ? done.map(d=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="badge ${d.status==="sent"?"ok":""}">${esc(d.status)}</span> #${d.id} → ${esc(d.to)} · ${esc(d.subject)} <span class="muted">${esc(mailWhen((d.sent_ts||d.ts)*1000))}</span></div>`).join("") : `<p class="muted">Nothing yet.</p>`);
+}
+async function mailCheck(b){ b.disabled = true; try{ const r = await api("/api/mail", {cmd:"refresh"}); if(r.msg) toast(r.msg); await loadMail(); }finally{ b.disabled = false; } }
+async function mailApprove(id, b){
+  const to = $(`#md${id}to`).value.trim();
+  if(!confirm(`Send draft #${id} to ${to}?`)) return;
+  b.disabled = true;
+  try{ const r = await api("/api/mail", {cmd:"approve", id, to, subject:$(`#md${id}subj`).value, text:$(`#md${id}text`).value}); toast(r.msg || r.error || "?"); await loadMail(); }
+  catch(e){ toast("failed: "+e.message); } finally{ b.disabled = false; }
+}
+async function mailDiscard(id){ if(!confirm(`Discard draft #${id}? It will not be sent.`)) return; const r = await api("/api/mail", {cmd:"discard", id}); toast(r.msg || "?"); loadMail(); }
+async function mailOpen(n){
+  const v = $("#mailView"); v.style.display = ""; v.innerHTML = `<p class="muted">Opening #${n}…</p>`;
+  const m = await api("/api/mail/message?id=" + n);
+  if(m.error){ v.innerHTML = `<p class="muted">${esc(m.error)}</p>`; return; }
+  v.innerHTML = `<div class="row"><b style="flex:1">#${m.n} ${esc(m.subject)}</b><button onclick="$('#mailView').style.display='none'">Close</button></div>
+    <p class="muted" style="margin:4px 0">From ${esc(m.from)} · to ${esc(m.to.join(", "))} · ${esc(mailWhen(m.ts))}${m.attachments.length?` · ${m.attachments.length} attachment(s) not shown`:""}</p>
+    <div style="white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto">${esc(m.text)}</div>
+    ${m.sent ? "" : `<div class="row" style="margin-top:8px"><button onclick="mailReply(${m.n}, ${esc(JSON.stringify(m.from))}, ${esc(JSON.stringify(m.subject))})">Reply</button></div>`}`;
+  loadMail();
+}
+function mailReply(n, from, subj){
+  $("#mailCompose").open = true; $("#mcReply").value = n; $("#mcTo").value = (from.match(/<([^>]+)>/)||[0,from])[1];
+  $("#mcSubj").value = /^re:/i.test(subj) ? subj : "Re: " + subj; $("#mcInfo").textContent = `reply to #${n}`; $("#mcText").focus();
+}
+async function mailSendOwn(b){
+  const to = $("#mcTo").value.trim(), text = $("#mcText").value.trim();
+  if(!to || !text){ toast("To and text are needed"); return; }
+  if(!confirm(`Send this email to ${to} from Pip's address?`)) return;
+  b.disabled = true;
+  try{ const r = await api("/api/mail", {cmd:"send", to, subject:$("#mcSubj").value, text, reply_to:$("#mcReply").value});
+    toast(r.msg || "?"); if(r.ok){ $("#mcTo").value = $("#mcSubj").value = $("#mcText").value = $("#mcReply").value = ""; $("#mcInfo").textContent = ""; } await loadMail(); }
+  catch(e){ toast("failed: "+e.message); } finally{ b.disabled = false; }
+}
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===b.dataset.tab));
+  tab=b.dataset.tab; if(tab !== "live") document.body.classList.remove("driving"); refresh();
+});
+$("#moods").innerHTML = `<button class="pri" data-owner onclick="act('/api/face',{mood:'auto'},'face: back to the robot')">Auto</button>` +
+  MOODS.filter(m=>m!=="idle").map(m=>`<button data-owner onclick="act('/api/face',{mood:'${m}'},'face: ${m} (stays until you tap Auto)')">${m}</button>`).join("");
+
+// Live view: one continuous MJPEG stream (no round trip per frame, smooth through the tunnel); falls back to
+// fetching single frames if the stream does not work in this browser.
+let camStream = true, camSmall = !/^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|localhost|127\.)/.test(location.hostname);
+const camSrc = () => "/api/live.mjpg?vision=1&fps=12&size=" + (camSmall ? "small" : "full") + "&t=" + Date.now();
+$("#camInfo").onclick = () => { camSmall = !camSmall; if(camOn && $("#cam").dataset.stream){ $("#cam").src = camSrc(); $("#camInfo").textContent = camLabel(); } };
+const camLabel = () => "live stream, " + (camSmall ? "smooth (tap for sharp)" : "sharp (tap for smooth)");
+function setCam(on){
+  if(on === camOn) return; camOn = on; $("#camBtn").textContent = camOn ? "Stop live view" : "Start live view"; clearTimeout(camTimer);
+  const el = $("#cam");
+  el.style.display = camOn ? "" : "none"; $("#faceCv").style.display = camOn ? "none" : "";   // live view off: Pip's face, never a broken picture
+  if(!camOn){ if(el.dataset.stream){ el.onerror = null; delete el.dataset.stream; el.src = "data:,"; } return; }
+  if(camStream){
+    el.dataset.stream = "1";
+    el.onerror = () => { if(!camOn || !el.dataset.stream) return; delete el.dataset.stream; camStream = false; el.onerror = null; camLoop(); };
+    el.src = camSrc();
+    $("#camInfo").textContent = camLabel();
+  } else camLoop();
+}
+$("#camBtn").onclick = () => setCam(!camOn);
+// ---- Pip's face in the picture box while the live view is off: the same shapes, colours and blinking as the real
+// screen (firmware/cyd_dashboard/face.ino), following the mood the screen reports in /api/status.
+const FACE_EYES = [["#00D8FF","#40F0B0","#4080FF","#FFA020","#B080FF","#FF5090","#0090B0"], ["#2F80FF","#22C55E","#6366F1","#F59E0B","#A855F7","#EC4899","#1E5BB8"],
+  ["#4FC1FF","#89D185","#3794FF","#CCA700","#C586C0","#F48771","#2C6D9E"], ["#2AA198","#859900","#268BD2","#B58900","#6C71C4","#D33682","#1A6E68"],
+  ["#CC7832","#6A8759","#6897BB","#BBB529","#9876AA","#C77DBB","#8A5A2A"], ["#A6E22E","#E6DB74","#66D9EF","#FD971F","#AE81FF","#F92672","#5A8A1E"]];
+let faceState = {mood:"idle", page:"face", asleep:false, up:true, theme:0}, faceOnline = true;
+const fg = {lx:0, ly:0, tx:0, ty:0, nextSacc:0, nextBlink:2500, blinkStart:-1};
+function faceDot(c, x, y, r, col){ c.fillStyle = col; c.beginPath(); c.arc(x, y, Math.max(0, r), 0, 7); c.fill(); }
+function faceEye(c, cx, cy, w, h, open, col, m, left){
+  const eh = Math.max(4, h*open), x0 = cx - w/2, y0 = cy - eh/2, r = Math.min(w, eh) / (m === "surprised" ? 2 : 3);
+  if(m === "love"){ const s = w/4; faceDot(c, cx-s, cy-s/2, s+2, col); faceDot(c, cx+s, cy-s/2, s+2, col);
+    c.beginPath(); c.moveTo(cx-2*s-2, cy-s/4); c.lineTo(cx+2*s+2, cy-s/4); c.lineTo(cx, cy+2*s+4); c.fill(); return; }
+  c.fillStyle = col; c.beginPath(); if(c.roundRect) c.roundRect(x0, y0, w, eh, r); else c.rect(x0, y0, w, eh); c.fill();
+  const inner = left ? x0+w : x0, outer = left ? x0 : x0+w;
+  c.fillStyle = "#000";
+  if(m === "happy"){ c.beginPath(); c.ellipse(cx, cy+eh*0.62, w*0.72, eh*0.62, 0, 0, 7); c.fill(); }
+  else if(m === "sleepy"){ c.fillRect(x0-2, y0-2, w+4, eh*0.55+2); c.fillStyle = col; c.fillRect(x0, y0+eh*0.55-3, w, 4); }
+  else if(m === "sad" || m === "warning"){ c.beginPath(); c.moveTo(outer, y0-2); c.lineTo(inner, y0-2); c.lineTo(outer, y0+eh*0.5); c.fill(); }
+  else if(m === "thinking" && !left) c.fillRect(x0-2, y0+eh*0.62, w+4, eh);
+  if(eh > 26 && m !== "sleepy" && m !== "happy") faceDot(c, cx-w/5, y0+eh/4, Math.max(3, w/12), "#fff");
+}
+function faceMouth(c, cx, cy, col, m, t){
+  const D = Math.PI/180, band = (x, y, r0, r1, a0, a1) => { c.strokeStyle = col; c.lineWidth = r1-r0; c.beginPath(); c.arc(x, y, (r0+r1)/2, a0*D, a1*D); c.stroke(); };
+  c.fillStyle = col;
+  if(m === "happy" || m === "love"){ c.beginPath(); c.arc(cx, cy-8, 24, 0, Math.PI); c.fill(); c.fillStyle = "#00303A"; c.beginPath(); c.arc(cx, cy-8, 9, 0, Math.PI); c.fill(); }
+  else if(m === "sad") band(cx, cy+22, 26, 31, 215, 325);
+  else if(m === "surprised"){ c.beginPath(); c.ellipse(cx, cy+2, 13, 17, 0, 0, 7); c.fill(); c.fillStyle = "#000"; c.beginPath(); c.ellipse(cx, cy+2, 7, 11, 0, 0, 7); c.fill(); }
+  else if(m === "curious"){ faceDot(c, cx+14, cy+2, 8, col); faceDot(c, cx+14, cy+2, 4, "#000"); }
+  else if(m === "thinking") c.fillRect(cx, cy, 34, 5);
+  else if(m === "warning"){ c.strokeStyle = col; c.lineWidth = 4.4; c.beginPath(); for(let i = 0; i < 4; i++){ c.moveTo(cx-30+i*15, cy+(i%2?6:-2)); c.lineTo(cx-15+i*15, cy+(i%2?-2:6)); } c.stroke(); }
+  else if(m === "sleepy"){ const r = 5 + 2*Math.sin(t/600); faceDot(c, cx, cy+4, r, col); faceDot(c, cx, cy+4, r-3, "#000"); }
+  else if(m !== "booting") band(cx, cy-26, 30, 35, 50, 130);
+}
+function faceDraw(){
+  const cv = $("#faceCv"); if(!cv || camOn || tab !== "live" || document.hidden) return;
+  const c = cv.getContext("2d"), t = performance.now();
+  let m = faceState.mood; if(!faceOnline || !faceState.up || faceState.asleep) m = "sleepy";
+  const e = FACE_EYES[faceState.theme] || FACE_EYES[0], col = e[{happy:1, sad:2, warning:3, thinking:4, love:5, sleepy:6}[m] || 0];
+  if(t > fg.nextSacc){ fg.tx = (Math.random()*2-1)*0.8; fg.ty = (Math.random()*2-1)*0.5; if(Math.random() < 0.33) fg.tx = fg.ty = 0;
+    if(m === "thinking"){ fg.tx = 0.6; fg.ty = -0.7; } fg.nextSacc = t + 1200 + Math.random()*3300; }
+  fg.lx += (fg.tx-fg.lx)*0.2; fg.ly += (fg.ty-fg.ly)*0.2;
+  let open = 1;
+  if(fg.blinkStart < 0 && t > fg.nextBlink){ fg.blinkStart = t; fg.nextBlink = t + 2200 + Math.random()*3800; }
+  if(fg.blinkStart >= 0){ const dt = t - fg.blinkStart; if(dt < 170) open = Math.abs(1 - 2*dt/170); else fg.blinkStart = -1; }
+  if(m === "sleepy") open *= 0.9;
+  if(m === "booting") open = 0.08 + 0.92*Math.min(1, (t%2500)/2500);
+  c.setTransform(cv.width/320, 0, 0, cv.height/240, 0, 0);
+  c.fillStyle = "#000"; c.fillRect(0, 0, 320, 240);
+  const dx = fg.lx*26, dy = fg.ly*14 + 2*Math.sin(t/900), ew = 68, eh = 92, sep = 52;
+  let ewL = ew, ehL = eh, ewR = ew, ehR = eh;
+  if(m === "curious"){ ehL = eh*1.12; ehR = eh*0.78; }
+  if(m === "surprised"){ ewL = ewR = ew*0.86; ehL = ehR = eh*1.08; }
+  faceEye(c, 160-sep-ew/2+24+dx, 88+dy, ewL, ehL, open, col, m, true);
+  faceEye(c, 160+sep+ew/2-24+dx, 88+dy, ewR, ehR, open, col, m, false);
+  faceMouth(c, 160+dx/2, 170+dy/2, col, m, t);
+  c.fillStyle = col; c.font = "bold 18px sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+  if(m === "thinking") for(let i = 0; i < 3; i++) faceDot(c, 250+i*16, 28, 5, (Math.floor(t/300)%4) > i ? col : "#222a38");
+  else if(m === "sleepy"){ const ph = (t%3000)/3000; c.fillText("z", 250+ph*20, 50-ph*30); c.font = "bold 13px sans-serif"; c.fillText("z", 236+ph*14, 62-ph*22); }
+  else if(m === "warning"){ c.fillStyle = "#FFA020"; c.beginPath(); c.moveTo(160, 4); c.lineTo(146, 28); c.lineTo(174, 28); c.fill(); c.fillStyle = "#000"; c.font = "bold 14px sans-serif"; c.fillText("!", 160, 19); }
+  else if(m === "curious") c.fillText("?", 262, 30 + 3*Math.sin(t/300));
+  const why = !faceOnline ? "Pip is not answering" : !faceState.up ? "Pip's screen is not connected" : faceState.asleep ? "Pip's screen is asleep"
+    : faceState.page !== "face" ? "Pip's screen shows: " + faceState.page : "Pip looks " + faceState.mood;
+  c.fillStyle = "#8a94a8"; c.font = "11px sans-serif"; c.fillText(why + "  ·  live view is off (tap to start)", 160, 228);
+}
+setInterval(faceDraw, 66);
+faceDraw(); // initial draw so the canvas isn't blank on load
+setInterval(() => { const el = $("#cam"); if(camOn && el.dataset.stream) el.src = camSrc(); }, 14 * 60 * 1000);   // the robot ends a stream after 15 min
+function camLoop(){
+  if(!camOn) return;
+  const img = new Image(), t0 = performance.now();
+  img.onload = () => { $("#cam").src = img.src; $("#camInfo").textContent = Math.round(performance.now()-t0)+" ms/frame"; camTimer=setTimeout(camLoop, 150); };
+  img.onerror = () => { $("#camInfo").textContent = "camera busy, retrying"; camTimer=setTimeout(camLoop, 1500); };
+  img.src = "/api/live.jpg?vision=1&t=" + Date.now();
+}
+// ---- Talk: typed, keyboard dictation, or hold-to-talk with this phone's microphone (the robot answers out loud)
+const convo = [];
+function addLine(who, text){ convo.push({who, text}); if(convo.length > 40) convo.shift();
+  setHTML("#convo", convo.map(m=>`<div class="${m.who}">${esc(m.text)}</div>`).join("")); const c = $("#convo"); c.scrollTop = c.scrollHeight; }
+async function chat(text){ const typed = text === undefined, t = (typed ? $("#chatIn").value : text).trim(); if(!t) return;
+  if(typed) $("#chatIn").value = "";
+  addLine("you", t); addLine("bot", "…");
+  try{ const r = await api("/api/chat",{text:t}); convo.pop(); const rep = (r.reply||"") + (r.online ? "" : "  (offline mode - add an API key in AI)");
+    addLine("bot", rep);
+    if($("#phoneVoice").checked && r.reply && window.speechSynthesis){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(r.reply)); }
+  }catch(e){ convo.pop(); addLine("bot", "failed: " + e.message); } }
+$("#chatIn").addEventListener("keydown", e=>{ if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); chat(); } });
+let rec = null, recChunks = [], recStream = null, recT0 = 0, pttHeld = false;
+function pttLabel(on){ const b = $("#ptt"); b.classList.toggle("rec", on); b.innerHTML = on ? "&#9679; Listening… let go to send" : "&#127908; Hold to talk"; }
+async function pttStart(e){ e.preventDefault(); if(rec) return; pttHeld = true;
+  if(!window.isSecureContext || !navigator.mediaDevices || !window.MediaRecorder){ toast("The phone mic needs the robot's https address. Your keyboard's mic button works anywhere."); return; }
+  try{ recStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true, autoGainControl:true}}); }
+  catch(err){ toast("Microphone blocked: " + err.message); return; }
+  if(!pttHeld){ recStream.getTracks().forEach(t=>t.stop()); recStream = null; toast("Mic ready: hold the button while you talk"); return; }   // let go during the permission prompt
+  const mime = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find(m=>MediaRecorder.isTypeSupported(m));
+  rec = new MediaRecorder(recStream, mime ? {mimeType:mime} : {}); recChunks = [];
+  rec.ondataavailable = ev=>{ if(ev.data.size) recChunks.push(ev.data); };
+  rec.onstop = pttSend; rec.start(); recT0 = Date.now(); pttLabel(true); }
+function pttStop(e){ pttHeld = false; if(rec && rec.state === "recording") rec.stop(); }
+async function pttSend(){ const type = (rec.mimeType || "audio/webm"), blob = new Blob(recChunks, {type}); rec = null;
+  if(recStream){ recStream.getTracks().forEach(t=>t.stop()); recStream = null; } pttLabel(false);
+  if(Date.now() - recT0 < 500){ toast("Hold the button while you talk"); return; }
+  addLine("you", "…");
+  const b64 = await new Promise(res=>{ const fr = new FileReader(); fr.onload = ()=>res(fr.result); fr.readAsDataURL(blob); });
+  try{ const r = await api("/api/hear", {audio:b64, mime:type}); convo.pop();
+    if(!r.text){ addLine("bot", "(I didn't catch that. Try again, a bit closer.)"); return; }
+    chat(r.text); }catch(e){ convo.pop(); toast("failed: " + e.message); } }
+{ const b = $("#ptt"); b.addEventListener("pointerdown", pttStart); ["pointerup", "pointercancel", "pointerleave"].forEach(ev=>b.addEventListener(ev, pttStop));
+  b.addEventListener("contextmenu", e=>e.preventDefault());
+  if(!window.isSecureContext) $("#pttNote").textContent = "Hold to talk needs the robot's https address (phones only allow the mic there). Typing and your keyboard's mic button work anywhere."; }
+async function say(){ const t=$("#chatIn").value.trim(); if(t){ await act("/api/say",{text:t},"saying it"); $("#chatIn").value=""; } }
+let catRows=[], benchRows=[], benchSort="score";
+const money = v => v===0 ? "free" : v==null ? "?" : "$"+(v<0.1? v.toFixed(3) : v.toFixed(2));
+async function usePack(){ await act("/api/brain/use",{model_id:$("#pack").value},"switched"); }
+async function useModel(id){ await act("/api/brain/use",{model_id:id},"now using "+id); }
+async function benchOne(id){ const r = await api("/api/bench/run",{models:[id]}); toast(r.msg); }
+async function benchPack(){ if(!confirm("Run the benchmark on every model in the variety pack? It costs a few cents in total (free models cost nothing).")) return; const r = await api("/api/bench/run",{models:"pack"}); toast(r.msg); }
+async function loadCatalog(){
+  const s=$("#csort").value, params=new URLSearchParams({q:$("#cq").value, vision:$("#cv").checked?1:0, tools:$("#ct").checked?1:0, free:$("#cf").checked?1:0, sort:s==="score"?"price":s});
+  const d = await api("/api/models?"+params); catRows=d.models;
+  if(s==="score") catRows.sort((a,b)=>(b.score??-1)-(a.score??-1));
+  $("#cinfo").textContent = d.error ? "price feed error: "+d.error : `${catRows.length} models · prices updated ${Math.round((Date.now()/1000-d.fetched)/60)} min ago`;
+  $("#ctab").innerHTML = "<tr><th>model</th><th>company</th><th>in</th><th>out</th><th>context</th><th>👁</th><th>🔧</th><th>score</th><th></th></tr>" + catRows.slice(0,80).map(m=>
+    `<tr><td title="${esc(m.id)}">${esc(m.name)}</td><td>${esc(m.company)}</td><td>${money(m.in)}</td><td>${money(m.out)}</td><td>${(m.ctx/1000).toFixed(0)}k</td><td>${m.vision?"✓":""}</td><td>${m.tools?"✓":""}</td><td>${m.score==null?"":Math.round(m.score*100)}</td><td><button data-owner onclick="useModel('${esc(m.id)}')">use</button> <button data-owner onclick="benchOne('${esc(m.id)}')">bench</button></td></tr>`).join("");
+  document.querySelectorAll("#ctab [data-owner]").forEach(e=>e.disabled = role!=="owner");
+}
+function drawBench(){
+  const tasks=["persona","reasoning","math","tool_use","json","vision_count","ocr"];
+  const key={score:r=>-r.score, latency:r=>r.avg_latency_s, cost:r=>r.cost, model:r=>r.model}[benchSort] || (r=>-(r.tasks[benchSort]??-1));
+  const rows=[...benchRows].sort((a,b)=>{const x=key(a),y=key(b); return x<y?-1:x>y?1:0;});
+  $("#btab").innerHTML = `<tr><th onclick="benchSort='model';drawBench()">model</th><th onclick="benchSort='score';drawBench()">score ▾</th>${tasks.map(t=>`<th onclick="benchSort='${t}';drawBench()">${t.replace("_"," ")}</th>`).join("")}<th onclick="benchSort='latency';drawBench()">avg s</th><th onclick="benchSort='cost';drawBench()">cost</th><th></th></tr>` +
+    rows.map(r=>`<tr><td>${esc(r.model)}</td><td><b>${Math.round(r.score*100)}</b></td>${tasks.map(t=>`<td>${r.tasks[t]==null?"":Math.round(r.tasks[t]*100)}</td>`).join("")}<td>${r.avg_latency_s}</td><td>$${r.cost.toFixed(4)}</td><td><button data-owner onclick="useModel('${esc(r.model)}')">use</button></td></tr>`).join("") || "<tr><td class=muted>no benchmark runs yet</td></tr>";
+}
+async function selectModel(){ await act("/api/brain/select",{key:$("#model").value},"switched"); }
+async function saveKey(){ await act("/api/brain/key",{provider:$("#keyProv").value,key:$("#keyVal").value},"key saved"); $("#keyVal").value=""; }
+async function addModel(){ await act("/api/brain/model",{key:$("#mKey").value,provider:$("#mProv").value,model:$("#mId").value,label:$("#mKey").value},"model added"); }
+async function draftPost(photo){ toast("drafting…"); const r = await api("/api/social/draft",{note:$("#sNote").value||"a little update about my day", take_photo:photo}); toast("draft "+r.status+(r.status==="blocked"?": "+r.privacy:"")); $("#sNote").value=""; refresh(); }
+async function shareImg(p){ toast("drafting a post…"); const r = await api("/api/social/draft",{photo:p, note:"a photo I took"}); toast("draft "+r.status+(r.status==="blocked"?": "+r.privacy:"")); }
+function postCounts(c){ return c ? `<div style="font-size:12px;margin:2px 0">&hearts; ${c.likes} &middot; ${c.reposts} reposts &middot; ${c.replies} replies</div>` : ""; }
+async function publish(id){ const t=document.getElementById("pt"+id).value; const r = await api("/api/social/publish",{id, text:t}); toast(r.msg||"posted"); refresh(); }
+async function saveSocial(){ const d={BLUESKY_HANDLE:$("#bh").value,BLUESKY_APP_PASSWORD:$("#bp").value,PINTEREST_TOKEN:$("#pt").value,PINTEREST_BOARD_ID:$("#pb").value}; await act("/api/social/creds",d,"accounts saved"); ["#bp","#pt"].forEach(s=>$(s).value=""); }
+async function addMem(){ const f=$("#memIn").value.trim(); if(f){ await act("/api/memories",{fact:f},"remembered"); $("#memIn").value=""; } }
+async function setPw(){ await act("/api/web/password",{password:$("#pw").value},"password set"); $("#pw").value=""; }
+async function invite(){ const r = await api("/api/web/invite",{}); $("#inv").innerHTML = `Send this link (valid 24 h, one use): <br><code>${esc(r.url)}</code>`; }
+
+function drawImu(d){
+  const c=$("#imu"), g=c.getContext("2d"), W=c.width, H=c.height, cx=110, cy=110, R=95;
+  g.clearRect(0,0,W,H);
+  g.save(); g.beginPath(); g.arc(cx,cy,R,0,7); g.clip();
+  g.translate(cx,cy); g.rotate(-d.r*Math.PI/180); g.translate(0, d.p*2.2);
+  g.fillStyle="#2d7fd8"; g.fillRect(-300,-300,600,300); g.fillStyle="#8a5a2b"; g.fillRect(-300,0,600,300);
+  g.strokeStyle="#fff"; g.lineWidth=2; g.beginPath(); g.moveTo(-300,0); g.lineTo(300,0); g.stroke();
+  g.lineWidth=1; for(let k=-40;k<=40;k+=10){ if(!k) continue; const y=-k*2.2, l=k%20?14:26; g.beginPath(); g.moveTo(-l,y); g.lineTo(l,y); g.stroke(); }
+  g.restore();
+  g.strokeStyle="#3a4458"; g.beginPath(); g.arc(cx,cy,R,0,7); g.stroke();
+  g.fillStyle="#ffb020"; g.fillRect(cx-46,cy-2,28,4); g.fillRect(cx+18,cy-2,28,4); g.beginPath(); g.arc(cx,cy,4,0,7); g.fill();
+  g.fillStyle="#e8ecf4"; g.font="15px system-ui";
+  [["pitch",d.p],["roll",d.r],["yaw",d.y]].forEach((v,i)=>g.fillText(`${v[0]} ${(+v[1]).toFixed(1)}°`,225,40+i*24));
+  g.fillStyle="#8a94a8"; g.font="13px system-ui";
+  g.fillText(`|a| ${Math.hypot(d.ax,d.ay,d.az).toFixed(2)} g`,225,124); g.fillText(`${d.hz} Hz via ${d.src}`,225,144); g.fillText(`${d.tc} °C`,225,164);
+}
+
+function battShow(b){                              // header battery (robotd/battery.py bar_info)
+  const el = $("#batt");
+  if(!b){ el.hidden = true; return; }
+  el.hidden = false;
+  el.className = "batt " + b.s;
+  el.title = b.tip || "";
+  el.querySelector(".bfill").style.width = Math.max(0, Math.min(100, b.pct ?? 0)) * 0.17 + "px";
+  el.querySelector(".btxt").textContent = b.txt;
+}
+
+async function refresh(){
+  if(document.hidden) return;                      // a tab nobody is looking at must not keep the robot busy
+  try{
+    const st = await api("/api/status");
+    $("#link").classList.add("on");
+    if(st.face) { faceState = st.face; faceDraw(); } faceOnline = true;
+    try{ localStorage.setItem("pipLastSeen", Date.now()); }catch(e){}   // shown by offline.html
+    $("#hdr").textContent = `${st.temp}°C · ${st.cpu}% cpu · ${role}`;
+    battShow(st.batt);
+    if(tab==="body"){
+      if(role==="owner" && document.activeElement!==$("#deskKey")) deskRefresh();
+      const ips = Object.entries(st.ips||{}).map(([k,v])=>k+" "+v).join(", ");
+      $("#sys").innerHTML = [["Uptime",Math.round(st.up/60)+" min"],["RAM",st.mem_used+" / "+st.mem_total+" MB"],["Disk",st.disk_used+" / "+st.disk_total+" GB"],["Load",st.load.join(" ")],["Network",ips],["Internet",st.net?"online":"offline"],["RP2040",st.rp2040],["AI",st.ai]].map(([k,v])=>`<div>${k}</div><div>${esc(v)}</div>`).join("");
+      drawImu(await api("/api/imu")); $("#imuTxt").textContent="";
+      if(role==="owner") loadMotion();
+      const devs = await api("/api/devices");
+      setHTML("#devs", devs.map(d=>`<div><span>${esc(d.n)}<br><span class="muted">${esc(d.d)}</span></span><span class="badge ${({ok:'ok',warn:'warn',missing:'bad'})[d.s]||''}">${esc(d.s)}</span></div>`).join(""));
+      const ts = await api("/api/tests");
+      setHTML("#tests", ts.map(t=>`<div><span>${esc(t.n)}<br><span class="muted">${esc(t.when)}</span></span><span><span class="badge ${t.last==='pass'?'ok':t.last==='fail'?'bad':''}">${t.last||'-'}</span> <button data-owner onclick="runTest('${t.id}',this)">run</button></span></div>`).join(""));
+    }
+    if(tab==="ai"){
+      const pk = await api("/api/models/pack");
+      if(document.activeElement!==$("#pack")) $("#pack").innerHTML = pk.map(m=>`<option value="${esc(m.id)}" ${m.active?"selected":""}>${esc(m.slot)}: ${esc(m.name)} — ${money(m.in)}/${money(m.out)} · ${(m.ctx/1000).toFixed(0)}k${m.vision?" · 👁":""}${m.score!=null?" · score "+Math.round(m.score*100):""}</option>`).join("");
+      if(!catRows.length) loadCatalog();
+      const bj = await api("/api/bench"); benchRows=bj.leaderboard; drawBench();
+      $("#bjob").textContent = bj.job.state==="running" ? `running: ${bj.job.done}/${bj.job.total} tasks (${bj.job.current})` : (bj.job.state==="idle"?"":bj.job.state);
+      const b = await api("/api/brain");
+      if(document.activeElement!==$("#model")) $("#model").innerHTML = b.models.map(m=>`<option value="${esc(m.k)}" ${m.k===b.active?"selected":""} ${m.ok?"":"disabled"}>${m.pack?esc(m.pack)+" · ":""}${esc(m.l)}${m.price?" · "+esc(m.price):""}${m.vision?" · 👁":""}${m.ok?"":" (unavailable)"}</option>`).join("");
+      $("#aiInfo").textContent = `Now: ${b.label} — ${b.online?"ready":"needs an API key"}. This session: ${b.usage.requests} requests, ${b.usage.input} in / ${b.usage.output} out tokens, ${b.usage.cache_read} cached.`;
+      $("#stats").innerHTML = (b.stats.length? b.stats : [{model:"no calls yet",calls:0,avg_latency_s:0,success:0,thumbs_up:0,thumbs_down:0}]).map(s=>`<div><span>${esc(s.model)}<br><span class="muted">${s.calls} calls · ${s.avg_latency_s}s avg · ${Math.round(s.success*100)}% ok</span></span><span class="badge">👍${s.thumbs_up||0} 👎${s.thumbs_down||0}</span></div>`).join("");
+      const mems = await api("/api/memories");
+      $("#mems").innerHTML = mems.map(m=>`<div><span>${esc(m)}</span></div>`).join("") || "<div class=muted>nothing yet</div>";
+    }
+    if(tab==="photos"){ loadPhotos(); loadMusic(); if(role==="owner" && !fData) loadFiles(); }
+    if(tab==="dev" && role==="owner"){ devPoll(); if(!devModelsLoaded) devLoadModels(); }
+    if(tab==="social"){
+      const s = await api("/api/social");
+      $("#chans").textContent = "Bluesky: "+(s.channels.bluesky?"connected":"not set")+" · Pinterest: "+(s.channels.pinterest?"connected":"not set");
+      $("#autoUp").checked = !!s.cfg.autonomous; $("#diary").checked = s.cfg.daily_diary!==false;
+      const dr = s.posts.filter(x=>x.status==="draft"||x.status==="blocked"||x.status==="failed"||x.status==="queued");
+      if(!$("#drafts").contains(document.activeElement)) setHTML("#drafts", dr.map(x=>`<div class="card" style="background:var(--panel2)">${x.image?`<img src="/api/social/image?id=${x.id}" style="width:100%;max-width:320px;border-radius:8px">`:""}
+        <textarea id="pt${x.id}">${esc(x.text)}</textarea><div class="muted">#${x.id} · ${esc(x.status)} · privacy: ${esc(x.privacy)} ${x.error?"· "+esc(x.error):""}</div>
+        <div class="row" style="margin-top:6px">${x.status!=="blocked"?`<button class="pri" data-owner onclick="publish(${x.id})">Post</button>`:""}<button data-owner onclick="act('/api/social/discard',{id:${x.id}},'discarded')">Discard</button></div></div>`).join("") || "<span class=muted>no drafts</span>");
+      setHTML("#posted", s.posts.filter(x=>x.status==="posted").map(x=>`<div>${x.image?`<img src="/api/social/image?id=${x.id}" onerror="this.remove()">`:""}${postCounts((s.counts||{})[x.id])}<div class="muted" style="font-size:12px">${esc(x.text)}</div></div>`).join("") || "<span class=muted>nothing posted yet</span>");
+    }
+    if(tab==="settings"){
+      loadSettings();
+      if(role==="owner") loadMail();
+      const w = await api("/api/whoami");
+      $("#who").textContent = `Signed in as ${w.role}. Owner password ${w.has_password?"is set":"is NOT set yet (pairing via the robot screen works anyway)"}.`;
+      $("#pub").innerHTML = Object.entries(w.public).map(([k,v])=>`<label class="row" style="padding:4px 0"><input type="checkbox" style="width:auto" ${v?"checked":""} onchange="act('/api/web/public',{${k}:this.checked},'saved')"> ${k}</label>`).join("");
+    }
+    if(tab==="live"){
+      loadPrivacy();
+      if(role==="owner") loadDrive();
+      const v = await api("/api/vision");
+      if(document.activeElement!==$("#cvMode")) $("#cvMode").value = v.cfg.mode; $("#cvFollow").checked = !!v.cfg.follow; $("#cvGaze").checked = !!v.cfg.gaze_mirror;
+      $("#cvInfo").textContent = v.cfg.mode==="off" ? "" : `faces ${v.faces} · smiles ${v.smiles} · motion ${Math.round((v.motion||0)*100)}%${v.gaze_dir&&v.gaze_dir!=="-"?" · looking "+v.gaze_dir:""} ${v.qr?"· QR: "+v.qr:""}`;
+      const f = await api("/api/feed?since="+feedSince);
+      if(f.length){ feedSince = f[f.length-1].id || feedSince;
+        const box=$("#feed"); f.forEach(e=>{ const d=document.createElement("div"); const cls={heard:"heard",said:"said",ai_reply:"ai"}[e.kind]||"";
+          d.innerHTML=`<span class="k">${new Date(e.ts*1000).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})} ${esc(e.kind)}</span> <span class="${cls}">${esc(e.msg)}</span>`; box.prepend(d); });
+        while(box.children.length>200) box.lastChild.remove(); }
+    }
+  }catch(e){ if(e.message!=="auth"){ $("#link").classList.remove("on"); faceOnline = false; battShow(null);
+    let s = 0; try{ s = +localStorage.getItem("pipLastSeen") || 0; }catch(_){}
+    $("#hdr").textContent = "offline" + (s ? " · last seen " + new Date(s).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) : ""); } }
+  document.querySelectorAll("[data-owner]").forEach(e=>e.disabled = role!=="owner");
+  document.querySelectorAll("[data-owner-card]").forEach(e=>e.style.display = role==="owner"?"":"none");
+  document.querySelectorAll("[data-owner-nav]").forEach(e=>e.style.display = role==="owner"?"":"none");
+}
+// ---- motion sensor modes
+const MOT_HELP = {off: "Off: it only counts movement (shown in Devices and the feed).",
+  wake: "Wake: the face perks up when someone comes by. The camera is not used.",
+  greet: "Greet: it looks with the camera and says hello (at most every few minutes). Greeting photos are not saved.",
+  security: "Security: after a 60 s delay to let you leave, each movement saves a private photo below. Switch it off here when you are back (it cannot be switched off by voice)."};
+async function loadMotion(){ try{ const m = await api("/api/motion");
+  document.querySelectorAll("#motModes button").forEach(b=>b.className = b.dataset.m === m.mode ? (m.mode === "security" ? "red" : "pri") : "");
+  $("#motHelp").textContent = MOT_HELP[m.mode] || "";
+  $("#motAi").checked = !!m.greet_ai; $("#motWarn").checked = !!m.security_warn;
+  const last = m.last_s == null ? "no movement seen since start" : (m.active ? "something is moving now" : `last movement ${m.last_s < 90 ? Math.round(m.last_s)+" s" : Math.round(m.last_s/60)+" min"} ago`);
+  $("#motInfo").textContent = `Mode: ${m.mode}${m.mode==="security" ? (m.armed ? ` (armed, ${m.seen_while_armed} movement${m.seen_while_armed===1?"":"s"} so far)` : ` (arming in ${m.armed_in} s)`) : ""}. ${last}; ${m.today} today.` + (m.last_greeting ? ` Last greeting: "${m.last_greeting}"` : "");
+  const ph = m.security_photos || [];
+  $("#secBox").style.display = ph.length ? "" : "none";
+  setHTML("#secGrid", ph.map(p=>`<div><img loading="lazy" src="/api/security/photo?name=${encodeURIComponent(p)}&thumb=1" onclick="$('#dlgImg').src='/api/security/photo?name=${encodeURIComponent(p)}';$('#dlg').showModal()"><div class="muted" style="font-size:11px">${esc(p.slice(4,8)+"-"+p.slice(8,10)+"-"+p.slice(10,12)+" "+p.slice(13,15)+":"+p.slice(15,17)+":"+p.slice(17,19))}</div></div>`).join(""));
+}catch(e){} }
+async function motSet(b){ const r = await api("/api/motion", b).catch(e=>({error:e.message})); toast(r.error || r.msg || "saved"); loadMotion(); }
+// ---- driving: joystick + keys -> /api/drive/rc every 120 ms while held; the robot stops 0.4 s after the last one
+let rcX = 0, rcY = 0, rcTimer = null, drvState = {}, drvKeys = new Set();
+let camAuto = false;
+async function loadDrive(){ try{ drvState = await api("/api/drive");
+  const on = role === "owner" && !!drvState.motors_enabled;
+  $("#drvWrap").classList.toggle("driving", on); document.body.classList.toggle("driving", on && tab === "live");
+  if(on && !camAuto && tab === "live"){ camAuto = true; setCam(true); if(innerWidth > innerHeight && innerHeight < 520) $("#drvWrap").scrollIntoView({block: "start"}); }
+  if(!on) camAuto = false;
+  $("#drvLock").textContent = drvState.motors_enabled ? "Lock motors" : "Unlock motors to drive";
+  $("#drvLock").className = drvState.motors_enabled ? "red" : "pri";
+  $("#pad").classList.toggle("off", !drvState.motors_enabled);
+  $("#drvInfo").textContent = !drvState.wheels ? "Run Body > Tests > Wheel setup first." :
+    (drvState.motors_enabled ? `Motors unlocked (cap ${drvState.motor_max}/127).` : "Motors locked.") +
+    (drvState.busy ? " Driving: " + drvState.step : (drvState.log && drvState.log.length ? " Last: " + drvState.log[drvState.log.length-1] : "")) +
+    (drvState.error ? " Error: " + drvState.error : "") + (drvState.motors_enabled ? " Unplug the motor battery when you are done." : ""); }catch(e){} }
+async function drvToggle(){ await act("/api/motors/settings", {enabled: !drvState.motors_enabled}, drvState.motors_enabled ? "motors locked" : "motors unlocked"); loadDrive(); }
+async function drv(b){ const r = await api("/api/drive", b).catch(e=>({error:e.message})); toast(r.error || r.msg || "ok"); setTimeout(loadDrive, 300); }
+function drvSend(){ api("/api/drive/rc", {x: rcX, y: rcY, max: +$("#drvMax").value}).then(r=>{ if(r && r.error){ toast(r.error); rcEnd(); } }).catch(()=>{}); }
+function rcGo(){ if(!rcTimer){ drvSend(); rcTimer = setInterval(drvSend, 120); } }
+function rcEnd(){ clearInterval(rcTimer); rcTimer = null; rcX = rcY = 0; knob(0, 0); api("/api/drive", {cmd: "stop"}).catch(()=>{}); }
+function knob(x, y){ const k = $("#knob"); k.style.left = (50 + x * 38) + "%"; k.style.top = (50 - y * 38) + "%"; }
+function padMove(e){ const b = $("#pad").getBoundingClientRect();
+  let x = (e.clientX - b.left - b.width / 2) / (b.width / 2), y = (b.top + b.height / 2 - e.clientY) / (b.height / 2);
+  const m = Math.hypot(x, y); if(m > 1){ x /= m; y /= m; }
+  rcX = Math.abs(x) < 0.1 ? 0 : x; rcY = Math.abs(y) < 0.1 ? 0 : y; knob(x, y); rcGo(); }
+$("#pad").addEventListener("pointerdown", e=>{ if(!drvState.motors_enabled){ toast("Unlock the motors first"); return; } $("#pad").setPointerCapture(e.pointerId); padMove(e); });
+$("#pad").addEventListener("pointermove", e=>{ if(rcTimer) padMove(e); });
+["pointerup", "pointercancel", "lostpointercapture"].forEach(ev=>$("#pad").addEventListener(ev, ()=>{ if(rcTimer) rcEnd(); }));
+const DRV_KEYS = {ArrowUp:[0,1], w:[0,1], ArrowDown:[0,-1], s:[0,-1], ArrowLeft:[-1,0], a:[-1,0], ArrowRight:[1,0], d:[1,0]};
+function keysToRc(){ let x = 0, y = 0; drvKeys.forEach(k=>{ x += DRV_KEYS[k][0]; y += DRV_KEYS[k][1]; });
+  if(!x && !y){ if(rcTimer) rcEnd(); return; } rcX = x * (y ? 0.5 : 0.8); rcY = y; knob(rcX, rcY); rcGo(); }
+document.addEventListener("keydown", e=>{ if(tab !== "live" || !drvState.motors_enabled || !(e.key in DRV_KEYS) || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  e.preventDefault(); if(!drvKeys.has(e.key)){ drvKeys.add(e.key); keysToRc(); } });
+document.addEventListener("keyup", e=>{ if(drvKeys.delete(e.key)) keysToRc(); });
+window.addEventListener("blur", ()=>{ drvKeys.clear(); if(rcTimer) rcEnd(); });
+document.addEventListener("visibilitychange", ()=>{ if(document.hidden && rcTimer) rcEnd(); });
+// Hidden tab (phone locked, another tab in front): stop the live camera and the polling; pick both up again when it is shown.
+let camWasOn = false;
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden){ camWasOn = camOn; if(camOn) setCam(false); }
+  else { if(camWasOn && tab === "live") setCam(true); camWasOn = false; refresh(); }
+});
+async function runTest(id, btn){ btn.disabled=true; btn.textContent="…"; const r = await api("/api/test/"+id,{}); toast((r.ok?"PASS ":"FAIL ")+r.sum); $("#tests")._h = null; refresh(); }
+// ---- media: photos (look-alikes marked, delete) and the Music folder
+function hamming(a, b){ if(!a || !b) return 64; let x = BigInt("0x"+a) ^ BigInt("0x"+b), n = 0; while(x){ n += Number(x & 1n); x >>= 1n; } return n; }
+let lookAlikes = [];
+async function loadPhotos(){ try{
+  const all = await api("/api/photos?info=1"), posts = all.filter(p=>p.post).length;
+  const ph = $("#phPosts").checked ? all : all.filter(p=>!p.post);
+  $("#phPostsN").textContent = posts ? `(${posts}, also shown in Social)` : "";
+  // list is newest first: an older photo that looks the same as a newer one is a look-alike (the newest one is kept)
+  const like = {}; lookAlikes = [];
+  ph.forEach((p, i)=>{ for(let j = 0; j < i; j++){ if(!like[ph[j].n] && hamming(p.h, ph[j].h) <= 3){ like[p.n] = ph[j].n; lookAlikes.push(p.n); break; } } });
+  $("#phDupBtn").style.display = lookAlikes.length && role === "owner" ? "" : "none";
+  $("#phDupBtn").textContent = `Delete ${lookAlikes.length} look-alike${lookAlikes.length===1?"":"s"}`;
+  $("#phInfo").textContent = `${ph.length} photo${ph.length===1?"":"s"}` + (lookAlikes.length ? ` · ${lookAlikes.length} marked "look-alike" (almost the same as a newer photo)` : "");
+  setHTML("#grid", ph.map(p=>`<div class="ph"><img loading="lazy" src="/api/photo?name=${encodeURIComponent(p.n)}&thumb=1" data-n="${esc(p.n)}" onclick="openImg(this.dataset.n)" title="${esc(p.n)}">${like[p.n]?`<span class="tag" title="looks like ${esc(like[p.n])}">look-alike</span>`:""}${p.post?`<span class="tag" style="left:auto;right:4px;color:var(--acc)">post copy</span>`:""}
+    <div class="bar"><button data-owner data-n="${esc(p.n)}" onclick="shareImg(this.dataset.n)">share</button><button data-owner class="red" data-n="${esc(p.n)}" onclick="delPhotos([this.dataset.n])" title="delete">&#128465;</button></div></div>`).join("") || "<span class=muted>no photos yet</span>");
+  document.querySelectorAll("#grid [data-owner]").forEach(e=>e.disabled = role!=="owner");
+}catch(e){} }
+async function delPhotos(names){ if(!names.length || !confirm(names.length === 1 ? `Delete ${names[0]}?` : `Delete ${names.length} photos?`)) return;
+  await act("/api/photos/delete", {names}, "deleted"); }
+function delLookAlikes(){ delPhotos(lookAlikes.slice()); }
+async function loadMusic(){ if(role !== "owner") return; try{ const m = await api("/api/music");
+  $("#musInfo").innerHTML = `Songs saved with <b>Save audio</b> in RoboTube (on the robot's screen) land in <code>${esc(m.folder)}</code> on the robot. The <b>Music</b> app on the robot plays them; here you can listen, download or delete them.` +
+    (m.playing ? ` <br>Playing on the robot: ${esc(m.playing)} <button onclick="act('/api/music/play',{stop:true})">&#9632; stop</button>` : "");
+  setHTML("#musList", m.files.map(f=>`<div><span style="min-width:0;overflow-wrap:anywhere">${esc(f.n)}<br><span class="muted">${(f.size/1048576).toFixed(1)} MB · saved ${new Date(f.ts*1000).toLocaleDateString()}</span></span>
+    <span style="display:flex;gap:4px;flex-shrink:0;align-items:center"><button data-n="${esc(f.n)}" onclick="musListen(this.dataset.n)" title="listen on this device">&#9654; here</button><button data-n="${esc(f.n)}" onclick="act('/api/music/play',{name:this.dataset.n})" title="play on the robot speaker">&#9654; robot</button><a href="/api/music/file?name=${encodeURIComponent(f.n)}" download><button title="download">&#11015;</button></a><button class="red" data-n="${esc(f.n)}" onclick="musDel(this.dataset.n)" title="delete">&#128465;</button></span></div>`).join("") || "<div class=muted>no songs yet</div>");
+}catch(e){} }
+function musListen(n){ const a = $("#musAudio"); a.src = "/api/music/file?name=" + encodeURIComponent(n); a.style.display = "block"; a.play().catch(()=>{}); }
+async function musDel(n){ if(confirm(`Delete ${n}?`)) await act("/api/music/delete", {name:n}, "deleted"); }
+// ---- RoboDev (coding agent) chat
+let devSince = 0, devFiles = [], devStatus = {}, devModelsLoaded = false;
+function devReset(){ devSince = 0; $("#devLog").innerHTML = ""; devPoll(); }
+function devMd(t){   // tiny markdown: ``` blocks, `code`, **bold**
+  return esc(t).replace(/```[\w-]*\n?([\s\S]*?)```/g, (m, c)=>`<pre>${c}</pre>`).replace(/`([^`\n]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>").replace(/<pre>([\s\S]*?)<\/pre>/g, (m, c)=>`<pre>${c.replace(/<br>/g, "\n")}</pre>`); }
+function devItem(it){
+  const k = it.kind;
+  if(k === "user"){ const via = {brain: "&#127908; by voice", voice: "&#127908; by voice", mcp: "via MCP", desktop: "on RoboOS"}[it.src];
+    return `<div class="du">${via ? `<span class="muted" style="font-size:12px">${via}</span><br>` : ""}${esc(it.text)}${(it.files||[]).map(f=>/\.jpg$/i.test(f)?`<img src="/api/agent/file?name=${encodeURIComponent(f)}" onclick="$('#dlgImg').src=this.src;$('#dlg').showModal()">`:`<div class="muted">&#128206; ${esc(f)}</div>`).join("")}</div>`; }
+  if(k === "assistant") return `<div class="da">${devMd(it.text)}</div>`;
+  if(k === "tool"){ const mark = it.ok === null || it.ok === undefined ? "&#8230;" : it.ok ? `<span class="ok">&#10003;</span>` : `<span class="bad">&#10007;</span>`;
+    return `<details class="dt"><summary>${mark} ${esc(it.tool)}: ${esc(it.args)}</summary><pre>${esc(it.out || "(running)")}</pre></details>`; }
+  if(k === "approval"){ const pend = it.state === "pending";
+    return `<div class="dap"><b>&#9888; ${esc(it.title)}</b><br><span class="muted">${esc(it.why)}</span><pre>${esc(it.detail)}</pre>${pend ? `<div class="row" style="margin-top:6px"><button class="pri" onclick="devAnswer('${it.id}',true)">Allow</button><button class="red" onclick="devAnswer('${it.id}',false)">Deny</button></div>` : `<div class="${it.state==='allowed'?'ok':'bad'}">${esc(it.state)}</div>`}</div>`; }
+  return `<div class="${k === "error" ? "de" : "di"}">${esc(it.text)}</div>`;
+}
+async function devPoll(){ if(role !== "owner") return; try{
+  const r = await api("/api/agent?since=" + devSince), box = $("#devLog");
+  const atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+  r.items.forEach(it=>{ devSince = Math.max(devSince, it.seq);
+    let el = document.getElementById("dk" + it.key); const open = el && el.querySelector("details[open]");
+    if(!el){ el = document.createElement("div"); el.id = "dk" + it.key; box.appendChild(el); }
+    el.innerHTML = devItem(it); if(open){ const d = el.querySelector("details"); if(d) d.open = true; } });
+  while(box.children.length > 400) box.firstChild.remove();
+  if(r.items.length && atEnd) box.scrollTop = box.scrollHeight;
+  devStatus = r.status; devHeader();
+}catch(e){} }
+function devHeader(){ const s = devStatus; if(!s.mode) return;
+  const busy = s.state !== "idle";
+  $("#devState").textContent = "· " + (s.pending ? "waiting for you" : busy ? `${s.current || "working"} (${s.busy_s}s)` : "ready") + (s.queued ? ` · ${s.queued} queued` : "");
+  $("#devStop").style.display = busy ? "" : "none";
+  if(document.activeElement !== $("#devMode")) $("#devMode").value = s.mode;
+  if(document.activeElement !== $("#devVoice")) $("#devVoice").value = s.voice_max_mode;
+  if(document.activeElement !== $("#devBudget")) $("#devBudget").value = s.budget;
+  if(document.activeElement !== $("#devModel") && $("#devModel").value !== s.model && devModelsLoaded) devLoadModels();
+  $("#devInfo").textContent = `Using ${s.model_label}${s.vision ? "" : " (cannot see pictures)"} · mode ${s.effective_mode}${s.full_left_s != null ? ` (full for ${Math.ceil(s.full_left_s/60)} more min)` : ""} · spent today $${s.spend_today.toFixed(3)} of $${s.budget} · this chat $${s.session_cost.toFixed(3)}`;
+}
+async function devLoadModels(){ try{ const r = await api("/api/agent/models"); devModelsLoaded = true;
+  $("#devModel").innerHTML = r.models.map(m=>`<option value="${esc(m.id)}" ${m.id === r.current ? "selected" : ""}>${esc(m.label)}${m.price ? " · " + esc(m.price) : ""}${m.vision ? " · 👁" : ""}</option>`).join("") + `<option value="__other">Other OpenRouter model id…</option>`;
+}catch(e){} }
+async function devSet(b){ try{ const r = await api("/api/agent/settings", b); if(r.error){ toast(r.error); return; } devStatus = r; devHeader(); toast("saved"); }catch(e){ toast("failed"); } }
+function devModeSet(v){ if(v === "full" && !confirm("Full access: RoboDev runs ANY command and flashes firmware without asking, until it drops back to Auto after the time limit. Turn it on?")){ devHeader(); return; } devSet({mode: v}); }
+function devModelSet(v){ if(v === "__other"){ const id = prompt("OpenRouter model id (e.g. anthropic/claude-sonnet-5.5):"); if(!id){ devLoadModels(); return; } v = id.trim(); } devSet({model: v}).then(devLoadModels); }
+async function devAnswer(id, allow){ await api("/api/agent/approve", {id, allow}); devPoll(); }
+function devChips(){ setHTML("#devChips", devFiles.map((f, i)=>`<span>&#128206; ${esc(f.name)} <a href="#" onclick="devFiles.splice(${i},1);devChips();return false" style="color:var(--bad)">&#10005;</a></span>`).join("")); }
+function devAddFiles(list){ for(const f of list){ if(f.size > 25e6){ toast(f.name + " is too big (25 MB max)"); continue; } devFiles.push(f); } devChips(); }
+function devShrink(f){ return new Promise(res=>{   // pictures: max 1568 px JPEG before upload (phones make huge photos)
+  const img = new Image(); img.onload = ()=>{ const s = Math.min(1, 1568 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+    c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    res({name: f.name.replace(/\.\w+$/, "") + ".jpg", data: c.toDataURL("image/jpeg", .85).split(",")[1]}); URL.revokeObjectURL(img.src); };
+  img.onerror = ()=>res(null); img.src = URL.createObjectURL(f); }); }
+function devRead(f){ return new Promise(res=>{ const rd = new FileReader(); rd.onload = ()=>res({name: f.name, data: String(rd.result).split(",")[1] || ""}); rd.readAsDataURL(f); }); }
+async function devSend(){ const t = $("#devIn").value.trim(); if(!t && !devFiles.length) return;
+  toast(devFiles.length ? "uploading…" : "sending…");
+  const atts = []; for(const f of devFiles){ let a = /^image\/(jpeg|png|webp|heic|bmp)/.test(f.type) ? await devShrink(f) : null; atts.push(a || await devRead(f)); }
+  try{ const r = await api("/api/agent/send", {text: t, attachments: atts}); toast(r.msg || "sent");
+    if(r.ok){ $("#devIn").value = ""; devFiles = []; devChips(); } setTimeout(devPoll, 300); }catch(e){ toast("failed: " + e.message); } }
+$("#devIn").addEventListener("keydown", e=>{ if(e.key === "Enter" && !e.shiftKey && !e.isComposing){ e.preventDefault(); devSend(); } });
+function devMic(){ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ toast(location.protocol === "https:" ? "This browser has no speech input: use your keyboard's mic button" : "Talking needs the robot's https address (its public address, if you set one up), or use your keyboard's mic button"); return; }
+  const rec = new SR(), base = $("#devIn").value.trim(); rec.lang = navigator.language || "en-US"; rec.interimResults = true;
+  rec.onresult = e=>{ let t = ""; for(const x of e.results) t += x[0].transcript; $("#devIn").value = (base ? base + " " : "") + t; };
+  rec.onend = ()=>$("#devMic").classList.remove("red"); rec.onerror = e=>toast("mic: " + e.error);
+  $("#devMic").classList.add("red"); rec.start(); }
+setInterval(()=>{ if(!document.hidden && tab === "dev" && devStatus.state && devStatus.state !== "idle") devPoll(); }, 1200);
+function openImg(p){ $("#dlgImg").src="/api/photo?name="+encodeURIComponent(p); $("#dlg").showModal(); }
+["#csort","#cv","#ct","#cf"].forEach(s=>$(s).addEventListener("change", loadCatalog)); $("#cq").addEventListener("input", ()=>{clearTimeout(window._cq); window._cq=setTimeout(loadCatalog,400);});
+(async()=>{ try{ const w = await api("/api/whoami"); role=w.role; }catch(e){} const t = document.querySelector(`nav button[data-tab="${location.hash.slice(1)}"]`);
+  if(t) t.click(); else refresh(); setInterval(refresh, 2500);
+  faceDraw(); // draw face immediately on load (even if first poll hasn't returned yet)
+})();   // /#photos opens a tab directly
+</script>
+</body>
+</html>

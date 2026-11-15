@@ -1,0 +1,23 @@
+data/
+venv/
+models/
+__pycache__/
+*.pyc
+firmware/*.bin
+firmware/*/build/
+agentmail.env
+*.env
+!tools/secrets.env.template
+private_terms.txt
+
+# videos are too big for git (keep them on the laptop / in data/social)
+knowledge/pics/*.mov
+knowledge/pics/*.mp4
+knowledge/BlinkersDisplayExperiment/*.mov
+knowledge/BlinkersDisplayExperiment/*.mp4
+
+# Things that are true only for one robot and its home stay out of the public code:
+# its test history, the plans it writes with its owner, and its own manual pages (data/manual/, inside data/).
+knowledge/experience_log.jsonl
+plans/*
+!plans/README.md
