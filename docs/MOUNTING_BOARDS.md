@@ -19,6 +19,8 @@ on its printer. Yours may need 4.9 or 5.1.
 
 1. In the LEGO-ifier, **Download calibration strip**. It is five snap-off tabs with one stud each, from 0.2 mm under
    to 0.2 mm over your current setting. The dots count the size: 1 dot = smallest, 3 dots = current, 5 dots = largest.
+   They sit on a thin handle beside each tab, below the face that touches the frame, so they never get in the way of
+   the fit. The handle is also a grip for pulling the tab out.
 2. Print it studs up.
 3. Press each tab into a hole of your frame (or into the underside of a LEGO brick). The right one goes in with a
    firm push, stays put when you turn it upside down, and comes out by hand.

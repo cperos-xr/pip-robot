@@ -37,7 +37,7 @@
   <section class="panel steps calib" aria-labelledby="calib-title">
     <div class="stepshead"><div><div class="overline">First time? Calibrate before a big print</div><h2 id="calib-title">Print a small one first and make sure it fits</h2><p>Every printer, filament and frame is a little different. Five minutes of test printing saves a plate that will not go in, or falls out.</p></div></div>
     <div class="stepgrid">
-      <div class="step"><div class="stepnum">1</div><strong>Print the calibration strip</strong><p>Five snap-off tabs, each with one stud, from <b id="calLo">4.80</b> to <b id="calHi">5.20 mm</b>. The dots count the size: <b>1 dot</b> is the smallest, <b>3 dots</b> is your current setting.</p></div>
+      <div class="step"><div class="stepnum">1</div><strong>Print the calibration strip</strong><p>Five snap-off tabs, each with one stud, from <b id="calLo">4.80</b> to <b id="calHi">5.20 mm</b>. The dots count the size: <b>1 dot</b> is the smallest, <b>3 dots</b> is your current setting. They sit on a thin handle beside each tab, below the face that touches the frame, so only the stud is tested.</p></div>
       <div class="step"><div class="stepnum">2</div><strong>Press each tab into your frame</strong><p>Into a hole of the grid (or the underside of a LEGO brick). The right one goes in with a firm push and holds upside down, but comes out by hand.</p></div>
       <div class="step"><div class="stepnum">3</div><strong>Type in the winner</strong><p>Each dot is 0.1 mm. Two dots = 0.1 mm smaller than now, four dots = 0.1 mm bigger. Put that number in <b>Stud diameter</b>.</p></div>
       <div class="step"><div class="stepnum">4</div><strong>Check with a 2 × 2 plate</strong><p>A 16 × 16 mm plate with four studs: it tests the spacing too. If it fits, every plate you make with these settings will.</p></div>
@@ -269,13 +269,16 @@ function plateModel(p) {
   return { T: m.T, studs, skipped };
 }
 function calibrationModel(d, h) {     // five snap-off tabs: stud d-0.2 ... d+0.2, with 1..5 dots to tell them apart
+  // The dots sit on a thin handle beside each tab, below the tab's top face (z = 2.0), so nothing but the stud
+  // touches the frame when a tab is pressed in. The handle is also a grip for pulling the tab out again.
   const m = newMesh();
   addBox(m, 0, -2.0, 0, 4 * 14 + 12, 0.6, 1.0);
   for (let i = 0; i < 5; i++) {
     const x = i * 14;
     addBox(m, x, 0, 0, x + 12, 12, 2.0);
     addCylinder(m, x + 6, 6, 1.8, 2.0 + h, (d + (i - 2) * 0.1) / 2);
-    for (let k = 0; k <= i; k++) addCylinder(m, x + 1.6 + k * 2.0, 10.4, 1.8, 2.6, 0.65);
+    addBox(m, x + 1, 11.5, 0, x + 11, 16, 1.0);                                        // handle, 1 mm thick
+    for (let k = 0; k <= i; k++) addCylinder(m, x + 2 + k * 2.0, 13.8, 0.8, 1.4, 0.65);  // dots, top at 1.4 mm
   }
   return m.T;
 }
