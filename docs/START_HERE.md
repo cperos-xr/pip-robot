@@ -72,7 +72,9 @@ and the order to do it in.
    understands four text commands works too: see "The motor board is just a few text commands" in
    [YOUR_PARTS.md](YOUR_PARTS.md).
 2. **Mount everything.** Print stud plates for each board with the LEGO-ifier: [MOUNTING_BOARDS.md](MOUNTING_BOARDS.md).
-3. **Power.** Motors need more than USB can give. Read [POWER.md](POWER.md) before you connect a battery.
+3. **Power.** Motors need more than USB can give. Read [POWER.md](POWER.md) before you connect a battery. On our
+   version the pack plugs in by its 4-pin balance plug (0 V to 0 V, check every time), and always through the
+   protection board.
 4. **Unlock the motors.** Motors stay locked until the owner unlocks them, and the motor board stops by itself after
    half a second without commands.
 5. **Teach it to balance.** Each Pip learns its own balance point for wheelies: [WHEELIES.md](WHEELIES.md).

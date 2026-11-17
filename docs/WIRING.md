@@ -62,7 +62,9 @@ Editable sources for both drawings are in [`img/PIP_robot_wiring_revC_package/`]
 ### 3. The battery side
 
 1. Build or buy the pack and check its balance taps: [POWER.md](POWER.md).
-2. Pack → protection board → INA219 (in the + wire) → T-plug.
+2. Pack → protection board, through the pack's **4-pin balance plug**, not its main (Deans) plug: the protection board
+   needs all four voltages. Then protection board → INA219 (in the + wire) → T-plug. Mark the 0 V side of the 4-pin
+   plug: it fits either way round. Never connect the pack without the protection board ([POWER.md](POWER.md)).
 3. **Set both regulators and measure them with nothing connected:** 5.0 V and 7.5 V. A regulator on the wrong pad can
    destroy the Pi in a second.
 4. Only then connect: 5 V to the 13-pin header and the hub, 7.5 V (through its T-plug) to the motor board.
@@ -74,6 +76,8 @@ Editable sources for both drawings are in [`img/PIP_robot_wiring_revC_package/`]
 
 ## Before you plug in the battery
 
+- The pack goes in by its 4-pin balance plug, **0 V to 0 V**. A reversed plug burned out a charger.
+- The protection board is in the circuit. Without it, the regulators and motor board drain the pack until it is ruined.
 - No short between the battery + and −: check with a meter on its continuity setting.
 - Both regulator outputs measured, with nothing connected.
 - Every ground joined: the pack's −, both regulators, the Pi, the motor board.

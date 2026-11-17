@@ -32,6 +32,22 @@ In words: the pack plugs into a **protection board (BMS)**. The BMS output goes 
 positive wire, then a **T-plug** to the robot's power. There it splits into two small regulators: **5 V** for the brain
 and everything on USB, and **7.5 V** (through a second T-plug) for the motor board.
 
+> **Three rules for the first Pip's battery** (your battery system may be different: this is how ours works)
+>
+> 1. **The pack plugs in by its 4-pin balance plug, not its main (Deans) plug.** The protection board needs all four
+>    voltages (0, 3.7, 7.4 and 11.1 V) to watch each cell group, so on the first Pip everything goes through that one
+>    plug. Leave the pack's main leads unplugged and cover their connector.
+> 2. **Check which side is 0 V and which is 11.1 V every time you plug in.** The plug on the robot side is a plain
+>    4-pin header that fits either way round, and the wrong way round puts 11.1 V where 0 V should be. A reversed plug
+>    burned out a charger. Mark the 0 V side on both halves (a dot of paint or nail polish), or fit a keyed plug.
+> 3. **Never connect a pack without the protection board.** The regulators and the motor board draw power even when
+>    nothing moves. With no cutoff they drain the pack until it is ruined: packs left plugged straight into the L293D
+>    board were destroyed this way. Unplug the pack when Pip is off.
+>
+> Running everything through the balance plug works because Pip draws little current (about 0.4 A at idle). Balance
+> plugs are made for small currents (a JST-XH plug is rated about 3 A). For bigger motors, use the pack's main leads
+> with a protection board that has its own main pads.
+
 ### The parts
 
 | Part | What the first Pip uses | Notes |
@@ -41,7 +57,7 @@ and everything on USB, and **7.5 V** (through a second T-plug) for the motor boa
 | Monitor | INA219 board, 0.1 ohm shunt, in the positive wire (Vin+ from the BMS, Vin− to the robot) | I2C address 0x40 on the brain's bus 0 (pins 3 and 5). Optional: without it Pip runs fine but does not know its battery level. See `knowledge/manual/battery.md`. |
 | 5 V regulator | AJ26 V3.2 step-down module, output pad set to 5 V | Pins: VIN, GND, VOUT. The output is picked by bridging one solder pad (3.3, 3.7, 5, 6, 7.5, 9 or 12 V printed on the board). Feeds the brain's 5 V input and the USB hub, jumpered together. |
 | 7.5 V regulator | AJ26 V3.2 step-down module, output pad set to 7.5 V | Feeds only the motor board's EXT VOLTAGE input. Any step-down module works if you check its output with a meter first (LM2596, MP1584 and similar). |
-| Plugs | A 4-pin plug between the pack and the BMS, T-plugs (Deans style) for the 11.1 V feed and the 7.5 V motor feed | The plugs are where it comes apart, for charging or for working on one part. |
+| Plugs | The pack's **4-pin balance plug** into the BMS (never the pack's own Deans plug). Inside the robot, T-plugs (Deans style) for the 11.1 V feed and the 7.5 V motor feed | The plugs are where it comes apart, for charging or for working on one part. Mark the 0 V side of the 4-pin plug. |
 | Charger | External balance charger | The pack comes off the robot to charge. |
 
 ![The battery unit off the robot: protection board, INA219, the pack's 4-pin plug and the T-plug](img/power-bms-ina219.jpg)
@@ -79,6 +95,11 @@ INA219's I2C plug (blue tape) goes to the brain.*
 *Wire colours differ from pack to pack: measure each one against the black (0 V) wire before you plug it in. On the
 first Pip's protection board the taps are marked 0V, 4V, 8V and 12.6V (B−, B1, B2 and B+).*
 
+<img src="img/battery-balance-plug.jpg" width="420" alt="A store-bought 3S pack: the white 4-pin balance plug with black, white, blue and red wires, and the thick red and black main leads">
+
+*A store-bought 3S pack. The white 4-pin balance plug (black 0 V, white, blue, red 11.1 V) is what plugs into Pip.
+The thick red and black main leads are not used on our version.*
+
 ![The pack on the back of the robot: nine cells in a printed holder, nickel strips on top](img/battery-mount-back.jpg)
 
 *The pack sits in a printed holder across the back of the robot, under the L293D board.*
@@ -105,7 +126,11 @@ Settings > Battery.
 Lithium cells store a lot of energy. These rules are not optional.
 
 - Charge with a **balance charger**, on a fireproof surface, and never leave it charging unattended.
-- Keep the **protection board** in the circuit. Never bypass it.
+- Keep the **protection board** in the circuit. Never bypass it, and never plug a pack straight into the regulators or
+  the motor board: they drain it even when Pip is still.
+- **Check the plug's direction** (0 V to 0 V) before you plug a pack into the robot or the charger. A reversed plug
+  burned out a charger.
+- Unplug the pack when Pip is off.
 - Throw away (at a battery recycling point) any cell or pack that is puffy, dented, hot or smells sweet.
 - Insulate every bare wire and solder joint. A short across a pack can start a fire in seconds.
 - **Kids:** use Option A, or a store-bought pack with a built-in protection board, with an adult handling charging.
