@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 640" width="1080" height="640" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title>Pip's battery pack: 3S3P wiring with balance taps</title>
+  <defs>
+    <style>
+      .ink { fill: #1b2233; }
+      .muted { fill: #5b6375; }
+      .cell { fill: #eef2f7; stroke: #1b2233; stroke-width: 2; }
+      .pos { fill: #d8342c; }
+      .neg { fill: #3b4252; }
+      .strip { fill: #a7b0ba; stroke: #6b7480; stroke-width: 1.5; }
+      .lead { stroke: #1b2233; stroke-width: 2.5; fill: none; }
+      .tag { fill: #ffffff; stroke: #1b2233; stroke-width: 1.8; }
+      .tagtop { fill: #fff4c7; stroke: #1b2233; stroke-width: 1.8; }
+      .pill { fill: #ffffff; stroke: #5b6375; stroke-width: 1.2; }
+      .warn { fill: #fff1e6; stroke: #d98a4a; stroke-width: 1.5; }
+    </style>
+  </defs>
+  <rect width="1080" height="640" fill="#ffffff"/>
+
+  <text x="40" y="44" class="ink" font-size="26" font-weight="700">Pip's battery pack: 3S3P (nine cells)</text>
+  <text x="40" y="70" class="muted" font-size="15">Three groups of three cells in parallel, joined in series. Grey bars are nickel strips. Red ends are +, dark ends are −.</text>
+
+  <!-- Tags for the top strips -->
+  <line x1="184" y1="140" x2="184" y2="122" class="lead"/>
+  <rect x="84" y="88" width="200" height="40" rx="6" class="tagtop"/>
+  <text x="184" y="105" text-anchor="middle" class="ink" font-size="14" font-weight="700">11.1 V (12.6 V full)</text>
+  <text x="184" y="121" text-anchor="middle" class="ink" font-size="13">to the BMS 12.6V pad</text>
+
+  <line x1="526" y1="140" x2="526" y2="122" class="lead"/>
+  <rect x="426" y="88" width="200" height="40" rx="6" class="tag"/>
+  <text x="526" y="105" text-anchor="middle" class="ink" font-size="14" font-weight="700">3.7 V (4.2 V full)</text>
+  <text x="526" y="121" text-anchor="middle" class="ink" font-size="13">to the BMS 4V pad</text>
+
+  <!-- Top strips -->
+  <rect x="74" y="140" width="220" height="14" rx="3" class="strip"/>
+  <rect x="302" y="140" width="448" height="14" rx="3" class="strip"/>
+
+  <!-- Group A: + up -->
+  <g>
+    <rect x="80" y="160" width="60" height="230" rx="8" class="cell"/><path d="M80 168 a8 8 0 0 1 8 -8 h44 a8 8 0 0 1 8 8 v26 h-60z" class="pos"/><path d="M80 382 a8 8 0 0 0 8 8 h44 a8 8 0 0 0 8 -8 v-26 h-60z" class="neg"/>
+    <rect x="154" y="160" width="60" height="230" rx="8" class="cell"/><path d="M154 168 a8 8 0 0 1 8 -8 h44 a8 8 0 0 1 8 8 v26 h-60z" class="pos"/><path d="M154 382 a8 8 0 0 0 8 8 h44 a8 8 0 0 0 8 -8 v-26 h-60z" class="neg"/>
+    <rect x="228" y="160" width="60" height="230" rx="8" class="cell"/><path d="M228 168 a8 8 0 0 1 8 -8 h44 a8 8 0 0 1 8 8 v26 h-60z" class="pos"/><path d="M228 382 a8 8 0 0 0 8 8 h44 a8 8 0 0 0 8 -8 v-26 h-60z" class="neg"/>
+    <g fill="#ffffff" font-size="22" font-weight="700" text-anchor="middle"><text x="110" y="185">+</text><text x="184" y="185">+</text><text x="258" y="185">+</text><text x="110" y="380">−</text><text x="184" y="380">−</text><text x="258" y="380">−</text></g>
+    <rect x="124" y="262" width="120" height="28" rx="14" class="pill"/><text x="184" y="281" text-anchor="middle" class="ink" font-size="14" font-weight="600">Group 3</text>
+  </g>
+  <!-- Group B: + down -->
+  <g>
+    <rect x="308" y="160" width="60" height="230" rx="8" class="cell"/><path d="M308 168 a8 8 0 0 1 8 -8 h44 a8 8 0 0 1 8 8 v26 h-60z" class="neg"/><path d="M308 382 a8 8 0 0 0 8 8 h44 a8 8 0 0 0 8 -8 v-26 h-60z" class="pos"/>
+    <rect x="382" y="160" width="60" height="230" rx="8" class="cell"/><path d="M382 168 a8 8 0 0 1 8 -8 h44 a8 8 0 0 1 8 8 v26 h-60z" class="neg"/><path d="M382 382 a8 8 0 0 0 8 8 h44 a8 8 0 0 0 8 -8 v-26 h-60z" class="pos"/>
+    <rect x="456" y="160" width="60" height="230" rx="8" class="cell"/><path d="M456 168 a8 8 0 0 1 8 -8 h44 a8 8 0 0 1 8 8 v26 h-60z" class="neg"/><path d="M456 382 a8 8 0 0 0 8 8 h44 a8 8 0 0 0 8 -8 v-26 h-60z" class="pos"/>
+    <g fill="#ffffff" font-size="22" font-weight="700" text-anchor="middle"><text x="338" y="185">−</text><text x="412" y="185">−</text><text x="486" y="185">−</text><text x="338" y="380">+</text><text x="412" y="380">+</text><text x="486" y="380">+</text></g>
+    <rect x="352" y="262" width="120" height="28" rx="14" class="pill"/><text x="412" y="281" text-anchor="middle" class="ink" font-size="14" font-weight="600">Group 2</text>
+  </g>
+  <!-- Group C: + up -->
+  <g>
+    <rect x="536" y="160" width="60" height="230" rx="8" class="cell"/><path d="M536 168 a8 8 0 0 1 8 -8 h44 a8 8 0 0 1 8 8 v26 h-60z" class="pos"/><path d="M536 382 a8 8 0 0 0 8 8 h44 a8 8 0 0 0 8 -8 v-26 h-60z" class="neg"/>
+    <rect x="610" y="160" width="60" height="230" rx="8" class="cell"/><path d="M610 168 a8 8 0 0 1 8 -8 h44 a8 8 0 0 1 8 8 v26 h-60z" class="pos"/><path d="M610 382 a8 8 0 0 0 8 8 h44 a8 8 0 0 0 8 -8 v-26 h-60z" class="neg"/>
+    <rect x="684" y="160" width="60" height="230" rx="8" class="cell"/><path d="M684 168 a8 8 0 0 1 8 -8 h44 a8 8 0 0 1 8 8 v26 h-60z" class="pos"/><path d="M684 382 a8 8 0 0 0 8 8 h44 a8 8 0 0 0 8 -8 v-26 h-60z" class="neg"/>
+    <g fill="#ffffff" font-size="22" font-weight="700" text-anchor="middle"><text x="566" y="185">+</text><text x="640" y="185">+</text><text x="714" y="185">+</text><text x="566" y="380">−</text><text x="640" y="380">−</text><text x="714" y="380">−</text></g>
+    <rect x="580" y="262" width="120" height="28" rx="14" class="pill"/><text x="640" y="281" text-anchor="middle" class="ink" font-size="14" font-weight="600">Group 1</text>
+  </g>
+
+  <!-- Bottom strips -->
+  <rect x="74" y="396" width="448" height="14" rx="3" class="strip"/>
+  <rect x="530" y="396" width="220" height="14" rx="3" class="strip"/>
+
+  <!-- Tags for the bottom strips -->
+  <line x1="298" y1="410" x2="298" y2="428" class="lead"/>
+  <rect x="198" y="428" width="200" height="40" rx="6" class="tag"/>
+  <text x="298" y="445" text-anchor="middle" class="ink" font-size="14" font-weight="700">7.4 V (8.4 V full)</text>
+  <text x="298" y="461" text-anchor="middle" class="ink" font-size="13">to the BMS 8V pad</text>
+
+  <line x1="640" y1="410" x2="640" y2="428" class="lead"/>
+  <rect x="540" y="428" width="200" height="40" rx="6" class="tag"/>
+  <text x="640" y="445" text-anchor="middle" class="ink" font-size="14" font-weight="700">0 V (pack −)</text>
+  <text x="640" y="461" text-anchor="middle" class="ink" font-size="13">to the BMS 0V pad</text>
+
+  <!-- How it adds up -->
+  <g class="ink" font-size="15">
+    <text x="790" y="170" font-size="17" font-weight="700">How it adds up</text>
+    <text x="790" y="200">Each group: 3 cells side by side</text>
+    <text x="790" y="220">(parallel). 3 × 260 mAh = 780 mAh,</text>
+    <text x="790" y="240">still 3.7 V.</text>
+    <text x="790" y="272">Three groups end to end (series):</text>
+    <text x="790" y="292">3 × 3.7 V = 11.1 V nominal,</text>
+    <text x="790" y="312">12.6 V fully charged.</text>
+    <text x="790" y="344">The groups alternate + up, + down,</text>
+    <text x="790" y="364">+ up, so each short strip joins one</text>
+    <text x="790" y="384">group's − to the next group's +.</text>
+    <text x="790" y="416">The four tags are the balance taps.</text>
+    <text x="790" y="436">The BMS watches each group</text>
+    <text x="790" y="456">through them.</text>
+  </g>
+
+  <!-- Safety -->
+  <rect x="40" y="500" width="1000" height="110" rx="8" class="warn"/>
+  <text x="62" y="530" class="ink" font-size="16" font-weight="700">Before you join anything (adults only)</text>
+  <g class="ink" font-size="14.5">
+    <text x="62" y="556">• Same cell model throughout, and every cell charged to the same voltage before cells are joined in parallel.</text>
+    <text x="62" y="578">• Spot-weld the nickel strip if you can. With a soldering iron, keep heat on each cell very short.</text>
+    <text x="62" y="600">• Check each group with a meter, wrap the finished pack, keep the BMS in the circuit, and charge with a balance charger.</text>
+  </g>
+</svg>

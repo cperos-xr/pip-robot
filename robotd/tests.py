@@ -180,6 +180,20 @@ def t_roboos_portable(r):
     return (not bad, f"{n} files, robot-free" if not bad else f"{len(bad)} places reach for the robot", bad[:8], {"files": n})
 
 
+@test("scripts_valid", "Demo scripts are valid")
+def t_scripts(r):
+    """Every demo script (routines/scripts/ and data/scripts/) loads and passes the checks in robotd/scripts.py."""
+    files = r.scripts.files()
+    bad = []
+    for name in files:
+        try:
+            errs = r.scripts.load(name)[2]
+        except Exception as e:
+            errs = [str(e)]
+        bad += [f"{name}: {e}" for e in errs]
+    return (not bad, f"{len(files)} scripts, all valid" if not bad else f"{len(bad)} problems", bad[:8], {"scripts": len(files)})
+
+
 def run_test(r, tid):
     name, fn = TESTS[tid]
     r.log(f"test {tid} started")

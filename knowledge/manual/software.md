@@ -88,7 +88,10 @@ curl -s -H "X-Robot-Token: $(cat /root/robot/data/api_token)" localhost:8080/api
   `/etc/systemd/system/cloudflared.service.d/protocol.conf` (2026-11-10), because the built-in Wi-Fi stalls for seconds
   at a time and QUIC connections timed out.
 - Network (2026-11-13): wlan0 via `wpa_supplicant@wlan0` + systemd-networkd. `/etc/wpa_supplicant/wpa_supplicant-wlan0.conf`
-  has the home network (it must be a 2.4 GHz one: the chip cannot use 5 GHz).
+  has the home network (it must be a 2.4 GHz one: the chip cannot use 5 GHz). Add or forget networks in the web app
+  (Settings > Wi-Fi, `robotd/wifi.py`, via `wpa_cli` + `save_config`): keys are stored as 64-hex PSKs, never in clear.
+  An iPhone hotspot needs Maximize Compatibility on (2.4 GHz) and its curly apostrophe; both spellings get saved.
+  On a new network Pip toasts its address on the face (`http://<address>:8080`).
   Backup: `/root/wpa_supplicant-wlan0.conf.bak-20261113`. Hostname `pip`; mDNS by systemd-resolved
   (`/etc/systemd/resolved.conf.d/mdns.conf`, `/etc/systemd/network/25-wlan0.network.d/mdns.conf`), and the web app is
   advertised as "Pip the robot" (`_http._tcp`, port 8080) by `/etc/systemd/dnssd/pip-web.dnssd`. Backups of the files

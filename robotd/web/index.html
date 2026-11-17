@@ -28,6 +28,14 @@ header small{color:var(--dim)}
 main{max-width:900px;margin:0 auto;padding:12px 16px}
 section{display:none}
 section.on{display:block}
+.scr-ask{display:none;margin-top:8px;padding:10px;border:1px solid var(--warn);border-radius:10px}
+.scr-ask.on{display:block}
+.prompt{margin-top:8px}
+.prompt .you{font-size:22px;line-height:1.3;font-weight:600;color:var(--acc)}
+.prompt .pip{font-size:16px;color:var(--text);margin-top:6px}
+.prompt .pip:before{content:"Pip: ";color:var(--dim)}
+.bigbtns button{flex:1;min-height:52px;font-size:17px}
+.wlist>div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
 .card h3{margin:0 0 10px;font-size:14px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -126,6 +134,14 @@ dialog img{max-width:90vw;max-height:75vh}
 <main>
 <!-- LIVE -->
 <section id="live" class="on">
+  <div class="card" data-owner-card id="scrCard"><h3>Scripts (hands-free demos)</h3>
+    <div class="row"><select id="scrSel" onchange="scrDraw()" style="flex:1"></select></div>
+    <p class="muted" id="scrInfo" style="margin:6px 0 0"></p>
+    <div class="row bigbtns" style="margin-top:8px"><button class="pri" id="scrPlay" onclick="scrAsk()">&#9654; Play</button><button id="scrNext" onclick="scrNext()" title="End the current pause now (or the next one)">Next &#9197;</button><button class="red" onclick="scrStop()">&#9632; Stop</button></div>
+    <div id="scrAsk" class="scr-ask"><p id="scrAskQ" style="margin:0 0 8px"></p>
+      <div class="row bigbtns"><button class="pri" onclick="scrPlay(true)">Floor is clear: start</button><button id="scrNoWh" onclick="scrPlay(false)">Start without the wheelie</button><button onclick="$('#scrAsk').classList.remove('on')">Cancel</button></div></div>
+    <div id="scrPrompt" class="prompt"></div>
+  </div>
   <div class="card">
     <div id="drvWrap" class="drvwrap">
       <img id="cam" class="cam" alt="" style="display:none"><canvas id="faceCv" class="cam" width="640" height="480" style="cursor:pointer" title="Pip's face right now. Tap to start the live view." onclick="setCam(true)"></canvas>
@@ -323,6 +339,15 @@ dialog img{max-width:90vw;max-height:75vh}
       <textarea id="mcText" rows="5" placeholder="Text" style="margin-top:8px"></textarea><input id="mcReply" type="hidden">
       <div class="row" style="margin-top:8px"><button class="pri" onclick="mailSendOwn(this)">Send</button><span class="muted" id="mcInfo"></span></div></details>
     <details style="margin-top:10px"><summary class="muted" style="cursor:pointer">Sent and discarded</summary><div id="mailDone"></div></details></div>
+  <div class="card" data-owner-card id="wifiCard"><h3>Wi-Fi</h3>
+    <p class="muted" id="wifiNow" style="margin:0 0 8px">…</p>
+    <div id="wifiSaved" class="wlist"></div>
+    <div class="row" style="margin-top:10px"><input id="wifiSsid" placeholder="Network name (e.g. a phone hotspot)" list="wifiSeen" autocomplete="off" style="flex:2;min-width:180px"><datalist id="wifiSeen"></datalist>
+      <input id="wifiPw" type="password" placeholder="Password (empty = open network)" autocomplete="new-password" style="flex:2;min-width:160px"></div>
+    <div class="row" style="margin-top:8px"><label style="white-space:nowrap"><input type="checkbox" id="wifiPrefer" style="width:auto"> prefer this one</label>
+      <button class="pri" onclick="wifiAdd(this)">Save network</button><button onclick="wifiScan(this)">Scan</button><span class="muted" id="wifiInfo"></span></div>
+    <div id="wifiScanList" class="wlist" style="margin-top:8px"></div>
+    <p class="muted" style="margin:8px 0 0">Saving a network does not switch to it: Pip joins it when it is in range and the current one is not, so you can add a hotspot at home and Pip uses it at the event. An iPhone hotspot needs <b>Maximize Compatibility</b> on (Settings &gt; Personal Hotspot) for Pip's 2.4 GHz Wi-Fi; keep that screen open so the hotspot stays on. On a new network Pip shows its address on its face: open <code>http://&lt;address&gt;:8080</code> on the phone.</p></div>
   <div class="card" data-owner-card><h3>Invite a guest (view only)</h3>
     <button onclick="invite()">Create 24 h guest link</button><p class="muted" id="inv"></p></div>
   <div class="card" data-owner-card><h3>Public page (show off)</h3>
@@ -384,6 +409,53 @@ document.addEventListener("DOMContentLoaded", ()=>{
   im.addEventListener("contextmenu", e=>{ e.preventDefault(); const r = im.getBoundingClientRect(); deskSend({long:[Math.round((e.clientX-r.left)*320/r.width), Math.round((e.clientY-r.top)*220/r.height)]}); });
   $("#deskKey").addEventListener("keydown", async e=>{ if(e.key==="Enter"){ for(const ch of $("#deskKey").value) await api("/api/desktop/input",{key:ch}); await deskSend({key:"ENTER"}); $("#deskKey").value=""; } });
 });
+// ---- Scripts (robotd/scripts.py): hands-free demos. Play = the owner's one approval (floor clear), wheelie included.
+let scrList = [], scrState = {busy:false}, scrTimer = null;
+async function apiT(path, body, ms){ const c = new AbortController(); const t = setTimeout(()=>c.abort(), ms||4000);   // the Wi-Fi can stall: never hang
+  try{ const r = await fetch(path, body===undefined ? {signal:c.signal} : {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body), signal:c.signal});
+    if(r.status === 401){ location.href = "/login"; throw new Error("auth"); } return await r.json(); } finally{ clearTimeout(t); } }
+async function loadScripts(){ try{ const d = await apiT("/api/scripts", undefined, 6000); scrList = d.scripts||[]; scrState = d.state||{busy:false};
+  const sel = $("#scrSel"); let keep = sel.value; try{ keep = keep || localStorage.getItem("scrSel") || ""; }catch(e){}
+  if(document.activeElement!==sel) setHTML(sel, scrList.map(x=>`<option value="${esc(x.name)}"${x.name===keep?" selected":""}>${esc(x.title)}${x.own?"":" (example)"}</option>`).join("") || "<option value=''>no scripts yet</option>");
+  scrDraw(); if(scrState.busy) scrPoll(); }catch(e){} }
+function scrCur(){ return scrList.find(x=>x.name===$("#scrSel").value) || scrList[0]; }
+function scrDraw(){ const x = scrCur(); try{ if(x) localStorage.setItem("scrSel", x.name); }catch(e){}
+  const st = scrState, busy = !!st.busy;
+  $("#scrPlay").disabled = busy || !x || (x.errors||[]).length>0 || (x.problems||[]).length>0; $("#scrNext").disabled = !busy;
+  let info = "";
+  if(busy) info = `Playing <b>${esc(st.title)}</b>: step ${st.i}/${st.n} ${esc(st.doing||"")}`;
+  else if(x){ const bits = [`${x.steps} steps, about ${Math.max(1,Math.round((x.secs||0)/60))} min`];
+    (x.errors||[]).concat(x.problems||[]).forEach(e=>bits.push(`<span style="color:var(--bad)">${esc(e)}</span>`));
+    (x.notes||[]).forEach(e=>bits.push(esc(e)));
+    if(st.doing && st.name===x.name) bits.push("last run: " + esc(st.doing) + (st.error? " ("+esc(st.error)+")" : ""));
+    info = bits.join(" · "); }
+  setHTML("#scrInfo", info);
+  const you = busy ? (st.cue || st.next_cue) : "", soon = busy && !st.cue && st.next_cue;
+  setHTML("#scrPrompt", busy ? `${you?`<div class="you">${soon?"<small class=muted>next:</small> ":""}${esc(you)}</div>`:""}${st.line?`<div class="pip">${esc(st.line)}</div>`:""}` : ""); }
+function scrAsk(){ const x = scrCur(); if(!x) return;
+  $("#scrAskQ").innerHTML = x.wheelie ? `<b>${esc(x.title)}</b> has a wheelie at step ${x.wheelie_step}. Is the floor clear about 1 m in front of and behind Pip, is it on battery, and is someone ready to catch it? Once it starts, nobody needs to touch Pip's screen.` : `Start <b>${esc(x.title)}</b>? Is the floor around Pip clear?`;
+  $("#scrNoWh").style.display = x.wheelie ? "" : "none"; $("#scrAsk").classList.add("on"); }
+async function scrPlay(wheelie){ $("#scrAsk").classList.remove("on"); const x = scrCur(); if(!x) return;
+  try{ const r = await apiT("/api/scripts/play", {name:x.name, wheelie}, 8000); toast(r.msg||r.error||"ok"); }catch(e){ toast("failed: "+e.message) }
+  scrPoll(); }
+async function scrNext(){ try{ await apiT("/api/scripts/next", {}); }catch(e){ toast("Next did not reach Pip") } }
+async function scrStop(){ $("#scrAsk").classList.remove("on"); for(let i=0;i<3;i++){ try{ const r = await apiT("/api/scripts/stop", {}, 3000); toast(r.msg||"stopped"); break; }catch(e){ toast("Stop: retrying…") } } scrPoll(); }
+function scrPoll(){ if(scrTimer) return; const tick = async()=>{ try{ scrState = (await apiT("/api/scripts?status=1", undefined, 3000)).state || {busy:false}; scrDraw(); }catch(e){}
+    if(scrState.busy){ scrTimer = setTimeout(tick, 900); } else { scrTimer = null; loadScripts(); } };
+  scrTimer = setTimeout(tick, 300); }
+// ---- Wi-Fi (robotd/wifi.py): saved networks; adding one never switches away from the current one
+async function loadWifi(){ try{ const w = await api("/api/wifi/networks");
+  $("#wifiNow").innerHTML = w.ssid ? `Connected to <b>${esc(w.ssid)}</b> · ${esc(w.ip)}${w.signal!=null?" · "+w.signal+" dBm":""}${w.freq?" · "+(w.freq>4000?"5":"2.4")+" GHz":""}${w.note?" · "+esc(w.note):""}` : `Not connected${w.note?" · "+esc(w.note):""}`;
+  setHTML("#wifiSaved", (w.networks||[]).map(n=>`<div><span>${esc(n.ssid)}${n.current?' <span class="badge ok">in use</span>':""}${n.disabled?' <span class="badge">off</span>':""}</span><span>${n.current?"":`<button data-id="${esc(n.id)}" data-s="${esc(n.ssid)}" onclick="wifiCmd('connect',this)">Connect now</button> <button class="red" data-id="${esc(n.id)}" data-s="${esc(n.ssid)}" onclick="wifiCmd('forget',this)">Forget</button>`}</span></div>`).join("") || "<div class=muted>no saved networks</div>");
+  }catch(e){} }
+async function wifiCmd(cmd, b){ const q = cmd==="forget" ? `Forget ${b.dataset.s}?` : `Switch Pip to ${b.dataset.s} now? This page may lose Pip for a moment.`;
+  if(!confirm(q)) return; try{ const r = await api("/api/wifi/networks", {cmd, id:b.dataset.id}); toast(r.msg||r.error||"ok"); }catch(e){ toast("failed: "+e.message) } loadWifi(); }
+async function wifiAdd(b){ const ssid = $("#wifiSsid").value.trim(); if(!ssid) return toast("type the network name");
+  b.disabled = true; try{ const r = await api("/api/wifi/networks", {cmd:"add", ssid, password:$("#wifiPw").value, prefer:$("#wifiPrefer").checked}); toast(r.msg||r.error||"ok"); if(r.ok){ $("#wifiPw").value=""; $("#wifiSsid").value=""; } }catch(e){ toast("failed: "+e.message) } b.disabled = false; loadWifi(); }
+async function wifiScan(b){ b.disabled = true; $("#wifiInfo").textContent = "scanning…"; try{ const r = await api("/api/wifi/networks", {cmd:"scan"}); const n = r.networks||[];
+    setHTML("#wifiSeen", n.map(x=>`<option value="${esc(x.ssid)}">`).join(""));
+    setHTML("#wifiScanList", n.map(x=>`<div><span>${esc(x.ssid)} <span class="muted">${x.signal} dBm · ${x.freq>4000?"5":"2.4"} GHz${x.secure?"":" · open"}</span></span><button onclick="$('#wifiSsid').value=this.dataset.s;$('#wifiPw').focus()" data-s="${esc(x.ssid)}">Use</button></div>`).join("") || "<div class=muted>nothing found</div>");
+    $("#wifiInfo").textContent = n.length + " found"; }catch(e){ $("#wifiInfo").textContent = "scan failed"; } b.disabled = false; }
 async function act(path, body, msg){ try{ const r = await api(path, body); toast(r && r.msg ? r.msg : (msg||"ok")); refresh(); return r; }catch(e){ toast("failed: "+e.message) } }
 function setHTML(sel, html){ const e = typeof sel === "string" ? $(sel) : sel; if(e && e._h !== html){ e._h = html; e.innerHTML = html; } }
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
@@ -779,6 +851,7 @@ async function refresh(){
     }
     if(tab==="settings"){
       loadSettings();
+      if(role==="owner") loadWifi();
       if(role==="owner") loadMail();
       const w = await api("/api/whoami");
       $("#who").textContent = `Signed in as ${w.role}. Owner password ${w.has_password?"is set":"is NOT set yet (pairing via the robot screen works anyway)"}.`;
@@ -786,6 +859,7 @@ async function refresh(){
     }
     if(tab==="live"){
       loadPrivacy();
+      if(role==="owner" && !scrState.busy) loadScripts();
       if(role==="owner") loadDrive();
       const v = await api("/api/vision");
       if(document.activeElement!==$("#cvMode")) $("#cvMode").value = v.cfg.mode; $("#cvFollow").checked = !!v.cfg.follow; $("#cvGaze").checked = !!v.cfg.gaze_mirror;

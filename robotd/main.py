@@ -76,6 +76,10 @@ class Robot:
         self.drive = Drive(self)                 # onboard steering + remote control (needs motors_enabled)
         from .wheelie import Wheelie
         self.wheelie = Wheelie(self)             # kick + balance on two wheels; the fast loop is in the motor board
+        from .scripts import ScriptPlayer
+        self.scripts = ScriptPlayer(self)        # demo scripts played hands-free (manual: scripts.md)
+        from .wifi import Wifi
+        self.wifi = Wifi(self)                   # saved Wi-Fi networks: scan, add, forget (web app Settings)
         from .motion_modes import MotionModes
         self.motion_modes = MotionModes(self)    # off / wake / greet / security, reacting to the PIR sensor
         from .blinkers import Blinkers

@@ -1,0 +1,18 @@
+{
+  "title": "Meet Pip (example)",
+  "about": "A short hello for a stage or a classroom. Copy it to data/scripts/ and change the lines; your copy stays private. Steps: say, wait (with a cue for the presenter), face, drive, wheelie (with a fallback), journal. Manual: knowledge/manual/scripts.md.",
+  "steps": [
+    {"cue": "YOU: I'd like you to meet a little robot. Pip, say hello!", "wait": 6},
+    {"say": "Hello everyone! I'm Pip, a little robot. I was built from spare parts, and I learn something new every day.", "mood": "happy"},
+    {"cue": "YOU: What do you do all day, Pip?", "wait": 4},
+    {"say": "I look around, I talk with my people, and I keep a journal, so I remember the important things.", "mood": "curious"},
+    {"drive": {"cmd": "wiggle", "n": 4}},
+    {"cue": "YOU: Show them a trick!", "wait": 4},
+    {"say": "Okay! Please give me some room.", "mood": "surprised"},
+    {"wait": 1.5},
+    {"wheelie": {"routine": "spin", "secs": 8},
+     "fallback": [{"say": "Here is my spin instead.", "mood": "happy"}, {"drive": {"cmd": "turn", "deg": 360}}, {"drive": {"cmd": "wiggle", "n": 4}}]},
+    {"journal": "I met a new group of people today and showed them a trick."},
+    {"say": "Thank you for meeting me!", "mood": "love"}
+  ]
+}

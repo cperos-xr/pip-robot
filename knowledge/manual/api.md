@@ -39,6 +39,8 @@ curl -s -H "X-Robot-Token: $T" -H 'Content-Type: application/json' -d '{"text":"
 | `/api/files` | Owner: file browser (list, download, upload into `data/files`). See `files.md` |
 | `/api/debug/threads?secs=10` | Owner: where robotd's CPU time goes: per thread, CPU % and the code it was seen in (`robotd/profiler.py`) |
 | `/api/wifi` | Owner: Wi-Fi keeper (peers the robot announces itself to, neighbour table); see troubleshooting |
+| `/api/wifi/networks` | Owner: the current Wi-Fi network, address, signal and the saved networks (`robotd/wifi.py`) |
+| `/api/scripts` | Owner: demo scripts with readiness and what is playing; `?status=1` = only the playback state (`scripts.md`) |
 | `/api/imu` | Tilt (pitch, roll), acceleration, gyro |
 | `/api/wheelie` | Owner: wheelie settings, what is missing, the last runs. `?run=<name>` = one run with its trace (`motors.md`) |
 | `/api/brain` | Active AI model and the model list |
@@ -120,6 +122,9 @@ curl -s -H "X-Robot-Token: $T" -H 'Content-Type: application/json' -d '{"text":"
 | `/api/wheelie` | `{"cmd":"kick"}`, `"arm"`, `"balance"`, `"record"`, `"setup"`, `"set"`, `"stop"`, plus settings | Wheelies. Asks Start on the screen before the wheels move (`motors.md`) |
 | `/api/motors` | `{"values":[...8 numbers -127..127], "duration":0.5}` | Drive motors. REFUSED while motors are locked. |
 | `/api/stop` | `{}` | Stop all motors |
+| `/api/scripts/play` | `{"name":"meet_pip","wheelie":true}` | Play a demo script. Pressing Play is the owner's approval for that playback, wheelie included (`scripts.md`) |
+| `/api/scripts/next` / `/api/scripts/stop` | `{}` | End the current pause now / stop the script (lands a wheelie) |
+| `/api/wifi/networks` | `{"cmd":"scan"}`, `{"cmd":"add","ssid","password","prefer"}`, `{"cmd":"connect"\|"forget","id"}` | Wi-Fi networks. Adding does not switch; connect falls back by itself after 40 s; the network in use cannot be forgotten |
 
 ## Self-test ids (for `/api/test/<id>`)
 

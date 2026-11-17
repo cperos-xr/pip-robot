@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2100" height="1830" viewBox="0 0 2100 1830" role="img" aria-labelledby="title desc">
+  <title id="title">PIP Robot Wiring Schematic Rev C</title>
+  <desc id="desc">Professional reference of PIP robot battery power distribution, Orange Pi Zero, ESP32 CYD touchscreen, RP2040 motor controller, PIR motion sensor, INA219, MPU6050, PCF8574 and L293D with a verified pin mapping table.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto-start-reverse"><path d="M0 1 L10 5.5 L0 10 Z" fill="#637996"/></marker>
+    <marker id="purpleArrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto-start-reverse"><path d="M0 1 L10 5.5 L0 10 Z" fill="#8158BF"/></marker>
+    <marker id="tealArrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto-start-reverse"><path d="M0 1 L10 5.5 L0 10 Z" fill="#078E95"/></marker>
+    <style>
+      .text{font-family:Arial,Helvetica,sans-serif;fill:#1B2C43}
+      .small{font-family:Arial,Helvetica,sans-serif;font-size:20px;fill:#65768B}
+      .tag{font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;fill:#6B7F98}
+      .h2{font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:800;fill:#1D324E}
+      .h3{font-family:Arial,Helvetica,sans-serif;font-size:23px;font-weight:800;fill:#213952}
+      .detail{font-family:Arial,Helvetica,sans-serif;font-size:19px;fill:#4D6580}
+      .wire{fill:none;stroke:#637996;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+      .usb{fill:none;stroke:#8158BF;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+      .i2c{fill:none;stroke:#078E95;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+      .gpio{fill:none;stroke:#D28A12;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+      .power{fill:none;stroke:#DC4958;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+      .gnd{fill:none;stroke:#42536A;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+  </defs>
+  <rect width="2100" height="1530" fill="#F5F8FC"/>
+  <rect x="65" y="61" width="13" height="53" rx="7" fill="#1976DA"/>
+  <text x="107" y="87" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="20" letter-spacing="3.4" fill="#216FC1">PIP / HARDWARE DOCUMENTATION</text>
+  <text id="title" x="101" y="164" font-family="Arial,Helvetica,sans-serif" font-size="66" font-weight="800" letter-spacing="-1.7" fill="#172A44">PIP Robot — Wiring Schematic</text>
+  <text x="106" y="207" class="small" font-size="24">Electrical architecture + connector reference · Based on the published first-PIP hardware manual</text>
+  <rect x="1777" y="101" width="257" height="70" rx="18" fill="#E3F0FE" stroke="#B8D5F5" stroke-width="2"/>
+  <text x="1905" y="130" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="22" fill="#1D69B8">REV C · 2026</text>
+  <text x="1905" y="153" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="16" fill="#4779A8">ASSEMBLY REFERENCE</text>
+
+  <!-- POWER -->
+  <rect x="66" y="237" width="1967" height="380" rx="28" fill="#FFFFFF" stroke="#DCE6F1" stroke-width="2"/>
+  <text x="108" y="282" class="tag">01  /  POWER DISTRIBUTION</text>
+  <rect x="101" y="314" width="277" height="155" rx="20" fill="#FCE8EC" stroke="#F1B5BF" stroke-width="2"/>
+  <text x="240" y="356" text-anchor="middle" class="h2" fill="#BC2D41">3S3P Li-ion Pack</text>
+  <text x="240" y="390" text-anchor="middle" class="detail">11.1 V nominal</text>
+  <text x="240" y="422" text-anchor="middle" class="detail">12.6 V fully charged</text>
+  <text x="240" y="450" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="17" fill="#995A67">3 groups × 3 cells</text>
+
+  <path d="M378 391 H434" class="power" marker-end="url(#arrow)"/>
+  <rect x="442" y="325" width="225" height="134" rx="18" fill="#FDF1F3" stroke="#F0C4CB" stroke-width="2"/>
+  <text x="554" y="369" text-anchor="middle" class="h2">3S BMS</text>
+  <text x="554" y="402" text-anchor="middle" class="detail">Cell protection</text>
+  <text x="554" y="431" text-anchor="middle" class="detail">Pack output</text>
+  <path d="M667 391 H715" class="power" marker-end="url(#arrow)"/>
+  <rect x="723" y="333" width="167" height="118" rx="17" fill="#FFF7E7" stroke="#F0D9AA" stroke-width="2"/>
+  <text x="806" y="371" text-anchor="middle" class="h2">F1 + SW1</text>
+  <text x="806" y="401" text-anchor="middle" class="detail">Fuse / switch</text>
+  <text x="806" y="429" text-anchor="middle" font-size="17" font-family="Arial,Helvetica,sans-serif" fill="#A37D38">Recommended</text>
+  <path d="M890 391 H938" class="power" marker-end="url(#arrow)"/>
+  <rect x="947" y="314" width="271" height="155" rx="20" fill="#E7F8F7" stroke="#A6DDD9" stroke-width="2"/>
+  <text x="1082" y="358" text-anchor="middle" class="h2">INA219</text>
+  <text x="1082" y="392" text-anchor="middle" class="detail">High-side current sense</text>
+  <text x="1082" y="424" text-anchor="middle" class="detail">I²C0 · addr 0x40</text>
+  <text x="1082" y="450" text-anchor="middle" font-size="17" font-family="Arial,Helvetica,sans-serif" fill="#06848A">SDA 3 · SCL 5 on Pi</text>
+  <path d="M1218 391 H1270" class="power"/>
+  <path d="M1270 347 V512" class="power"/>
+  <path d="M1270 347 H1309" class="power" marker-end="url(#arrow)"/>
+  <path d="M1270 512 H1309" class="power" marker-end="url(#arrow)"/>
+  <rect x="1320" y="298" width="253" height="99" rx="18" fill="#E9F4FE" stroke="#C0D8EE" stroke-width="2"/>
+  <text x="1446" y="340" text-anchor="middle" class="h2">5 V Buck</text>
+  <text x="1446" y="371" text-anchor="middle" class="detail">Logic power rail</text>
+  <rect x="1320" y="463" width="253" height="99" rx="18" fill="#F0EDFF" stroke="#CBC3F0" stroke-width="2"/>
+  <text x="1446" y="504" text-anchor="middle" class="h2">7.5 V Buck</text>
+  <text x="1446" y="536" text-anchor="middle" class="detail">Motor power rail</text>
+  <rect x="1633" y="298" width="353" height="99" rx="18" fill="#F4F9FE" stroke="#D2E0ED" stroke-width="2"/>
+  <text x="1809" y="339" text-anchor="middle" class="h2">+5 V LOGIC</text>
+  <text x="1809" y="370" text-anchor="middle" class="detail">Pi · CYD · RP2040 · PIR</text>
+  <rect x="1633" y="463" width="353" height="99" rx="18" fill="#F6F3FF" stroke="#D6CFF1" stroke-width="2"/>
+  <text x="1809" y="503" text-anchor="middle" class="h2">+7.5 V MOTORS</text>
+  <text x="1809" y="535" text-anchor="middle" class="detail">L293D EXT VOLTAGE</text>
+  <path d="M1573 347 H1625" stroke="#367EC1" stroke-width="5" marker-end="url(#arrow)"/>
+  <path d="M1573 512 H1625" class="usb" marker-end="url(#purpleArrow)"/>
+  <rect x="100" y="574" width="1890" height="26" rx="13" fill="#E8EDF4"/>
+  <text x="1043" y="593" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="700" fill="#52677F">All modules share COMMON GND · Confirm BMS outputs, regulator ratings, cable gauge, and motor stall current</text>
+
+  <!-- CONTROL -->
+  <rect x="66" y="646" width="1967" height="630" rx="28" fill="#FFFFFF" stroke="#DCE6F1" stroke-width="2"/>
+  <text x="108" y="691" class="tag">02  /  CONTROLLERS, DATA BUSES AND PERIPHERALS</text>
+
+  <rect x="113" y="740" width="485" height="244" rx="22" fill="#EBF4FF" stroke="#9EBFE8" stroke-width="3"/>
+  <text x="355" y="792" text-anchor="middle" class="h2">Orange Pi Zero (H2+)</text>
+  <text x="355" y="828" text-anchor="middle" class="detail">Robot brain · Armbian</text>
+  <path d="M145 850 H565" stroke="#C4D7ED" stroke-width="2"/>
+  <text x="146" y="882" class="detail">13-pin: 1 = 5 V, 2 = GND</text>
+  <text x="146" y="914" class="detail">USB2: pins 3/4 → RP2040</text>
+  <text x="146" y="946" class="detail">USB3: pins 5/6 → CYD</text>
+
+  <rect x="787" y="740" width="454" height="244" rx="22" fill="#F0EAFE" stroke="#C5AFE8" stroke-width="3"/>
+  <text x="1014" y="792" text-anchor="middle" class="h2">ESP32 CYD Screen</text>
+  <text x="1014" y="828" text-anchor="middle" class="detail">Face · display · audio</text>
+  <path d="M814 850 H1214" stroke="#D6C6ED" stroke-width="2"/>
+  <text x="815" y="882" class="detail">USB3 from Pi 13-pin 5/6</text>
+  <text x="815" y="914" class="detail">CN1: IO27 SDA · IO22 SCL</text>
+  <text x="815" y="946" class="detail">3.3 V I²C · address 0x20</text>
+
+  <rect x="1452" y="740" width="484" height="244" rx="22" fill="#E8F8F7" stroke="#97DAD8" stroke-width="3"/>
+  <text x="1694" y="792" text-anchor="middle" class="h2">RP2040 Zero</text>
+  <text x="1694" y="828" text-anchor="middle" class="detail">Real-time motor controller</text>
+  <path d="M1480 850 H1906" stroke="#C3E8E7" stroke-width="2"/>
+  <text x="1480" y="882" class="detail">USB2 from Pi 13-pin 3/4</text>
+  <text x="1480" y="914" class="detail">I²C1: GPIO26 SDA</text>
+  <text x="1480" y="946" class="detail">GPIO27 SCL · MPU 0x68</text>
+
+  <!-- USB connections, shown as purple links -->
+  <path d="M598 780 H787" class="usb" marker-end="url(#purpleArrow)"/>
+  <text x="693" y="762" text-anchor="middle" font-size="18" font-family="Arial,Helvetica,sans-serif" font-weight="800" fill="#8057BC">USB3 D±</text>
+  <path d="M598 715 H1694 V740" class="usb" stroke-dasharray="12 10" marker-end="url(#purpleArrow)"/>
+  <text x="1355" y="706" text-anchor="middle" font-size="18" font-family="Arial,Helvetica,sans-serif" font-weight="800" fill="#8057BC">USB2 D± to RP2040</text>
+
+  <!-- Bottom: peripheral nodes -->
+  <rect x="113" y="1050" width="414" height="162" rx="19" fill="#FFF7E7" stroke="#EDC779" stroke-width="2"/>
+  <text x="320" y="1092" text-anchor="middle" class="h3">PIR Motion Sensor</text>
+  <text x="320" y="1126" text-anchor="middle" class="detail">VCC +5 V · GND</text>
+  <text x="320" y="1157" text-anchor="middle" class="detail">OUT → Pi pin 7 (PA6)</text>
+  <text x="320" y="1186" text-anchor="middle" font-size="18" font-weight="800" font-family="Arial,Helvetica,sans-serif" fill="#AB750D">GPIO — NOT I²C</text>
+  <path d="M320 984 V1050" class="gpio" marker-end="url(#arrow)"/>
+
+  <rect x="798" y="1050" width="432" height="162" rx="19" fill="#EAF9F8" stroke="#A0DEDC" stroke-width="2"/>
+  <text x="1014" y="1092" text-anchor="middle" class="h3">PCF8574 I/O Expander</text>
+  <text x="1014" y="1126" text-anchor="middle" class="detail">CYD CN1 · 0x20</text>
+  <text x="1014" y="1157" text-anchor="middle" class="detail">SDA IO27 · SCL IO22</text>
+  <text x="1014" y="1186" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="18" fill="#0B8587">3.3 V + GND</text>
+  <path d="M1014 984 V1050" class="i2c" marker-end="url(#tealArrow)"/>
+
+  <rect x="1320" y="1050" width="305" height="162" rx="19" fill="#EAF9F8" stroke="#A0DEDC" stroke-width="2"/>
+  <text x="1472" y="1092" text-anchor="middle" class="h3">MPU-6050</text>
+  <text x="1472" y="1126" text-anchor="middle" class="detail">GY-521 IMU · 0x68</text>
+  <text x="1472" y="1157" text-anchor="middle" class="detail">RP GPIO26 / 27</text>
+  <text x="1472" y="1186" text-anchor="middle" class="detail">SDA / SCL</text>
+  <path d="M1572 984 V1017 H1472 V1050" class="i2c" marker-end="url(#tealArrow)"/>
+
+  <rect x="1660" y="1050" width="319" height="162" rx="19" fill="#F2EEFF" stroke="#C8BAE8" stroke-width="2"/>
+  <text x="1819" y="1092" text-anchor="middle" class="h3">Custom L293D PCB</text>
+  <text x="1819" y="1126" text-anchor="middle" class="detail">4× L293D · 8 channels</text>
+  <text x="1819" y="1157" text-anchor="middle" class="detail">EXT VOLTAGE = 7.5 V</text>
+  <text x="1819" y="1186" text-anchor="middle" class="detail">U5: M7 left · M8 right</text>
+  <path d="M1819 984 V1050" class="usb" marker-end="url(#purpleArrow)"/>
+  <text x="116" y="1250" font-family="Arial,Helvetica,sans-serif" font-size="18" fill="#657A90">Custom board: RP2040 GPIO0–15 → L293D inputs · GPIO16 RGB LED · GPIO28/29 UART option (not used in PIP's USB wiring)</text>
+
+  <!-- Separate built-in host-port USB topology; not the Pi's 13-pin data pairs. -->
+  <rect x="66" y="1300" width="1967" height="305" rx="28" fill="#FFFFFF" stroke="#DCE6F1" stroke-width="2"/>
+  <text x="108" y="1343" class="tag">03  /  USB EXPANSION — PHYSICAL PORTS</text>
+  <rect x="104" y="1392" width="385" height="159" rx="20" fill="#EBF4FF" stroke="#9EBFE8" stroke-width="2"/>
+  <text x="296" y="1444" text-anchor="middle" class="h2">Orange Pi Zero</text>
+  <text x="296" y="1480" text-anchor="middle" class="detail">Built-in USB Type-A</text>
+  <text x="296" y="1514" text-anchor="middle" font-size="19" font-weight="700" font-family="Arial,Helvetica,sans-serif" fill="#3276B7">HOST PORT</text>
+  <path d="M489 1469 H571" class="usb" marker-end="url(#purpleArrow)"/>
+  <rect x="582" y="1392" width="378" height="159" rx="20" fill="#F1EDFF" stroke="#C7B8EC" stroke-width="2"/>
+  <text x="771" y="1438" text-anchor="middle" class="h2">4-Port USB Hub</text>
+  <text x="771" y="1472" text-anchor="middle" class="detail">Unpowered / bus-powered</text>
+  <text x="771" y="1506" text-anchor="middle" class="detail">2 × Type-A · 2 × Type-C</text>
+  <path d="M960 1469 H1014" class="usb"/>
+  <path d="M1014 1416 V1531" class="usb"/>
+  <path d="M1014 1416 H1058" class="usb" marker-end="url(#purpleArrow)"/>
+  <path d="M1014 1512 H1058" class="usb" marker-end="url(#purpleArrow)"/>
+  <path d="M1014 1469 H1526 V1416 H1564" class="usb" marker-end="url(#purpleArrow)"/>
+  <path d="M1526 1469 V1512 H1564" class="usb" marker-end="url(#purpleArrow)"/>
+
+  <rect x="1066" y="1370" width="433" height="91" rx="17" fill="#E5F7F1" stroke="#A6DCC9" stroke-width="2"/>
+  <text x="1095" y="1405" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="800" fill="#247A5B">USB-A #1  ·  OCCUPIED</text>
+  <text x="1095" y="1437" class="detail">onn. webcam + microphone</text>
+  <rect x="1574" y="1370" width="411" height="91" rx="17" fill="#E5F7F1" stroke="#A6DCC9" stroke-width="2"/>
+  <text x="1603" y="1405" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="800" fill="#247A5B">USB-A #2  ·  OCCUPIED</text>
+  <text x="1603" y="1437" class="detail">Bluetooth audio dongle</text>
+  <rect x="1066" y="1480" width="433" height="91" rx="17" fill="#F4F7FB" stroke="#CDD9E6" stroke-width="2"/>
+  <text x="1095" y="1515" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="800" fill="#4E6683">USB-C #1  ·  AVAILABLE</text>
+  <text x="1095" y="1547" class="detail">Free downstream port</text>
+  <rect x="1574" y="1480" width="411" height="91" rx="17" fill="#F4F7FB" stroke="#CDD9E6" stroke-width="2"/>
+  <text x="1603" y="1515" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="800" fill="#4E6683">USB-C #2  ·  AVAILABLE</text>
+  <text x="1603" y="1547" class="detail">Free downstream port</text>
+  <text x="110" y="1588" font-family="Arial,Helvetica,sans-serif" font-size="17" fill="#647990">All four ports share the Orange Pi host connection and its power budget. USB-C here does not imply USB Power Delivery capability.</text>
+
+  <!-- Critical wiring notes -->
+  <rect x="66" y="1631" width="1967" height="145" rx="26" fill="#192A43"/>
+  <text x="108" y="1671" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="800" letter-spacing="1.8" fill="#A7C1E5">CRITICAL CONNECTION CHECK</text>
+  <text x="110" y="1711" font-family="Arial,Helvetica,sans-serif" font-size="22" fill="#F2F7FE">PIR:  +5 V / GND / OUT→PA6</text>
+  <text x="743" y="1711" font-family="Arial,Helvetica,sans-serif" font-size="22" fill="#F2F7FE">INA219:  Pi SDA pin 3 / SCL pin 5</text>
+  <text x="1463" y="1711" font-family="Arial,Helvetica,sans-serif" font-size="22" fill="#F2F7FE">Shared GND on all boards</text>
+  <text x="110" y="1750" font-family="Arial,Helvetica,sans-serif" font-size="19" fill="#C5D5E9">Confirm BMS/charger pinout, fuse rating, regulator capacity, motor stall current, and all connector orientations.</text>
+  <text x="2021" y="1808" text-anchor="end" font-family="Arial,Helvetica,sans-serif" font-size="17" fill="#8090A4">PIP · pip.xrtech.dev · Reference schematic, not a PCB fabrication design</text>
+</svg>

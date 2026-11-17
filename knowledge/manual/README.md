@@ -54,6 +54,7 @@ Written 2026-11-06. If something here disagrees with the code, the code wins. Fi
 | Change code or firmware safely | `changing_things.md` |
 | Use RoboDev, the robot's coding agent (and its own rules) | `robodev.md` |
 | Drive motors (later) | `motors.md` |
+| Play a hands-free demo script (lines, moves, a wheelie) from the phone | `scripts.md` |
 | Light the salvaged BLINKERS LED display (and learn any salvaged display) | `blinkers.md` |
 | Weather app and the weather on the BLINKERS panel | `weather.md` |
 | Battery level, warnings, clean shutdown when empty, battery history (INA219) | `battery.md` |

@@ -28,10 +28,11 @@ class RobotHost(Host):
         from .desktop_bluetooth import Bluetooth
         from .desktop_dev import RoboDev
         from .desktop_robot import CameraApp, SettingsApp
+        from .desktop_scripts import ScriptsApp
         from .desktop_weather import WeatherApp
         out = [RoboDev] + list(builtin)
         i = next((k for k, a in enumerate(out) if a.name == "logs"), len(out))
-        out[i:i] = [BlinkersApp, WeatherApp, BatteryApp, CameraApp, SettingsApp, Bluetooth]
+        out[i:i] = [BlinkersApp, WeatherApp, BatteryApp, CameraApp, SettingsApp, Bluetooth, ScriptsApp]
         return out
 
     def recent_log(self, n=120):

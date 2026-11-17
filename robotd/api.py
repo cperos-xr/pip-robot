@@ -301,6 +301,16 @@ class Api(threading.Thread):
                     return self._send(200, tests.tests_list(r))
                 if p == "/api/drive":
                     return self._send(200, r.drive.status())
+                if p == "/api/scripts":              # demo scripts (robotd/scripts.py): the list, readiness, what is playing
+                    if role != "owner":
+                        return self._send(403, {"error": "owner only"})
+                    if q.get("status"):
+                        return self._send(200, {"state": r.scripts.status()})
+                    return self._send(200, {"scripts": r.scripts.list(), "state": r.scripts.status()})
+                if p == "/api/wifi/networks":        # saved Wi-Fi networks and the current one (robotd/wifi.py)
+                    if role != "owner":
+                        return self._send(403, {"error": "owner only"})
+                    return self._send(200, r.wifi.status())
                 if p == "/api/blinkers":
                     return self._send(200, r.blinkers.status())
                 if p == "/api/motion":
@@ -910,6 +920,30 @@ class Api(threading.Thread):
                     return self._send(200, {"reply": res})
                 if p == "/api/stop":
                     return self._send(200, {"reply": r.motor.stop()})
+                if p == "/api/scripts/play":         # pressing Play IS the owner's approval for this playback (wheelie included)
+                    try:
+                        ok, msg = r.scripts.play(str(data.get("name", "")), wheelie_ok=bool(data.get("wheelie", True)))
+                    except (KeyError, ValueError) as e:
+                        return self._send(404, {"error": str(e)})
+                    return self._send(200 if ok else 409, {"ok": ok, "msg": msg})
+                if p == "/api/scripts/next":
+                    return self._send(200, r.scripts.next())
+                if p == "/api/scripts/stop":
+                    return self._send(200, r.scripts.stop())
+                if p == "/api/wifi/networks":        # {"cmd": "scan" | "add" (ssid, password, prefer) | "connect" | "forget" (id)}
+                    cmd = str(data.get("cmd", ""))
+                    try:
+                        if cmd == "scan":
+                            return self._send(200, {"ok": True, "networks": r.wifi.scan()})
+                        if cmd == "add":
+                            return self._send(200, r.wifi.add(data.get("ssid"), data.get("password", ""), bool(data.get("prefer"))))
+                        if cmd == "connect":
+                            return self._send(200, r.wifi.connect(data.get("id")))
+                        if cmd == "forget":
+                            return self._send(200, r.wifi.forget(data.get("id")))
+                    except (ValueError, RuntimeError) as e:
+                        return self._send(400, {"error": str(e)})
+                    return self._send(400, {"error": "cmd: scan | add | connect | forget"})
                 if p == "/api/drive":                 # onboard steering: one move, {"seq": [...]}, or {"cmd": "stop"}
                     if str(data.get("cmd", "")).lower() == "stop":
                         r.drive.stop()

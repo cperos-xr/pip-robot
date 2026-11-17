@@ -1,0 +1,309 @@
+<svg viewBox="0 0 1500 1165" width="1500" height="1165" xmlns="http://www.w3.org/2000/svg" color="#1b1d21" font-family="Inter, Helvetica, Arial, sans-serif">
+<rect width="1500" height="1165" fill="#ffffff"/>
+<text x="40" y="36" text-anchor="start" font-size="15" font-weight="700" fill="currentColor">Power</text>
+<text x="40" y="468" text-anchor="start" font-size="15" font-weight="700" fill="currentColor">Motion</text>
+<text x="660" y="468" text-anchor="start" font-size="15" font-weight="700" fill="currentColor">Compute</text>
+<text x="1000" y="468" text-anchor="start" font-size="15" font-weight="700" fill="currentColor">Sensors and display</text>
+<line x1="40" y1="440" x2="1460" y2="440" stroke="currentColor" stroke-width="1" opacity=".25" stroke-dasharray="2 4"/>
+<polyline points="150,100 150,134" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<line x1="120" y1="134" x2="180" y2="134" stroke="currentColor" stroke-width="2"/>
+<line x1="135" y1="146" x2="165" y2="146" stroke="currentColor" stroke-width="5"/>
+<polyline points="150,146 150,180" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<text x="186" y="144" text-anchor="start" font-size="10" font-weight="400" fill="currentColor" opacity="0.6">3.7 V</text>
+<polyline points="150,180 150,214" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<line x1="120" y1="214" x2="180" y2="214" stroke="currentColor" stroke-width="2"/>
+<line x1="135" y1="226" x2="165" y2="226" stroke="currentColor" stroke-width="5"/>
+<polyline points="150,226 150,260" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<text x="186" y="224" text-anchor="start" font-size="10" font-weight="400" fill="currentColor" opacity="0.6">3.7 V</text>
+<polyline points="150,260 150,294" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<line x1="120" y1="294" x2="180" y2="294" stroke="currentColor" stroke-width="2"/>
+<line x1="135" y1="306" x2="165" y2="306" stroke="currentColor" stroke-width="5"/>
+<polyline points="150,306 150,340" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<text x="186" y="304" text-anchor="start" font-size="10" font-weight="400" fill="currentColor" opacity="0.6">3.7 V</text>
+<polyline points="150,100 320,100" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<text x="205" y="94" text-anchor="start" font-size="11" font-weight="600" fill="#d9483b">B+ 11.1 V</text>
+<polyline points="150,180 320,180" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<text x="205" y="174" text-anchor="start" font-size="11" font-weight="600" fill="currentColor">7.4 V</text>
+<polyline points="150,260 320,260" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<text x="205" y="254" text-anchor="start" font-size="11" font-weight="600" fill="currentColor">3.7 V</text>
+<polyline points="150,340 320,340" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<text x="205" y="334" text-anchor="start" font-size="11" font-weight="600" fill="currentColor">B− 0 V</text>
+<circle cx="150" cy="180" r="3.5" fill="currentColor"/>
+<circle cx="150" cy="260" r="3.5" fill="currentColor"/>
+<rect x="262" y="93" width="40" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="282" y="124" text-anchor="middle" font-size="11" font-weight="700" fill="#d9483b">F1 · 5 A</text>
+<text x="282" y="137" text-anchor="middle" font-size="9.5" font-weight="400" fill="currentColor" opacity="0.65">recommended</text>
+<text x="70" y="205" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">3S Li-ion</text>
+<text x="70" y="222" text-anchor="middle" font-size="11" font-weight="400" fill="currentColor">11.1 V nom.</text>
+<text x="70" y="238" text-anchor="middle" font-size="11" font-weight="400" fill="currentColor" opacity="0.7">12.6 V full</text>
+<rect x="320" y="70" width="180" height="310" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="328" y="104" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">BAL B+</text>
+<text x="328" y="184" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">BAL 2</text>
+<text x="328" y="264" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">BAL 1</text>
+<text x="328" y="344" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">BAL B−</text>
+<text x="410" y="205" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">3S low-voltage</text>
+<text x="410" y="222" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">cutoff</text>
+<text x="492" y="154" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">OUT+</text>
+<text x="492" y="334" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">OUT−</text>
+<polyline points="500,150 590,150" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="500,330 540,330" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="540,330 540,344" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<line x1="529" y1="344" x2="551" y2="344" stroke="currentColor" stroke-width="2"/>
+<line x1="533" y1="349" x2="547" y2="349" stroke="currentColor" stroke-width="2"/>
+<line x1="537" y1="354" x2="543" y2="354" stroke="currentColor" stroke-width="2"/>
+<rect x="590" y="110" width="180" height="150" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="598" y="154" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">VIN+</text>
+<text x="762" y="154" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">VIN−</text>
+<text x="680" y="192" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">INA219</text>
+<text x="680" y="209" text-anchor="middle" font-size="11" font-weight="400" fill="currentColor" opacity="0.75">battery gauge · 0x40</text>
+<text x="620" y="252" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor">VCC</text>
+<text x="665" y="252" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor">GND</text>
+<text x="710" y="252" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor">SCL</text>
+<text x="755" y="252" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor">SDA</text>
+<polyline points="620,260 620,292" fill="none" stroke="#c2417a" stroke-width="2" stroke-linejoin="round"/>
+<text x="616" y="298" text-anchor="start" font-size="12" font-weight="700" fill="#c2417a" transform="rotate(90 616 298)">+3V3_PI</text>
+<polyline points="665,260 665,274" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<line x1="654" y1="274" x2="676" y2="274" stroke="currentColor" stroke-width="2"/>
+<line x1="658" y1="279" x2="672" y2="279" stroke="currentColor" stroke-width="2"/>
+<line x1="662" y1="284" x2="668" y2="284" stroke="currentColor" stroke-width="2"/>
+<polyline points="710,260 710,292" fill="none" stroke="#8f5bd6" stroke-width="2" stroke-linejoin="round"/>
+<text x="706" y="298" text-anchor="start" font-size="12" font-weight="700" fill="#8f5bd6" transform="rotate(90 706 298)">PI_SCL</text>
+<polyline points="755,260 755,292" fill="none" stroke="#8f5bd6" stroke-width="2" stroke-linejoin="round"/>
+<text x="751" y="298" text-anchor="start" font-size="12" font-weight="700" fill="#8f5bd6" transform="rotate(90 751 298)">PI_SDA</text>
+<polyline points="770,150 900,150" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="840,150 840,320 900,320" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="840" cy="150" r="3.5" fill="#d9483b"/>
+<text x="835" y="140" text-anchor="middle" font-size="11" font-weight="600" fill="#d9483b">VBAT_SW  9–12.6 V</text>
+<rect x="900" y="105" width="160" height="95" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="908" y="154" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">VIN</text>
+<text x="1052" y="154" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">VOUT</text>
+<text x="980" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Buck reg 7.5 V</text>
+<polyline points="980,200 980,214" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<line x1="969" y1="214" x2="991" y2="214" stroke="currentColor" stroke-width="2"/>
+<line x1="973" y1="219" x2="987" y2="219" stroke="currentColor" stroke-width="2"/>
+<line x1="977" y1="224" x2="983" y2="224" stroke="currentColor" stroke-width="2"/>
+<rect x="900" y="275" width="160" height="95" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="908" y="324" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">VIN</text>
+<text x="1052" y="324" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">VOUT</text>
+<text x="980" y="352" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Buck reg 5 V</text>
+<polyline points="980,370 980,384" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<line x1="969" y1="384" x2="991" y2="384" stroke="currentColor" stroke-width="2"/>
+<line x1="973" y1="389" x2="987" y2="389" stroke="currentColor" stroke-width="2"/>
+<line x1="977" y1="394" x2="983" y2="394" stroke="currentColor" stroke-width="2"/>
+<polyline points="1060,150 1130,150" fill="none" stroke="#e07b12" stroke-width="2" stroke-linejoin="round"/>
+<text x="1136" y="154" text-anchor="start" font-size="12" font-weight="700" fill="#e07b12">+7V5_MOT</text>
+<text x="1136" y="170" text-anchor="start" font-size="11" font-weight="400" fill="currentColor" opacity="0.7">motor supply</text>
+<polyline points="1060,320 1130,320" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<text x="1136" y="324" text-anchor="start" font-size="12" font-weight="700" fill="#d9483b">+5V</text>
+<text x="1136" y="340" text-anchor="start" font-size="11" font-weight="400" fill="currentColor" opacity="0.7">logic rail</text>
+<rect x="125" y="505" width="390" height="242" rx="8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="130" y="785" text-anchor="start" font-size="11" font-weight="600" fill="currentColor" opacity="0.8">Motor board: cperos-xr/l293d</text>
+<rect x="140" y="520" width="160" height="220" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="220" y="620" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">4× L293D</text>
+<text x="220" y="637" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor" opacity="0.75">U2–U5 · 8 channels</text>
+<text x="220" y="652" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor" opacity="0.6">M7 left · M8 right · 1–6 free</text>
+<text x="180" y="534" text-anchor="middle" font-size="9.5" font-weight="400" fill="currentColor">EXT VCC</text>
+<text x="262" y="534" text-anchor="middle" font-size="9.5" font-weight="400" fill="currentColor">VSS 5V</text>
+<polyline points="180,520 180,496" fill="none" stroke="#e07b12" stroke-width="2" stroke-linejoin="round"/>
+<line x1="168" y1="496" x2="192" y2="496" stroke="#e07b12" stroke-width="2.5"/>
+<text x="180" y="489" text-anchor="middle" font-size="12" font-weight="700" fill="#e07b12">+7V5_MOT</text>
+<polyline points="260,520 260,496" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<line x1="248" y1="496" x2="272" y2="496" stroke="#d9483b" stroke-width="2.5"/>
+<text x="260" y="489" text-anchor="middle" font-size="12" font-weight="700" fill="#d9483b">+5V</text>
+<text x="148" y="564" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">M7 +</text>
+<text x="148" y="614" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">M7 −</text>
+<text x="148" y="664" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">M8 +</text>
+<text x="148" y="714" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">M8 −</text>
+<text x="292" y="564" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">7F</text>
+<text x="292" y="614" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">7R</text>
+<text x="292" y="664" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">8F</text>
+<text x="292" y="714" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">8R</text>
+<polyline points="140,560 80,560 80,571" fill="none" stroke="#e07b12" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="140,610 80,610 80,599" fill="none" stroke="#e07b12" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="80" cy="585" r="14" fill="none" stroke="currentColor" stroke-width="2"/>
+<text x="80" y="590" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">M</text>
+<text x="56" y="589" text-anchor="end" font-size="13" font-weight="700" fill="currentColor">M7</text>
+<polyline points="140,660 80,660 80,671" fill="none" stroke="#e07b12" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="140,710 80,710 80,699" fill="none" stroke="#e07b12" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="80" cy="685" r="14" fill="none" stroke="currentColor" stroke-width="2"/>
+<text x="80" y="690" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">M</text>
+<text x="56" y="689" text-anchor="end" font-size="13" font-weight="700" fill="currentColor">M8</text>
+<text x="220" y="724" text-anchor="middle" font-size="9.5" font-weight="400" fill="currentColor">EXT GND</text>
+<polyline points="220,740 220,754" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<line x1="209" y1="754" x2="231" y2="754" stroke="currentColor" stroke-width="2"/>
+<line x1="213" y1="759" x2="227" y2="759" stroke="currentColor" stroke-width="2"/>
+<line x1="217" y1="764" x2="223" y2="764" stroke="currentColor" stroke-width="2"/>
+<rect x="360" y="520" width="140" height="220" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="440" y="688" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">RP2040-Zero</text>
+<text x="440" y="703" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor" opacity="0.75">0.5 s watchdog</text>
+<polyline points="300,560 360,560" fill="none" stroke="#1f9e8f" stroke-width="2" stroke-linejoin="round"/>
+<text x="368" y="564" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">GP12</text>
+<polyline points="300,610 360,610" fill="none" stroke="#1f9e8f" stroke-width="2" stroke-linejoin="round"/>
+<text x="368" y="614" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">GP13</text>
+<polyline points="300,660 360,660" fill="none" stroke="#1f9e8f" stroke-width="2" stroke-linejoin="round"/>
+<text x="368" y="664" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">GP14</text>
+<polyline points="300,710 360,710" fill="none" stroke="#1f9e8f" stroke-width="2" stroke-linejoin="round"/>
+<text x="368" y="714" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">GP15</text>
+<text x="492" y="564" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">VBUS</text>
+<text x="492" y="594" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">GND</text>
+<text x="492" y="624" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">D−</text>
+<text x="492" y="654" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">D+</text>
+<text x="330" y="548" text-anchor="middle" font-size="10" font-weight="400" fill="#1f9e8f">PWM</text>
+<text x="385" y="732" text-anchor="middle" font-size="9" font-weight="400" fill="currentColor">5V</text>
+<text x="415" y="732" text-anchor="middle" font-size="9" font-weight="400" fill="currentColor">GND</text>
+<text x="445" y="732" text-anchor="middle" font-size="9" font-weight="400" fill="currentColor">GP26</text>
+<text x="475" y="732" text-anchor="middle" font-size="9" font-weight="400" fill="currentColor">GP27</text>
+<rect x="355" y="800" width="150" height="70" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="385" y="815" text-anchor="middle" font-size="9.5" font-weight="400" fill="currentColor">VCC</text>
+<text x="415" y="815" text-anchor="middle" font-size="9.5" font-weight="400" fill="currentColor">GND</text>
+<text x="445" y="815" text-anchor="middle" font-size="9.5" font-weight="400" fill="currentColor">SDA</text>
+<text x="475" y="815" text-anchor="middle" font-size="9.5" font-weight="400" fill="currentColor">SCL</text>
+<text x="430" y="840" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">MPU-6050 (GY-521)</text>
+<text x="430" y="856" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor" opacity="0.75">0x68 · 500 Hz</text>
+<polyline points="385,740 385,800" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="415,740 415,800" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="445,740 445,800" fill="none" stroke="#8f5bd6" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="475,740 475,800" fill="none" stroke="#8f5bd6" stroke-width="2" stroke-linejoin="round"/>
+<text x="520" y="772" text-anchor="start" font-size="11" font-weight="600" fill="#8f5bd6">I²C1 via</text>
+<text x="520" y="786" text-anchor="start" font-size="11" font-weight="600" fill="#8f5bd6">H1 header</text>
+<polyline points="500,560 660,560" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="600" cy="560" r="3.5" fill="#d9483b"/>
+<polyline points="600,560 600,512" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<line x1="588" y1="512" x2="612" y2="512" stroke="#d9483b" stroke-width="2.5"/>
+<text x="600" y="505" text-anchor="middle" font-size="12" font-weight="700" fill="#d9483b">+5V</text>
+<polyline points="500,590 660,590" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="500,620 660,620" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="500,650 660,650" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round"/>
+<text x="560" y="639" text-anchor="middle" font-size="11" font-weight="600" fill="#2f7de1">USB 2.0</text>
+<rect x="660" y="520" width="260" height="360" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="668" y="540" text-anchor="start" font-size="10" font-weight="600" fill="currentColor" opacity="0.75">13-pin header</text>
+<text x="668" y="564" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">5V</text>
+<text x="654" y="556" text-anchor="end" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">1</text>
+<text x="668" y="594" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">GND</text>
+<text x="654" y="586" text-anchor="end" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">2</text>
+<text x="668" y="624" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">USB-DM2</text>
+<text x="654" y="616" text-anchor="end" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">3</text>
+<text x="668" y="654" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">USB-DP2</text>
+<text x="654" y="646" text-anchor="end" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">4</text>
+<text x="668" y="684" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">USB-DM3</text>
+<text x="654" y="676" text-anchor="end" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">5</text>
+<text x="668" y="714" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">USB-DP3</text>
+<text x="654" y="706" text-anchor="end" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">6</text>
+<polyline points="660,680 618,680" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round"/>
+<text x="612" y="684" text-anchor="end" font-size="12" font-weight="700" fill="#2f7de1">USB3_DM</text>
+<polyline points="660,710 618,710" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round"/>
+<text x="612" y="714" text-anchor="end" font-size="12" font-weight="700" fill="#2f7de1">USB3_DP</text>
+<text x="912" y="540" text-anchor="end" font-size="10" font-weight="600" fill="currentColor" opacity="0.75">26-pin GPIO</text>
+<text x="912" y="564" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">3V3</text>
+<text x="926" y="556" text-anchor="start" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">1</text>
+<text x="912" y="594" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">PA12 SDA</text>
+<text x="926" y="586" text-anchor="start" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">3</text>
+<text x="912" y="624" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">PA11 SCL</text>
+<text x="926" y="616" text-anchor="start" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">5</text>
+<text x="912" y="654" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">GND</text>
+<text x="926" y="646" text-anchor="start" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">6</text>
+<text x="912" y="704" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">5V</text>
+<text x="926" y="696" text-anchor="start" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">2</text>
+<text x="912" y="734" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">PA6 / PWM1</text>
+<text x="926" y="726" text-anchor="start" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">7</text>
+<text x="912" y="764" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">GND</text>
+<text x="926" y="756" text-anchor="start" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">9</text>
+<text x="790" y="800" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">Orange Pi Zero</text>
+<text x="790" y="818" text-anchor="middle" font-size="11" font-weight="400" fill="currentColor" opacity="0.75">Allwinner H2+/H3 · 512 MB</text>
+<polyline points="920,560 958,560" fill="none" stroke="#c2417a" stroke-width="2" stroke-linejoin="round"/>
+<text x="964" y="564" text-anchor="start" font-size="12" font-weight="700" fill="#c2417a">+3V3_PI</text>
+<polyline points="920,590 958,590" fill="none" stroke="#8f5bd6" stroke-width="2" stroke-linejoin="round"/>
+<text x="964" y="594" text-anchor="start" font-size="12" font-weight="700" fill="#8f5bd6">PI_SDA</text>
+<polyline points="920,620 958,620" fill="none" stroke="#8f5bd6" stroke-width="2" stroke-linejoin="round"/>
+<text x="964" y="624" text-anchor="start" font-size="12" font-weight="700" fill="#8f5bd6">PI_SCL</text>
+<polyline points="920,650 945,650 945,656" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="945,656 945,670" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<line x1="934" y1="670" x2="956" y2="670" stroke="currentColor" stroke-width="2"/>
+<line x1="938" y1="675" x2="952" y2="675" stroke="currentColor" stroke-width="2"/>
+<line x1="942" y1="680" x2="948" y2="680" stroke="currentColor" stroke-width="2"/>
+<text x="790" y="872" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor">USB-A</text>
+<polyline points="790,880 790,1000" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round"/>
+<rect x="660" y="1000" width="340" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="830" y="1022" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">4-port USB hub (unpowered)</text>
+<text x="700" y="1052" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor">A1</text>
+<text x="830" y="1052" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor">A2</text>
+<text x="920" y="1052" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor">C1</text>
+<text x="975" y="1052" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor">C2</text>
+<polyline points="700,1060 700,1105" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round"/>
+<rect x="640" y="1105" width="120" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="700" y="1125" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">USB webcam</text>
+<text x="700" y="1140" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor" opacity="0.6">camera</text>
+<polyline points="830,1060 830,1105" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round"/>
+<rect x="770" y="1105" width="120" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="830" y="1125" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Bluetooth</text>
+<text x="830" y="1140" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor" opacity="0.6">USB dongle</text>
+<polyline points="920,1060 920,1088" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<polyline points="975,1060 975,1088" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<text x="948" y="1104" text-anchor="middle" font-size="11" font-weight="600" fill="#2f7de1">2× USB-C free</text>
+<rect x="1060" y="680" width="150" height="100" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="1068" y="704" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">VCC</text>
+<text x="1068" y="734" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">OUT</text>
+<text x="1068" y="764" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">GND</text>
+<text x="1135" y="672" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">PIR motion (HC-SR501)</text>
+<polyline points="920,700 1060,700" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="920,730 1060,730" fill="none" stroke="#1f9e8f" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="920,760 1060,760" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<text x="1000" y="724" text-anchor="middle" font-size="10" font-weight="400" fill="#1f9e8f">motion</text>
+<rect x="1060" y="815" width="200" height="160" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="1160" y="836" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">CYD ESP32-2432S028R</text>
+<text x="1160" y="900" text-anchor="middle" font-size="11" font-weight="400" fill="currentColor" opacity="0.75">2.8″ touch</text>
+<text x="1160" y="915" text-anchor="middle" font-size="11" font-weight="400" fill="currentColor" opacity="0.75">320 × 240</text>
+<text x="1068" y="864" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">VBUS</text>
+<text x="1068" y="894" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">GND</text>
+<text x="1068" y="924" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">D−</text>
+<text x="1068" y="954" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">D+</text>
+<text x="1066" y="973" text-anchor="start" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">USB-C</text>
+<polyline points="1060,860 1010,860" fill="none" stroke="#d9483b" stroke-width="2" stroke-linejoin="round"/>
+<text x="1004" y="864" text-anchor="end" font-size="12" font-weight="700" fill="#d9483b">+5V</text>
+<polyline points="1060,890 1030,890 1030,896" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="1030,896 1030,910" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+<line x1="1019" y1="910" x2="1041" y2="910" stroke="currentColor" stroke-width="2"/>
+<line x1="1023" y1="915" x2="1037" y2="915" stroke="currentColor" stroke-width="2"/>
+<line x1="1027" y1="920" x2="1033" y2="920" stroke="currentColor" stroke-width="2"/>
+<polyline points="1060,920 1010,920" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round"/>
+<text x="1004" y="924" text-anchor="end" font-size="12" font-weight="700" fill="#2f7de1">USB3_DM</text>
+<polyline points="1060,950 1010,950" fill="none" stroke="#2f7de1" stroke-width="2" stroke-linejoin="round"/>
+<text x="1004" y="954" text-anchor="end" font-size="12" font-weight="700" fill="#2f7de1">USB3_DP</text>
+<text x="1252" y="864" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">IO27 SDA</text>
+<text x="1252" y="894" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">IO22 SCL</text>
+<text x="1252" y="924" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">3V3</text>
+<text x="1252" y="954" text-anchor="end" font-size="11" font-weight="400" fill="currentColor">GND</text>
+<text x="1254" y="973" text-anchor="end" font-size="9" font-weight="400" fill="currentColor" opacity="0.6">CN1</text>
+<rect x="1330" y="840" width="140" height="130" rx="4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="1338" y="864" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">SDA</text>
+<text x="1338" y="894" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">SCL</text>
+<text x="1338" y="924" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">VCC</text>
+<text x="1338" y="954" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">GND</text>
+<text x="1420" y="895" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">PCF8574</text>
+<text x="1420" y="912" text-anchor="middle" font-size="11" font-weight="400" fill="currentColor" opacity="0.7">unused</text>
+<text x="1420" y="927" text-anchor="middle" font-size="10" font-weight="400" fill="currentColor" opacity="0.7">0x20–0x27</text>
+<polyline points="1260,860 1330,860" fill="none" stroke="#8f5bd6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<polyline points="1260,890 1330,890" fill="none" stroke="#8f5bd6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<polyline points="1260,920 1330,920" fill="none" stroke="#c2417a" stroke-width="2" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<polyline points="1260,950 1330,950" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<rect x="1230" y="60" width="240" height="300" rx="6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="1246" y="86" text-anchor="start" font-size="13" font-weight="700" fill="currentColor">Legend</text>
+<line x1="1246" y1="112" x2="1276" y2="112" stroke="#d9483b" stroke-width="2.5"/>
+<text x="1286" y="116" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">Battery / 5 V power</text>
+<line x1="1246" y1="136" x2="1276" y2="136" stroke="#e07b12" stroke-width="2.5"/>
+<text x="1286" y="140" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">7.5 V motor power</text>
+<line x1="1246" y1="160" x2="1276" y2="160" stroke="#c2417a" stroke-width="2.5"/>
+<text x="1286" y="164" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">3.3 V</text>
+<line x1="1246" y1="184" x2="1276" y2="184" stroke="currentColor" stroke-width="2.5"/>
+<text x="1286" y="188" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">Ground</text>
+<line x1="1246" y1="208" x2="1276" y2="208" stroke="#8f5bd6" stroke-width="2.5"/>
+<text x="1286" y="212" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">I²C</text>
+<line x1="1246" y1="232" x2="1276" y2="232" stroke="#2f7de1" stroke-width="2.5"/>
+<text x="1286" y="236" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">USB data</text>
+<line x1="1246" y1="256" x2="1276" y2="256" stroke="#1f9e8f" stroke-width="2.5"/>
+<text x="1286" y="260" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">GPIO signal</text>
+<line x1="1246" y1="280" x2="1276" y2="280" stroke="currentColor" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="1286" y="284" text-anchor="start" font-size="11" font-weight="400" fill="currentColor">Optional / unused</text>
+<text x="1246" y="310" text-anchor="start" font-size="10.5" font-weight="400" fill="currentColor" opacity="0.8">Bold names (+5V, PI_SDA…) are net</text>
+<text x="1246" y="325" text-anchor="start" font-size="10.5" font-weight="400" fill="currentColor" opacity="0.8">labels: same name = same wire.</text>
+</svg>

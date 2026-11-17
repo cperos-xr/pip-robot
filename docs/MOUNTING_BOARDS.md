@@ -51,6 +51,10 @@ It is the same idea as the standoffs in a computer case:
 4. A nut on each prong holds it down.
 5. Press the plate into the frame.
 
+<img src="img/cyd-standoffs.jpg" width="420" alt="The CYD touchscreen held on brass standoffs, bolted through printed mounts pressed into the perforated frame">
+
+*The first Pip's screen: brass standoffs as the spacers, nuts on top, and black printed mounts pressed into the frame.*
+
 ### Hot glue (in a hurry, or no screw holes)
 
 Turn off the bolt holes, print the plate, and glue the board straight onto it. Put the glue where the board has

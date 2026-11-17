@@ -433,21 +433,26 @@ class Wheelie:
                 if res.get("msg") != "nobody tapped Start":
                     r.toast("Wheelie: " + str(res.get("msg")), 4000)
                 return
-            held = res.get("balance_ms", 0) / 1000
-            end = res.get("end", "").split(" ")[0]
-            if end == "landed":
-                line = f"I balanced on two wheels for {held:.0f} seconds!"
-                r.face("happy", line, hold=4000)
-            elif held >= 1:
-                line = f"I held it for {held:.1f} seconds, then lost it."
-                r.face("surprised", line, hold=4000)
-            else:
-                line = "That one did not work. I did not get up on two wheels."
-                r.face("sad", line, hold=4000)
-            r.voice.speak(line)
-            r.store.event("wheelie", f"{line} (run {res['name']}, end: {res.get('end')})")
+            self.announce(res)
         threading.Thread(target=go, daemon=True, name="wheelie-show").start()
         return True, "wheelie: tap Start on my screen when the floor is clear"
+
+    def announce(self, res, speak=True):
+        """After a show run: the face and the line that says how it went (also used by robotd/scripts.py)."""
+        r = self.r
+        held = res.get("balance_ms", 0) / 1000
+        end = res.get("end", "").split(" ")[0]
+        if end == "landed":
+            line, mood = f"I balanced on two wheels for {held:.0f} seconds!", "happy"
+        elif held >= 1:
+            line, mood = f"I held it for {held:.1f} seconds, then lost it.", "surprised"
+        else:
+            line, mood = "That one did not work. I did not get up on two wheels.", "sad"
+        r.face(mood, line, hold=4000)
+        if speak:
+            r.voice.speak(line)
+        r.store.event("wheelie", f"{line} (run {res.get('name')}, end: {res.get('end')})")
+        return line
 
     @staticmethod
     def routine(x):
