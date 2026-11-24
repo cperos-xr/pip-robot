@@ -146,6 +146,15 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
 .icons h3 { font: 700 1.0625rem/1.2 var(--display); }
 .icons p { font-size: 0.9375rem; line-height: 1.45; color: var(--dim); }
 
+/* Videos: plain links. No YouTube players or thumbnails: they would track visitors */
+.videos { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem 2rem; }
+.videos li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 0.85rem; align-items: start; min-width: 0; }
+.videos svg { width: 32px; height: 32px; display: block; }
+.videos h3 { font: 700 1.0625rem/1.25 var(--display); }
+.videos h3 a { text-underline-offset: 3px; }
+.videos p { font-size: 0.9375rem; line-height: 1.45; color: var(--dim); margin-top: 0.25rem; }
+.pane .videos + .note { margin-top: 1.4rem; }
+
 /* The body: a photo and a details list */
 .split { display: grid; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); gap: 1.75rem; align-items: start; }
 .photo img { width: 100%; }
@@ -194,6 +203,9 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
   .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pane { padding: 1.1rem; }
 }
+@media (max-width: 640px) {
+  .videos { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
+}
 @media (max-width: 430px) {
   .steps { grid-template-columns: minmax(0, 1fr); }
   .days li { grid-template-columns: minmax(0, 1fr); gap: 0; }
@@ -233,7 +245,7 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
         <a class="btn raised go" data-link="github" href="#build">Get the code</a>
         <a class="btn raised" data-link="thingiverse" href="#body">Print the body</a>
         <a class="btn raised" data-link="bluesky" href="#does">Follow Pip</a>
-        <a class="btn raised" data-link="video" href="#does">Watch Pip dance</a>
+        <a class="btn raised" data-link="video" href="#videos">Watch Pip dance</a>
       </div>
     </div>
   </section>
@@ -253,6 +265,20 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
         <li><span data-icon="post"></span><h3>Posts</h3><p>Shares its day on Bluesky if you let it, with faces blurred and a safety check first.</p></li>
         <li><span data-icon="care"></span><h3>Checks itself</h3><p>A self-test for every part, a battery gauge, and a clean shutdown before the pack runs dry.</p></li>
       </ul>
+    </div>
+  </section>
+
+  <section class="win raised" id="videos">
+    <div class="bar"><h2>Videos</h2><span class="ctl" aria-hidden="true"><i class="raised"></i><i class="raised"></i><i class="raised"></i></span></div>
+    <div class="pane sunken">
+      <ul class="videos">
+        <li><span data-icon="play"></span><div><h3><a href="https://youtube.com/shorts/OSsZpHV0tX4" target="_blank" rel="noopener">How Pip learned to balance on two wheels</a></h3><p>Pip was held at its balance point once, then tuned its own controller from there.</p></div></li>
+        <li><span data-icon="play"></span><div><h3><a href="https://youtube.com/shorts/7A4optsqTOc" target="_blank" rel="noopener">Pip has found perfect balance</a></h3><p>The result: balancing on two wheels, with a dance and a full spin.</p></div></li>
+        <li><span data-icon="play"></span><div><h3><a href="https://youtube.com/shorts/7AXn7GA2-Yc" target="_blank" rel="noopener">Reverse engineering a salvaged LED panel</a></h3><p>Pip works out an unknown salvaged screen on its own.</p></div></li>
+        <li><span data-icon="play"></span><div><h3><a href="https://youtube.com/shorts/xIaZ679_vL0" target="_blank" rel="noopener">Learning the new lidar sensor and caster wheel</a></h3><p>Pip takes on a sensor it had no code for.</p></div></li>
+        <li><span data-icon="play"></span><div><h3><a href="https://youtu.be/WMXmUGjVRbw" target="_blank" rel="noopener">Original demo</a></h3><p>A tour of what Pip does.</p></div></li>
+      </ul>
+      <p class="note">The videos open on YouTube in a new tab. More photos of Pip are in its <a href="https://cperos-xr.github.io/pip-gallery/" target="_blank" rel="noopener">photo gallery</a>.</p>
     </div>
   </section>
 
@@ -360,7 +386,7 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
 
   <footer class="foot">
     <span>Code under the MIT license. Manual, photos and models under CC BY 4.0.</span>
-    <span><a data-link="github" href="#build">Code</a> · <a data-link="thingiverse" href="#body">Printable body</a> · <a data-link="bluesky" href="#does">Bluesky</a> · <a data-link="video" href="#does">Video</a> · <a data-link="coffee" href="#top">Buy me a coffee</a></span>
+    <span><a data-link="github" href="#build">Code</a> · <a data-link="thingiverse" href="#body">Printable body</a> · <a data-link="bluesky" href="#does">Bluesky</a> · <a href="#videos">Videos</a> · <a data-link="coffee" href="#top">Buy me a coffee</a></span>
   </footer>
 </div>
 
@@ -371,7 +397,7 @@ const LINKS = {
   thingiverse: "https://www.thingiverse.com/thing:7435423",
   coffee: "https://www.buymeacoffee.com/cperos",
   bluesky: "https://bsky.app/profile/imalittlerobot.bsky.social",
-  video: "https://www.youtube.com/shorts/WMXmUGjVRbw"
+  video: "https://youtube.com/shorts/7A4optsqTOc"
 };
 document.querySelectorAll("[data-link]").forEach(a => {
   const url = LINKS[a.dataset.link];
@@ -399,7 +425,8 @@ const ICONS = {
   drive: ["....kkkk....", "..kkggggkk..", ".kggggggggk.", ".kggkkkkggk.", "kggkrrrrkggk", "kggkrrrrkggk", "kggkrrrrkggk", "kggkrrrrkggk", ".kggkkkkggk.", ".kggggggggk.", "..kkggggkk..", "....kkkk...."],
   phone: ["...kkkkkk...", "...kwwwwk...", "...kcccck...", "...kcccck...", "...kcccck...", "...kwwwwk...", "...kyywwk...", "...kwwwwk...", "...kwwrrk...", "...kwwwwk...", "...kkggkk...", "...kkkkkk..."],
   post: ["............", "..rr....rr..", ".rrrr..rrrr.", "rrrrrrrrrrrr", "rrwrrrrrrrrr", "rrrrrrrrrrrr", ".rrrrrrrrrr.", "..rrrrrrrr..", "...rrrrrr...", "....rrrr....", ".....rr.....", "............"],
-  care: ["............", "....kkkk....", "..kkkkkkkk..", "..kwwwwwwk..", "..kwwwwwwk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kkkkkkkk..", "............"]
+  care: ["............", "....kkkk....", "..kkkkkkkk..", "..kwwwwwwk..", "..kwwwwwwk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kyyyyyyk..", "..kkkkkkkk..", "............"],
+  play: ["............", "kkkkkkkkkkkk", "kbbbbbbbbbbk", "kbbbwbbbbbbk", "kbbbwwbbbbbk", "kbbbwwwbbbbk", "kbbbwwwwbbbk", "kbbbwwwbbbbk", "kbbbwwbbbbbk", "kbbbwbbbbbbk", "kbbbbbbbbbbk", "kkkkkkkkkkkk"]
 };
 const FILL = {k: "var(--ink)", w: "var(--icon-w)", c: "var(--icon-c)", y: "var(--accent)", r: "var(--icon-r)", g: "var(--icon-g)", b: "var(--title)"};
 document.querySelectorAll("[data-icon]").forEach(el => {

@@ -28,4 +28,5 @@ your robot's address behind an access gate (see `SECURITY.md`).
 
 The page is plain HTML and CSS. The face in the hero is drawn by the script at the bottom, the same way the robot's
 touchscreen draws it. The icons are 12 x 12 pixel maps in `ICONS`. Photos: keep them free of people, mail, screens and
-anything that shows where you live, and strip their metadata (`exiftool -all= photo.jpg`).
+anything that shows where you live, and strip their metadata (`exiftool -all= photo.jpg`). Videos are plain links
+in the Videos section: no YouTube players and no thumbnails loaded from YouTube, because both track visitors.
